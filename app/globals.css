@@ -1347,7 +1347,7 @@ tbody td:last-child button:hover {
 }
 
 .quote-banner::after {
-  content: "FOOLAD BONYAN";
+  content: "FOULAD BONYAN";
   position: absolute;
   bottom: -35px;
   left: 4%;
@@ -1438,19 +1438,29 @@ footer {
   line-height: 2;
 }
 
-.footer-phone {
+.footer-phones {
   display: flex;
   flex-direction: column;
+  align-items: flex-start;
+  gap: 5px;
 }
 
-.footer-phone small {
+.footer-phones small {
+  margin-bottom: 2px;
   color: var(--primary);
   font-size: 9px;
 }
 
-.footer-phone strong {
-  margin-top: 7px;
+.footer-phones a {
+  color: #fff;
   font-size: 19px;
+  font-weight: 900;
+  line-height: 1.5;
+  transition: color 0.2s;
+}
+
+.footer-phones a:hover {
+  color: var(--primary);
 }
 
 .footer-column {

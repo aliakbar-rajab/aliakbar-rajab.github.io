@@ -163,8 +163,8 @@ export default function IronDemo() {
   const [submitted, setSubmitted] = useState(false);
 
   useEffect(() => {
-    const savedPrimary = window.localStorage.getItem("foolad-bonyan-primary");
-    const savedSecondary = window.localStorage.getItem("foolad-bonyan-secondary");
+    const savedPrimary = window.localStorage.getItem("foulad-bonyan-primary");
+    const savedSecondary = window.localStorage.getItem("foulad-bonyan-secondary");
     if (savedPrimary && isHex(savedPrimary)) setPrimary(savedPrimary);
     if (savedSecondary && isHex(savedSecondary)) setSecondary(savedSecondary);
   }, []);
@@ -190,15 +190,15 @@ export default function IronDemo() {
     if (kind === "primary") setPrimary(value);
     else setSecondary(value);
     if (isHex(value)) {
-      window.localStorage.setItem(`foolad-bonyan-${kind}`, value);
+      window.localStorage.setItem(`foulad-bonyan-${kind}`, value);
     }
   };
 
   const resetTheme = () => {
     setPrimary(DEFAULT_PRIMARY);
     setSecondary(DEFAULT_SECONDARY);
-    window.localStorage.removeItem("foolad-bonyan-primary");
-    window.localStorage.removeItem("foolad-bonyan-secondary");
+    window.localStorage.removeItem("foulad-bonyan-primary");
+    window.localStorage.removeItem("foulad-bonyan-secondary");
   };
 
   const submitQuote = (event: FormEvent<HTMLFormElement>) => {
@@ -542,7 +542,7 @@ export default function IronDemo() {
               <strong>+۱۵</strong>
               <span>سال تجربه در بازار فولاد</span>
             </div>
-            <div className="steel-stamp">FOOLAD BONYAN / QC</div>
+            <div className="steel-stamp">FOULAD BONYAN / QC</div>
           </div>
           <div className="about-copy">
             <span className="section-kicker">خرید مطمئن، بدون پیچیدگی</span>
@@ -626,10 +626,12 @@ export default function IronDemo() {
               تجربه‌ای شفاف، سریع و قابل اعتماد برای تأمین آهن‌آلات ساختمانی و
               صنعتی.
             </p>
-            <a className="footer-phone" href="tel:+982188888180">
+            <div className="footer-phones">
               <small>مرکز تماس و فروش</small>
-              <strong dir="ltr">۰۲۱ - ۸۸۸۸ ۸۱۸۰</strong>
-            </a>
+              <a href="tel:+982188888180" dir="ltr">۰۲۱ - ۸۸۸۸ ۸۱۸۰</a>
+              <a href="tel:+982188888280" dir="ltr">۰۲۱ - ۸۸۸۸ ۸۲۸۰</a>
+              <a href="tel:+982188888122" dir="ltr">۰۲۱ - ۸۸۸۸ ۸۱۲۲</a>
+            </div>
           </div>
           <div className="footer-column">
             <h4>محصولات</h4>
@@ -649,9 +651,8 @@ export default function IronDemo() {
           </div>
           <div className="footer-column footer-address">
             <h4>با ما در ارتباط باشید</h4>
-            <p>تهران، خیابان مطهری، خیابان سرافراز، پلاک ۲۱</p>
+            <p>آجودانیه پورابتهاج نبش لشکری ساختمان سرو واحد ۳۰۳</p>
             <p>شنبه تا چهارشنبه، ۸:۳۰ تا ۱۷:۳۰</p>
-            <a href="mailto:sales@fooladbonyan.demo">sales@fooladbonyan.demo</a>
           </div>
         </div>
         <div className="footer-bottom">
