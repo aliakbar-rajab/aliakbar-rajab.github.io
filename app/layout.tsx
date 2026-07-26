@@ -9,28 +9,24 @@ export async function generateMetadata(): Promise<Metadata> {
     incomingHeaders.get("x-forwarded-proto") ??
     (host?.startsWith("localhost") ? "http" : "https");
   const metadataBase = host ? new URL(`${protocol}://${host}`) : new URL("https://example.com");
-  const socialImage = new URL("/og.png", metadataBase).toString();
-
   return {
     metadataBase,
     title: {
-      default: "فولادینو | بازار آنلاین آهن و فولاد",
-      template: "%s | فولادینو",
+      default: "فولاد بنیان | بازار آنلاین آهن و فولاد",
+      template: "%s | فولاد بنیان",
     },
     description:
       "مرجع سریع استعلام و خرید آهن‌آلات ساختمانی و صنعتی با مشاوره تخصصی.",
     openGraph: {
-      title: "فولادینو | خرید حرفه‌ای آهن‌آلات",
+      title: "فولاد بنیان | خرید حرفه‌ای آهن‌آلات",
       description: "قیمت شفاف، مشاوره تخصصی و ارسال مطمئن به سراسر ایران.",
       locale: "fa_IR",
       type: "website",
-      images: [{ url: socialImage, width: 1200, height: 630, alt: "فولادینو؛ بازار حرفه‌ای آهن" }],
     },
     twitter: {
       card: "summary_large_image",
-      title: "فولادینو | خرید حرفه‌ای آهن‌آلات",
+      title: "فولاد بنیان | خرید حرفه‌ای آهن‌آلات",
       description: "قیمت شفاف، مشاوره تخصصی و ارسال مطمئن.",
-      images: [socialImage],
     },
   };
 }

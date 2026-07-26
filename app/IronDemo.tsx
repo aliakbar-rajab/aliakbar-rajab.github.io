@@ -36,14 +36,46 @@ const slides = [
 ];
 
 const categories = [
-  { name: "میلگرد", mark: "////", meta: "۱۲۷ محصول" },
-  { name: "تیرآهن", mark: "I I", meta: "۸۴ محصول" },
-  { name: "ورق", mark: "▰", meta: "۹۶ محصول" },
-  { name: "پروفیل", mark: "▣", meta: "۷۳ محصول" },
-  { name: "لوله", mark: "◉", meta: "۱۱۲ محصول" },
-  { name: "نبشی", mark: "L", meta: "۵۸ محصول" },
-  { name: "ناودانی", mark: "∪", meta: "۴۱ محصول" },
-  { name: "مفتول", mark: "≋", meta: "۳۵ محصول" },
+  {
+    name: "میلگرد",
+    meta: "۱۲۷ محصول",
+    image: "/categories/01-rebar.jpg",
+  },
+  {
+    name: "تیرآهن",
+    meta: "۸۴ محصول",
+    image: "/categories/02-ibeam.jpg",
+  },
+  {
+    name: "ورق",
+    meta: "۹۶ محصول",
+    image: "/categories/03-sheet-coil.jpg",
+  },
+  {
+    name: "پروفیل",
+    meta: "۷۳ محصول",
+    image: "/categories/04-profile.jpg",
+  },
+  {
+    name: "لوله",
+    meta: "۱۱۲ محصول",
+    image: "/categories/05-pipe.jpg",
+  },
+  {
+    name: "نبشی",
+    meta: "۵۸ محصول",
+    image: "/categories/06-angle.jpg",
+  },
+  {
+    name: "ناودانی",
+    meta: "۴۱ محصول",
+    image: "/categories/07-channel.jpg",
+  },
+  {
+    name: "مفتول",
+    meta: "۳۵ محصول",
+    image: "/categories/08-wire.jpg",
+  },
 ];
 
 const priceGroups = [
@@ -101,25 +133,18 @@ const steps = [
   ["۰۴", "کنترل و ارسال", "بار کنترل کیفی شده و تا مقصد رهگیری می‌شود."],
 ];
 
-const articles = [
-  {
-    tag: "راهنمای خرید",
-    title: "چطور میلگرد مناسب پروژه را انتخاب کنیم؟",
-    image:
-      "https://images.pexels.com/photos/36003962/pexels-photo-36003962.jpeg?auto=compress&cs=tinysrgb&w=900",
-  },
-  {
-    tag: "تحلیل بازار",
-    title: "۵ عامل مهم در تغییر قیمت روز آهن",
-    image:
-      "https://images.pexels.com/photos/16708396/pexels-photo-16708396.jpeg?auto=compress&cs=tinysrgb&w=900",
-  },
-  {
-    tag: "دانشنامه",
-    title: "تفاوت تیرآهن IPE، INP و IPB چیست؟",
-    image:
-      "https://images.pexels.com/photos/36003978/pexels-photo-36003978.jpeg?auto=compress&cs=tinysrgb&w=900",
-  },
+const menuCategories = [
+  ["میلگرد", "////"],
+  ["پروفیل", "▱"],
+  ["ورق", "◉"],
+  ["نبشی و ناودانی", "L"],
+  ["تیرآهن", "I"],
+  ["لوله", "○"],
+  ["استیل", "▣"],
+  ["گرینتینگ و تسمه", "▦"],
+  ["تجهیزات", "◎"],
+  ["محصولات مفتولی", "≋"],
+  ["فلزات غیر آهنی", "◫"],
 ];
 
 function isHex(value: string) {
@@ -133,12 +158,13 @@ export default function IronDemo() {
   const [secondary, setSecondary] = useState(DEFAULT_SECONDARY);
   const [themeOpen, setThemeOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [productsOpen, setProductsOpen] = useState(false);
   const [quoteOpen, setQuoteOpen] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
   useEffect(() => {
-    const savedPrimary = window.localStorage.getItem("fooladino-primary");
-    const savedSecondary = window.localStorage.getItem("fooladino-secondary");
+    const savedPrimary = window.localStorage.getItem("foolad-bonyan-primary");
+    const savedSecondary = window.localStorage.getItem("foolad-bonyan-secondary");
     if (savedPrimary && isHex(savedPrimary)) setPrimary(savedPrimary);
     if (savedSecondary && isHex(savedSecondary)) setSecondary(savedSecondary);
   }, []);
@@ -164,15 +190,15 @@ export default function IronDemo() {
     if (kind === "primary") setPrimary(value);
     else setSecondary(value);
     if (isHex(value)) {
-      window.localStorage.setItem(`fooladino-${kind}`, value);
+      window.localStorage.setItem(`foolad-bonyan-${kind}`, value);
     }
   };
 
   const resetTheme = () => {
     setPrimary(DEFAULT_PRIMARY);
     setSecondary(DEFAULT_SECONDARY);
-    window.localStorage.removeItem("fooladino-primary");
-    window.localStorage.removeItem("fooladino-secondary");
+    window.localStorage.removeItem("foolad-bonyan-primary");
+    window.localStorage.removeItem("foolad-bonyan-secondary");
   };
 
   const submitQuote = (event: FormEvent<HTMLFormElement>) => {
@@ -180,7 +206,6 @@ export default function IronDemo() {
     setSubmitted(true);
   };
 
-  const activeSlide = slides[slide];
   const activeGroup = priceGroups[activePrices];
 
   return (
@@ -195,19 +220,18 @@ export default function IronDemo() {
             </span>
             <div className="top-links">
               <a href="#about">درباره ما</a>
-              <a href="#articles">مجله فولاد</a>
               <a href="#footer">تماس با ما</a>
             </div>
           </div>
         </div>
 
         <div className="container main-head">
-          <a className="brand" href="#" aria-label="صفحه نخست فولادینو">
+          <a className="brand" href="#" aria-label="صفحه نخست فولاد بنیان">
             <span className="brand-mark" aria-hidden="true">
               F
             </span>
             <span>
-              <strong>فولادینو</strong>
+              <strong>فولاد بنیان</strong>
               <small>بازار حرفه‌ای آهن</small>
             </span>
           </a>
@@ -222,13 +246,13 @@ export default function IronDemo() {
             <kbd>جستجو</kbd>
           </label>
 
-          <a className="phone-block" href="tel:+982188880000">
+          <a className="phone-block" href="tel:+982188888180">
             <span className="phone-icon" aria-hidden="true">
               ☎
             </span>
             <span>
               <small>مشاوره و خرید</small>
-              <strong dir="ltr">۰۲۱ - ۸۸۸۸ ۰۰۰۰</strong>
+              <strong dir="ltr">۰۲۱ - ۸۸۸۸ ۸۱۸۰</strong>
             </span>
           </a>
 
@@ -247,14 +271,56 @@ export default function IronDemo() {
 
         <nav className={`main-nav ${menuOpen ? "is-open" : ""}`}>
           <div className="container nav-inner">
-            <a className="products-menu" href="#prices">
-              <span>☰</span> قیمت روز محصولات
-            </a>
+            <div
+              className={`products-dropdown ${productsOpen ? "is-open" : ""}`}
+              onKeyDown={(event) => {
+                if (event.key === "Escape") setProductsOpen(false);
+              }}
+              onBlur={(event) => {
+                if (!event.currentTarget.contains(event.relatedTarget as Node)) {
+                  setProductsOpen(false);
+                }
+              }}
+            >
+              <button
+                className="products-menu"
+                type="button"
+                aria-expanded={productsOpen}
+                aria-haspopup="menu"
+                onClick={() => setProductsOpen((value) => !value)}
+              >
+                <span className="menu-lines" aria-hidden="true">
+                  <i />
+                  <i />
+                  <i />
+                </span>
+                <span>قیمت روز محصولات</span>
+              </button>
+              <div className="category-panel" role="menu">
+                {menuCategories.map(([name, mark], index) => (
+                  <a
+                    href="#prices"
+                    role="menuitem"
+                    key={name}
+                    onClick={() => {
+                      setProductsOpen(false);
+                      setMenuOpen(false);
+                      setActivePrices(Math.min(index, priceGroups.length - 1));
+                    }}
+                  >
+                    <span className={`menu-product-icon icon-${index + 1}`} aria-hidden="true">
+                      {mark}
+                    </span>
+                    <strong>{name}</strong>
+                    <span className="menu-chevron" aria-hidden="true">‹</span>
+                  </a>
+                ))}
+              </div>
+            </div>
             <a href="#categories">دسته‌بندی کالا</a>
             <a href="#prices">قیمت لحظه‌ای</a>
             <a href="#process">نحوه خرید</a>
-            <a href="#articles">راهنمای بازار</a>
-            <a href="#footer">درباره فولادینو</a>
+            <a href="#footer">درباره فولاد بنیان</a>
             <button
               className="nav-quote"
               type="button"
@@ -277,39 +343,18 @@ export default function IronDemo() {
         ))}
         <div className="hero-shade" />
         <div className="hero-grid" aria-hidden="true" />
-        <div className="container hero-content">
-          <div className="hero-copy" key={activeSlide.title}>
-            <span className="eyebrow">
-              <i /> {activeSlide.eyebrow}
-            </span>
-            <h1>
-              {activeSlide.title.split("\n").map((line) => (
-                <span key={line}>{line}</span>
-              ))}
-            </h1>
-            <p>{activeSlide.copy}</p>
-            <div className="hero-actions">
-              <button
-                className="button button-primary"
-                type="button"
-                onClick={() => setQuoteOpen(true)}
-              >
-                {activeSlide.action} <span>←</span>
-              </button>
-              <a className="button button-ghost" href="#prices">
-                لیست قیمت‌ها
-              </a>
-            </div>
-          </div>
-
-          <div className="hero-side">
-            <div className="hero-stat">
-              <span>شبکه تأمین</span>
-              <strong>۴۲ کارخانه</strong>
-              <small>از برندهای معتبر کشور</small>
-            </div>
-            <div className="hero-badge">{activeSlide.badge}</div>
-          </div>
+        <div className="container hero-content hero-content-banner">
+          <button
+            className="hero-promo-banner"
+            type="button"
+            onClick={() => setQuoteOpen(true)}
+            aria-label="درخواست استعلام و خرید از فولاد بنیان"
+          >
+            <img
+              src="/hero-banner-v2.png"
+              alt="فولاد بنیان؛ تأمین مستقیم آهن‌آلات پروژه"
+            />
+          </button>
         </div>
 
         <div className="container slider-controls">
@@ -388,16 +433,19 @@ export default function IronDemo() {
           </div>
 
           <div className="category-grid">
-            {categories.map((category, index) => (
+            {categories.map((category) => (
               <a className="category-card" href="#prices" key={category.name}>
-                <span className={`category-art art-${index + 1}`}>
-                  {category.mark}
-                </span>
-                <span>
+                <span
+                  className="category-photo"
+                  style={{ backgroundImage: `url("${category.image}")` }}
+                  aria-hidden="true"
+                />
+                <span className="category-shade" aria-hidden="true" />
+                <span className="category-copy">
                   <strong>{category.name}</strong>
                   <small>{category.meta}</small>
                 </span>
-                <i>←</i>
+                <i aria-hidden="true">←</i>
               </a>
             ))}
           </div>
@@ -494,13 +542,13 @@ export default function IronDemo() {
               <strong>+۱۵</strong>
               <span>سال تجربه در بازار فولاد</span>
             </div>
-            <div className="steel-stamp">FOOLADINO / QC</div>
+            <div className="steel-stamp">FOOLAD BONYAN / QC</div>
           </div>
           <div className="about-copy">
             <span className="section-kicker">خرید مطمئن، بدون پیچیدگی</span>
             <h2>فقط آهن نمی‌فروشیم؛ خیال شما را از تأمین راحت می‌کنیم.</h2>
             <p>
-              فولادینو یک تجربه ساده و حرفه‌ای برای استعلام، مقایسه و خرید
+              فولاد بنیان یک تجربه ساده و حرفه‌ای برای استعلام، مقایسه و خرید
               آهن‌آلات است. از انتخاب برند و سایز تا بارگیری و تحویل، تمام
               جزئیات سفارش با یک کارشناس ثابت پیگیری می‌شود.
             </p>
@@ -567,49 +615,20 @@ export default function IronDemo() {
         </div>
       </section>
 
-      <section className="section articles-section" id="articles">
-        <div className="container">
-          <div className="section-heading">
-            <div>
-              <span className="section-kicker">دانش و تحلیل بازار</span>
-              <h2>مجله فولادینو</h2>
-            </div>
-            <a href="#articles">مشاهده همه مطالب <span>←</span></a>
-          </div>
-          <div className="article-grid">
-            {articles.map((article) => (
-              <article className="article-card" key={article.title}>
-                <div
-                  className="article-image"
-                  style={{ backgroundImage: `url("${article.image}")` }}
-                >
-                  <span>{article.tag}</span>
-                </div>
-                <div className="article-copy">
-                  <small>۸ دقیقه مطالعه</small>
-                  <h3>{article.title}</h3>
-                  <a href="#articles">ادامه مطلب <span>←</span></a>
-                </div>
-              </article>
-            ))}
-          </div>
-        </div>
-      </section>
-
       <footer id="footer">
         <div className="container footer-main">
           <div className="footer-brand">
             <a className="brand brand-light" href="#">
               <span className="brand-mark">F</span>
-              <span><strong>فولادینو</strong><small>بازار حرفه‌ای آهن</small></span>
+              <span><strong>فولاد بنیان</strong><small>بازار حرفه‌ای آهن</small></span>
             </a>
             <p>
               تجربه‌ای شفاف، سریع و قابل اعتماد برای تأمین آهن‌آلات ساختمانی و
               صنعتی.
             </p>
-            <a className="footer-phone" href="tel:+982188880000">
+            <a className="footer-phone" href="tel:+982188888180">
               <small>مرکز تماس و فروش</small>
-              <strong dir="ltr">۰۲۱ - ۸۸۸۸ ۰۰۰۰</strong>
+              <strong dir="ltr">۰۲۱ - ۸۸۸۸ ۸۱۸۰</strong>
             </a>
           </div>
           <div className="footer-column">
@@ -632,12 +651,12 @@ export default function IronDemo() {
             <h4>با ما در ارتباط باشید</h4>
             <p>تهران، خیابان مطهری، خیابان سرافراز، پلاک ۲۱</p>
             <p>شنبه تا چهارشنبه، ۸:۳۰ تا ۱۷:۳۰</p>
-            <a href="mailto:sales@fooladino.demo">sales@fooladino.demo</a>
+            <a href="mailto:sales@fooladbonyan.demo">sales@fooladbonyan.demo</a>
           </div>
         </div>
         <div className="footer-bottom">
           <div className="container">
-            <span>© ۱۴۰۵ فولادینو — نسخه نمایشی</span>
+            <span>© ۱۴۰۵ فولاد بنیان — نسخه نمایشی</span>
             <span>طراحی‌شده برای یک خرید حرفه‌ای</span>
           </div>
         </div>
@@ -789,7 +808,7 @@ export default function IronDemo() {
       )}
 
       <div className="mobile-actions">
-        <a href="tel:+982188880000">☎ تماس با فروش</a>
+        <a href="tel:+982188888180">☎ تماس با فروش</a>
         <button type="button" onClick={() => setQuoteOpen(true)}>
           استعلام قیمت
         </button>
