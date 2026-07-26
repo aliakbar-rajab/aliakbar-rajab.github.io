@@ -1,829 +1,726 @@
-"use client";
+import {
+  FormEvent,
+  KeyboardEvent as ReactKeyboardEvent,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from "react";
+import { filterProductGroups } from "./site-logic.mjs";
 
-import { FormEvent, useEffect, useMemo, useState } from "react";
+type ProductRow = {
+  product: string;
+  origin: string;
+  unit: string;
+};
 
-const DEFAULT_PRIMARY = "#F6B500";
-const DEFAULT_SECONDARY = "#3B3B3E";
+type ProductGroup = {
+  id: string;
+  label: string;
+  shortLabel: string;
+  image: string;
+  description: string;
+  rows: ProductRow[];
+};
 
-const slides = [
-  {
-    eyebrow: "خرید مستقیم و مطمئن",
-    title: "آهن پروژه‌تان را\nحرفه‌ای تهیه کنید",
-    copy: "از مقایسه قیمت تا کنترل کیفیت و تحویل بار، یک کارشناس کنار شماست.",
-    action: "استعلام فوری قیمت",
-    image:
-      "https://images.pexels.com/photos/36003978/pexels-photo-36003978.jpeg?auto=compress&cs=tinysrgb&w=1800",
-    badge: "بیش از ۲,۵۰۰ قلم کالا",
-  },
-  {
-    eyebrow: "قیمت‌های شفاف و به‌روز",
-    title: "یک تصمیم دقیق،\nقبل از شروع پروژه",
-    copy: "قیمت محصولات چندین کارخانه را یک‌جا ببینید و بهترین انتخاب را انجام دهید.",
-    action: "مشاهده قیمت روز",
-    image:
-      "https://images.pexels.com/photos/36003962/pexels-photo-36003962.jpeg?auto=compress&cs=tinysrgb&w=1800",
-    badge: "به‌روزرسانی روزانه",
-  },
-  {
-    eyebrow: "تأمین سراسری آهن‌آلات",
-    title: "از انبار تا کارگاه،\nسریع و قابل پیگیری",
-    copy: "هماهنگی بارگیری، کنترل کیفیت و حمل، همه در یک تجربه خرید ساده.",
-    action: "درخواست مشاوره",
-    image:
-      "https://images.pexels.com/photos/16708396/pexels-photo-16708396.jpeg?auto=compress&cs=tinysrgb&w=1800",
-    badge: "ارسال به سراسر ایران",
-  },
+const phones = [
+  { label: "021-88888180", href: "tel:+982188888180" },
+  { label: "021-88888280", href: "tel:+982188888280" },
+  { label: "021-88888122", href: "tel:+982188888122" },
 ];
 
-const categories = [
+const address =
+  "آجودانیه پورابتهاج نبش لشکری ساختمان سرو واحد ۳۰۳";
+
+const productGroups: ProductGroup[] = [
   {
-    name: "میلگرد",
-    meta: "۱۲۷ محصول",
+    id: "rebar",
+    label: "میلگرد",
+    shortLabel: "میلگرد",
     image: "/categories/01-rebar.jpg",
+    description: "میلگرد آجدار و ساده برای پروژه‌های ساختمانی و صنعتی",
+    rows: [
+      { product: "میلگرد آجدار", origin: "کارخانه‌های معتبر", unit: "کیلوگرم" },
+      { product: "میلگرد ساده", origin: "کارخانه‌های معتبر", unit: "کیلوگرم" },
+      { product: "کلاف میلگرد", origin: "کارخانه‌های معتبر", unit: "کیلوگرم" },
+    ],
   },
   {
-    name: "تیرآهن",
-    meta: "۸۴ محصول",
+    id: "beam",
+    label: "تیرآهن",
+    shortLabel: "تیرآهن",
     image: "/categories/02-ibeam.jpg",
+    description: "تیرآهن IPE، هاش و مقاطع سازه‌ای",
+    rows: [
+      { product: "تیرآهن IPE", origin: "کارخانه‌های معتبر", unit: "شاخه" },
+      { product: "تیرآهن هاش سبک", origin: "کارخانه‌های معتبر", unit: "شاخه" },
+      { product: "تیرآهن هاش سنگین", origin: "کارخانه‌های معتبر", unit: "شاخه" },
+    ],
   },
   {
-    name: "ورق",
-    meta: "۹۶ محصول",
+    id: "sheet",
+    label: "ورق فولادی",
+    shortLabel: "ورق",
     image: "/categories/03-sheet-coil.jpg",
+    description: "ورق سیاه، گالوانیزه، روغنی و رنگی",
+    rows: [
+      { product: "ورق سیاه", origin: "کارخانه‌های معتبر", unit: "کیلوگرم" },
+      { product: "ورق گالوانیزه", origin: "کارخانه‌های معتبر", unit: "کیلوگرم" },
+      { product: "ورق روغنی", origin: "کارخانه‌های معتبر", unit: "کیلوگرم" },
+    ],
   },
   {
-    name: "پروفیل",
-    meta: "۷۳ محصول",
+    id: "profile",
+    label: "قوطی و پروفیل",
+    shortLabel: "پروفیل",
     image: "/categories/04-profile.jpg",
+    description: "پروفیل ساختمانی و صنعتی در ابعاد گوناگون",
+    rows: [
+      { product: "قوطی ساختمانی", origin: "کارخانه‌های معتبر", unit: "شاخه" },
+      { product: "پروفیل صنعتی", origin: "کارخانه‌های معتبر", unit: "شاخه" },
+      { product: "پروفیل در و پنجره", origin: "کارخانه‌های معتبر", unit: "شاخه" },
+    ],
   },
   {
-    name: "لوله",
-    meta: "۱۱۲ محصول",
+    id: "pipe",
+    label: "لوله فولادی",
+    shortLabel: "لوله",
     image: "/categories/05-pipe.jpg",
+    description: "لوله صنعتی، گازی و داربستی",
+    rows: [
+      { product: "لوله صنعتی", origin: "کارخانه‌های معتبر", unit: "شاخه" },
+      { product: "لوله گازی", origin: "کارخانه‌های معتبر", unit: "شاخه" },
+      { product: "لوله داربستی", origin: "کارخانه‌های معتبر", unit: "شاخه" },
+    ],
   },
   {
-    name: "نبشی",
-    meta: "۵۸ محصول",
+    id: "angle",
+    label: "نبشی",
+    shortLabel: "نبشی",
     image: "/categories/06-angle.jpg",
+    description: "نبشی بال مساوی و بال نامساوی",
+    rows: [
+      { product: "نبشی بال مساوی", origin: "کارخانه‌های معتبر", unit: "شاخه" },
+      { product: "نبشی بال نامساوی", origin: "کارخانه‌های معتبر", unit: "شاخه" },
+      { product: "نبشی لقمه", origin: "کارخانه‌های معتبر", unit: "کیلوگرم" },
+    ],
   },
   {
-    name: "ناودانی",
-    meta: "۴۱ محصول",
+    id: "channel",
+    label: "ناودانی",
+    shortLabel: "ناودانی",
     image: "/categories/07-channel.jpg",
+    description: "ناودانی سبک و سنگین برای مصارف سازه‌ای",
+    rows: [
+      { product: "ناودانی سبک", origin: "کارخانه‌های معتبر", unit: "شاخه" },
+      { product: "ناودانی سنگین", origin: "کارخانه‌های معتبر", unit: "شاخه" },
+      { product: "ناودانی UPE", origin: "کارخانه‌های معتبر", unit: "شاخه" },
+    ],
   },
   {
-    name: "مفتول",
-    meta: "۳۵ محصول",
+    id: "wire",
+    label: "مفتول و سیم",
+    shortLabel: "مفتول",
     image: "/categories/08-wire.jpg",
-  },
-];
-
-const priceGroups = [
-  {
-    name: "میلگرد",
+    description: "مفتول سیاه، گالوانیزه و محصولات سیمی",
     rows: [
-      ["میلگرد ۱۴ آجدار A3 ذوب‌آهن", "شاخه ۱۲ متری", "۳۹,۸۵۰", "up"],
-      ["میلگرد ۱۶ آجدار A3 میانه", "شاخه ۱۲ متری", "۳۹,۴۲۰", "down"],
-      ["میلگرد ۱۸ آجدار A3 بناب", "شاخه ۱۲ متری", "۴۰,۱۰۰", "up"],
-      ["میلگرد ۲۰ آجدار A3 نیشابور", "شاخه ۱۲ متری", "۳۹,۷۶۰", "same"],
-    ],
-  },
-  {
-    name: "تیرآهن",
-    rows: [
-      ["تیرآهن ۱۴ ذوب‌آهن اصفهان", "شاخه ۱۲ متری", "۵,۹۸۰,۰۰۰", "up"],
-      ["تیرآهن ۱۶ فایکو", "شاخه ۱۲ متری", "۷,۴۲۰,۰۰۰", "down"],
-      ["تیرآهن ۱۸ یزد", "شاخه ۱۲ متری", "۹,۱۰۰,۰۰۰", "same"],
-      ["هاش سبک ۲۰ ترک", "شاخه ۱۲ متری", "استعلام", "same"],
-    ],
-  },
-  {
-    name: "ورق",
-    rows: [
-      ["ورق سیاه ۲ میل مبارکه", "رول ۱.۲۵ متر", "۴۷,۳۰۰", "down"],
-      ["ورق سیاه ۱۰ میل اکسین", "شیت ۶×۲", "۵۱,۷۰۰", "up"],
-      ["ورق گالوانیزه ۰.۵ کاشان", "رول ۱ متر", "۶۸,۹۰۰", "same"],
-      ["ورق روغنی ۱ میل هفت‌الماس", "رول ۱ متر", "۷۲,۴۰۰", "up"],
-    ],
-  },
-  {
-    name: "پروفیل",
-    rows: [
-      ["پروفیل ۴۰×۴۰ ضخامت ۲", "شاخه ۶ متری", "۵۲,۲۰۰", "up"],
-      ["قوطی ۸۰×۸۰ ضخامت ۳", "شاخه ۶ متری", "۵۱,۸۵۰", "same"],
-      ["پروفیل صنعتی ۱۰۰×۱۰۰", "شاخه ۶ متری", "۵۴,۲۰۰", "down"],
-      ["پروفیل زد ۱۸", "شاخه ۶ متری", "۵۰,۹۰۰", "same"],
-    ],
-  },
-  {
-    name: "لوله",
-    rows: [
-      ["لوله داربستی ۱.۵ اینچ", "شاخه ۶ متری", "۴۹,۶۰۰", "up"],
-      ["لوله مانیسمان رده ۴۰", "شاخه ۶ متری", "استعلام", "same"],
-      ["لوله صنعتی ۲ اینچ", "شاخه ۶ متری", "۵۲,۷۰۰", "down"],
-      ["لوله گالوانیزه سبک", "شاخه ۶ متری", "۶۱,۲۰۰", "same"],
+      { product: "مفتول سیاه", origin: "کارخانه‌های معتبر", unit: "کیلوگرم" },
+      { product: "مفتول گالوانیزه", origin: "کارخانه‌های معتبر", unit: "کیلوگرم" },
+      { product: "توری و مش", origin: "کارخانه‌های معتبر", unit: "مترمربع" },
     ],
   },
 ];
 
-const steps = [
-  ["۰۱", "ثبت درخواست", "محصول، مقدار و مقصد را برای ما ارسال کنید."],
-  ["۰۲", "دریافت پیش‌فاکتور", "کارشناس فروش بهترین پیشنهاد را آماده می‌کند."],
-  ["۰۳", "تأیید و تسویه", "پس از تأیید شما، سفارش قطعی و آماده‌سازی می‌شود."],
-  ["۰۴", "کنترل و ارسال", "بار کنترل کیفی شده و تا مقصد رهگیری می‌شود."],
-];
+const heroSlides = productGroups.slice(0, 3);
 
-const menuCategories = [
-  ["میلگرد", "////"],
-  ["پروفیل", "▱"],
-  ["ورق", "◉"],
-  ["نبشی و ناودانی", "L"],
-  ["تیرآهن", "I"],
-  ["لوله", "○"],
-  ["استیل", "▣"],
-  ["گرینتینگ و تسمه", "▦"],
-  ["تجهیزات", "◎"],
-  ["محصولات مفتولی", "≋"],
-  ["فلزات غیر آهنی", "◫"],
-];
+function subscribeToMedia(query: string, callback: () => void) {
+  const media = window.matchMedia(query);
+  media.addEventListener("change", callback);
+  return () => media.removeEventListener("change", callback);
+}
 
-function isHex(value: string) {
-  return /^#[0-9A-Fa-f]{6}$/.test(value);
+function useMediaQuery(query: string) {
+  return useSyncExternalStore(
+    (callback) => subscribeToMedia(query, callback),
+    () => window.matchMedia(query).matches,
+    () => false,
+  );
+}
+
+function Brand() {
+  return (
+    <a className="brand" href="#top" aria-label="بنیان فولاد داریا، صفحه اصلی">
+      <span className="brand-mark" aria-hidden="true">
+        <i />
+        <i />
+        <i />
+      </span>
+      <span className="brand-copy">
+        <strong>بنیان فولاد داریا</strong>
+        <span>BONYAN FOULAD DARIA</span>
+      </span>
+    </a>
+  );
+}
+
+function SectionTitle({
+  eyebrow,
+  title,
+  description,
+}: {
+  eyebrow: string;
+  title: string;
+  description?: string;
+}) {
+  return (
+    <div className="section-heading">
+      <span>{eyebrow}</span>
+      <h2>{title}</h2>
+      {description ? <p>{description}</p> : null}
+    </div>
+  );
 }
 
 export default function IronDemo() {
-  const [slide, setSlide] = useState(0);
-  const [activePrices, setActivePrices] = useState(0);
-  const [primary, setPrimary] = useState(DEFAULT_PRIMARY);
-  const [secondary, setSecondary] = useState(DEFAULT_SECONDARY);
-  const [themeOpen, setThemeOpen] = useState(false);
-  const [menuOpen, setMenuOpen] = useState(false);
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [productsOpen, setProductsOpen] = useState(false);
-  const [quoteOpen, setQuoteOpen] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
+  const [activeSlide, setActiveSlide] = useState(0);
+  const [carouselPaused, setCarouselPaused] = useState(false);
+  const [activeGroup, setActiveGroup] = useState(productGroups[0].id);
+  const [searchInput, setSearchInput] = useState("");
+  const [committedSearch, setCommittedSearch] = useState("");
+  const [searchMessage, setSearchMessage] = useState("");
 
-  useEffect(() => {
-    const savedPrimary = window.localStorage.getItem("foulad-bonyan-primary");
-    const savedSecondary = window.localStorage.getItem("foulad-bonyan-secondary");
-    if (savedPrimary && isHex(savedPrimary)) setPrimary(savedPrimary);
-    if (savedSecondary && isHex(savedSecondary)) setSecondary(savedSecondary);
-  }, []);
+  const isMobile = useMediaQuery("(max-width: 900px)");
+  const reduceMotion = useMediaQuery("(prefers-reduced-motion: reduce)");
+  const productMenuRef = useRef<HTMLDivElement>(null);
+  const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
 
-  useEffect(() => {
-    if (document.getElementById("fb-preloader-script")) return;
-
-    const script = document.createElement("script");
-    script.id = "fb-preloader-script";
-    script.src = "/preloader/fb-preloader.js";
-    script.async = true;
-    document.body.appendChild(script);
-  }, []);
-
-  useEffect(() => {
-    const timer = window.setInterval(
-      () => setSlide((current) => (current + 1) % slides.length),
-      6500,
-    );
-    return () => window.clearInterval(timer);
-  }, []);
-
-  const themeStyle = useMemo(
-    () =>
-      ({
-        "--primary": primary,
-        "--secondary": secondary,
-      }) as React.CSSProperties,
-    [primary, secondary],
+  const filteredGroups = useMemo(
+    () => filterProductGroups(productGroups, committedSearch),
+    [committedSearch],
   );
 
-  const updateColor = (kind: "primary" | "secondary", value: string) => {
-    if (kind === "primary") setPrimary(value);
-    else setSecondary(value);
-    if (isHex(value)) {
-      window.localStorage.setItem(`foulad-bonyan-${kind}`, value);
-    }
+  const visibleGroup =
+    filteredGroups.find((group) => group.id === activeGroup) ??
+    filteredGroups[0] ??
+    null;
+
+  useEffect(() => {
+    if (reduceMotion || carouselPaused) return undefined;
+    const timer = window.setInterval(() => {
+      setActiveSlide((current) => (current + 1) % heroSlides.length);
+    }, 6500);
+    return () => window.clearInterval(timer);
+  }, [carouselPaused, reduceMotion]);
+
+  useEffect(() => {
+    if (!productsOpen) return undefined;
+
+    const closeOnOutsideClick = (event: MouseEvent) => {
+      if (!productMenuRef.current?.contains(event.target as Node)) {
+        setProductsOpen(false);
+      }
+    };
+    const closeOnEscape = (event: globalThis.KeyboardEvent) => {
+      if (event.key === "Escape") setProductsOpen(false);
+    };
+
+    document.addEventListener("pointerdown", closeOnOutsideClick);
+    document.addEventListener("keydown", closeOnEscape);
+    return () => {
+      document.removeEventListener("pointerdown", closeOnOutsideClick);
+      document.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [productsOpen]);
+
+  const goToGroup = (groupId: string) => {
+    setCommittedSearch("");
+    setSearchInput("");
+    setSearchMessage("");
+    setActiveGroup(groupId);
+    setProductsOpen(false);
+    setMobileNavOpen(false);
+    document.getElementById("prices")?.scrollIntoView({
+      behavior: reduceMotion ? "auto" : "smooth",
+      block: "start",
+    });
   };
 
-  const resetTheme = () => {
-    setPrimary(DEFAULT_PRIMARY);
-    setSecondary(DEFAULT_SECONDARY);
-    window.localStorage.removeItem("foulad-bonyan-primary");
-    window.localStorage.removeItem("foulad-bonyan-secondary");
-  };
-
-  const submitQuote = (event: FormEvent<HTMLFormElement>) => {
+  const submitSearch = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    setSubmitted(true);
+    const query = searchInput.trim();
+    const results = filterProductGroups(productGroups, query);
+    setCommittedSearch(query);
+    if (!query) {
+      setActiveGroup(productGroups[0].id);
+      setSearchMessage("همه محصولات نمایش داده می‌شوند.");
+    } else if (results.length > 0) {
+      setActiveGroup(results[0].id);
+      const count = results.reduce((sum, group) => sum + group.rows.length, 0);
+      setSearchMessage(`${count.toLocaleString("fa-IR")} نتیجه برای «${query}» پیدا شد.`);
+    } else {
+      setSearchMessage(`نتیجه‌ای برای «${query}» پیدا نشد.`);
+    }
+    document.getElementById("prices")?.scrollIntoView({
+      behavior: reduceMotion ? "auto" : "smooth",
+      block: "start",
+    });
   };
 
-  const activeGroup = priceGroups[activePrices];
+  const moveTabFocus = (
+    event: ReactKeyboardEvent<HTMLButtonElement>,
+    currentIndex: number,
+  ) => {
+    let target: number;
+    if (event.key === "ArrowLeft") target = (currentIndex + 1) % productGroups.length;
+    else if (event.key === "ArrowRight") {
+      target = (currentIndex - 1 + productGroups.length) % productGroups.length;
+    } else if (event.key === "Home") target = 0;
+    else if (event.key === "End") target = productGroups.length - 1;
+    else return;
+
+    event.preventDefault();
+    const group = productGroups[target];
+    setCommittedSearch("");
+    setSearchInput("");
+    setActiveGroup(group.id);
+    tabRefs.current[target]?.focus();
+  };
+
+  const slide = heroSlides[activeSlide];
 
   return (
-    <main id="fb-site" className="site-shell" style={themeStyle}>
-      <div className="demo-ribbon">نسخه نمایشی برای ارائه به مشتری</div>
+    <div id="fb-site">
+      <a className="skip-link" href="#main-content">
+        رفتن به محتوای اصلی
+      </a>
 
-      <header className="site-header">
-        <div className="topline">
-          <div className="container topline-inner">
-            <span>
-              <i className="live-dot" /> قیمت‌ها امروز به‌روزرسانی شده‌اند
-            </span>
-            <div className="top-links">
-              <a href="#about">درباره ما</a>
-              <a href="#footer">تماس با ما</a>
-            </div>
-          </div>
-        </div>
-
-        <div className="container main-head">
-          <a className="brand" href="#" aria-label="صفحه نخست فولاد بنیان">
-            <span className="brand-mark" aria-hidden="true">
-              F
-            </span>
-            <span>
-              <strong>فولاد بنیان</strong>
-              <small>بازار حرفه‌ای آهن</small>
-            </span>
-          </a>
-
-          <label className="searchbox">
-            <span aria-hidden="true">⌕</span>
-            <input
-              type="search"
-              placeholder="جستجوی محصول، کارخانه یا سایز..."
-              aria-label="جستجو در محصولات"
-            />
-            <kbd>جستجو</kbd>
-          </label>
-
-          <a className="phone-block" href="tel:+982188888180">
-            <span className="phone-icon" aria-hidden="true">
-              ☎
-            </span>
-            <span>
-              <small>مشاوره و خرید</small>
-              <strong dir="ltr">۰۲۱ - ۸۸۸۸ ۸۱۸۰</strong>
-            </span>
-          </a>
-
-          <button
-            className="menu-toggle"
-            type="button"
-            onClick={() => setMenuOpen((value) => !value)}
-            aria-expanded={menuOpen}
-            aria-label="نمایش منو"
-          >
-            <span />
-            <span />
-            <span />
-          </button>
-        </div>
-
-        <nav className={`main-nav ${menuOpen ? "is-open" : ""}`}>
-          <div className="container nav-inner">
-            <div
-              className={`products-dropdown ${productsOpen ? "is-open" : ""}`}
-              onKeyDown={(event) => {
-                if (event.key === "Escape") setProductsOpen(false);
-              }}
-              onBlur={(event) => {
-                if (!event.currentTarget.contains(event.relatedTarget as Node)) {
-                  setProductsOpen(false);
-                }
-              }}
-            >
-              <button
-                className="products-menu"
-                type="button"
-                aria-expanded={productsOpen}
-                aria-haspopup="menu"
-                onClick={() => setProductsOpen((value) => !value)}
-              >
-                <span className="menu-lines" aria-hidden="true">
-                  <i />
-                  <i />
-                  <i />
-                </span>
-                <span>قیمت روز محصولات</span>
-              </button>
-              <div className="category-panel" role="menu">
-                {menuCategories.map(([name, mark], index) => (
-                  <a
-                    href="#prices"
-                    role="menuitem"
-                    key={name}
-                    onClick={() => {
-                      setProductsOpen(false);
-                      setMenuOpen(false);
-                      setActivePrices(Math.min(index, priceGroups.length - 1));
-                    }}
-                  >
-                    <span className={`menu-product-icon icon-${index + 1}`} aria-hidden="true">
-                      {mark}
-                    </span>
-                    <strong>{name}</strong>
-                    <span className="menu-chevron" aria-hidden="true">‹</span>
-                  </a>
-                ))}
-              </div>
-            </div>
-            <a href="#categories">دسته‌بندی کالا</a>
-            <a href="#prices">قیمت لحظه‌ای</a>
-            <a href="#process">نحوه خرید</a>
-            <a href="#footer">درباره فولاد بنیان</a>
-            <button
-              className="nav-quote"
-              type="button"
-              onClick={() => setQuoteOpen(true)}
-            >
-              استعلام آنلاین
-            </button>
-          </div>
-        </nav>
-      </header>
-
-      <section className="hero" aria-roledescription="carousel">
-        {slides.map((item, index) => (
-          <div
-            key={item.title}
-            className={`hero-bg ${index === slide ? "is-active" : ""}`}
-            style={{ backgroundImage: `url("${item.image}")` }}
-            aria-hidden={index !== slide}
-          />
-        ))}
-        <div className="hero-shade" />
-        <div className="hero-grid" aria-hidden="true" />
-        <div className="container hero-content hero-content-banner">
-          <button
-            className="hero-promo-banner"
-            type="button"
-            onClick={() => setQuoteOpen(true)}
-            aria-label="درخواست استعلام و خرید از فولاد بنیان"
-          >
-            <img
-              src="/hero-banner-v2.png"
-              alt="فولاد بنیان؛ تأمین مستقیم آهن‌آلات پروژه"
-            />
-          </button>
-        </div>
-
-        <div className="container slider-controls">
-          <button
-            type="button"
-            onClick={() =>
-              setSlide((current) => (current - 1 + slides.length) % slides.length)
-            }
-            aria-label="اسلاید قبلی"
-          >
-            →
-          </button>
-          <div className="slider-dots">
-            {slides.map((item, index) => (
-              <button
-                key={item.title}
-                className={index === slide ? "is-active" : ""}
-                type="button"
-                onClick={() => setSlide(index)}
-                aria-label={`نمایش اسلاید ${index + 1}`}
-                aria-current={index === slide}
-              />
-            ))}
-          </div>
-          <button
-            type="button"
-            onClick={() => setSlide((current) => (current + 1) % slides.length)}
-            aria-label="اسلاید بعدی"
-          >
-            ←
-          </button>
-        </div>
-      </section>
-
-      <section className="quick-features">
-        <div className="container feature-row">
-          <div>
-            <span className="feature-icon">✓</span>
-            <p>
-              <strong>تضمین اصالت کالا</strong>
-              <small>فاکتور معتبر و کنترل کیفی</small>
-            </p>
-          </div>
-          <div>
-            <span className="feature-icon">◫</span>
-            <p>
-              <strong>قیمت شفاف و رقابتی</strong>
-              <small>مقایسه چندین تأمین‌کننده</small>
-            </p>
-          </div>
-          <div>
-            <span className="feature-icon">◇</span>
-            <p>
-              <strong>ارسال سراسری</strong>
-              <small>هماهنگی بار تا محل پروژه</small>
-            </p>
-          </div>
-          <div>
-            <span className="feature-icon">◎</span>
-            <p>
-              <strong>مشاوره تخصصی</strong>
-              <small>پاسخ‌گویی کارشناسان فروش</small>
-            </p>
-          </div>
-        </div>
-      </section>
-
-      <section className="section categories-section" id="categories">
-        <div className="container">
-          <div className="section-heading">
-            <div>
-              <span className="section-kicker">دسترسی سریع</span>
-              <h2>چه محصولی نیاز دارید؟</h2>
-            </div>
-            <a href="#prices">مشاهده همه محصولات <span>←</span></a>
-          </div>
-
-          <div className="category-grid">
-            {categories.map((category) => (
-              <a className="category-card" href="#prices" key={category.name}>
-                <span
-                  className="category-photo"
-                  style={{ backgroundImage: `url("${category.image}")` }}
-                  aria-hidden="true"
-                />
-                <span className="category-shade" aria-hidden="true" />
-                <span className="category-copy">
-                  <strong>{category.name}</strong>
-                  <small>{category.meta}</small>
-                </span>
-                <i aria-hidden="true">←</i>
+      <div className="utility-bar" id="top">
+        <div className="shell utility-inner">
+          <p>مشاوره و استعلام تلفنی محصولات فولادی</p>
+          <div aria-label="شماره‌های تماس">
+            {phones.map((phone) => (
+              <a href={phone.href} key={phone.href} dir="ltr">
+                {phone.label}
               </a>
             ))}
           </div>
         </div>
-      </section>
+      </div>
 
-      <section className="section prices-section" id="prices">
-        <div className="container">
-          <div className="price-head">
-            <div>
-              <span className="section-kicker light">تابلوی بازار</span>
-              <h2>قیمت روز آهن‌آلات</h2>
-              <p>قیمت‌ها برای دموی رابط کاربری هستند و ارزش معاملاتی ندارند.</p>
+      <header className="site-header">
+        <div className="shell header-main">
+          <Brand />
+
+          <form className="site-search" role="search" onSubmit={submitSearch}>
+            <label className="sr-only" htmlFor="site-search">
+              جست‌وجوی محصول
+            </label>
+            <input
+              id="site-search"
+              type="search"
+              placeholder="جست‌وجوی میلگرد، ورق، تیرآهن و…"
+              value={searchInput}
+              onChange={(event) => setSearchInput(event.target.value)}
+            />
+            <button type="submit" aria-label="جست‌وجو">
+              جست‌وجو
+            </button>
+          </form>
+
+          <a className="header-phone" href={phones[0].href}>
+            <span aria-hidden="true">☎</span>
+            <span>
+              <small>تماس با واحد فروش</small>
+              <b dir="ltr">{phones[0].label}</b>
+            </span>
+          </a>
+
+          <button
+            className="nav-toggle"
+            type="button"
+            aria-expanded={mobileNavOpen}
+            aria-controls="primary-navigation"
+            onClick={() => setMobileNavOpen((open) => !open)}
+          >
+            <span aria-hidden="true">{mobileNavOpen ? "×" : "☰"}</span>
+            <span className="sr-only">فهرست اصلی</span>
+          </button>
+        </div>
+
+        <div className="nav-wrap">
+          <nav
+            className="shell primary-nav"
+            id="primary-navigation"
+            aria-label="فهرست اصلی"
+            hidden={isMobile && !mobileNavOpen}
+          >
+            <a href="#top" onClick={() => setMobileNavOpen(false)}>
+              صفحه اصلی
+            </a>
+            <div className="products-menu" ref={productMenuRef}>
+              <button
+                type="button"
+                aria-expanded={productsOpen}
+                aria-controls="product-navigation"
+                onClick={() => setProductsOpen((open) => !open)}
+              >
+                محصولات <span aria-hidden="true">⌄</span>
+              </button>
+              {productsOpen ? (
+                <div id="product-navigation" className="product-dropdown">
+                  {productGroups.map((group) => (
+                    <button
+                      type="button"
+                      key={group.id}
+                      onClick={() => goToGroup(group.id)}
+                    >
+                      {group.label}
+                    </button>
+                  ))}
+                </div>
+              ) : null}
             </div>
-            <div className="price-update">
-              <i className="live-dot" />
-              آخرین بروزرسانی: امروز، ساعت ۱۱:۴۵
+            <a href="#prices" onClick={() => setMobileNavOpen(false)}>
+              راهنمای استعلام
+            </a>
+            <a href="#about" onClick={() => setMobileNavOpen(false)}>
+              درباره ما
+            </a>
+            <a href="#contact" onClick={() => setMobileNavOpen(false)}>
+              تماس با ما
+            </a>
+            <a className="nav-quote" href={phones[0].href}>
+              تماس برای استعلام
+            </a>
+          </nav>
+        </div>
+      </header>
+
+      <main id="main-content">
+        <section
+          className="hero"
+          aria-roledescription="carousel"
+          aria-label="محصولات منتخب بنیان فولاد داریا"
+          onMouseEnter={() => setCarouselPaused(true)}
+          onMouseLeave={() => setCarouselPaused(false)}
+          onFocus={() => setCarouselPaused(true)}
+          onBlur={(event) => {
+            if (!event.currentTarget.contains(event.relatedTarget)) {
+              setCarouselPaused(false);
+            }
+          }}
+        >
+          <img
+            className="hero-image"
+            src={slide.image}
+            alt=""
+            width="1600"
+            height="900"
+            fetchPriority="high"
+          />
+          <div className="hero-overlay" />
+          <div className="shell hero-content">
+            <p className="hero-kicker">تأمین و استعلام مقاطع فولادی</p>
+            <h1>بنیان فولاد داریا؛ همراه مطمئن خرید آهن و فولاد</h1>
+            <p>{slide.description}</p>
+            <div className="hero-actions">
+              <a href={phones[0].href}>
+                استعلام {slide.label}
+              </a>
+              <a href="#products">مشاهده محصولات</a>
             </div>
           </div>
 
-          <div className="price-panel">
-            <div className="price-tabs" role="tablist" aria-label="گروه محصولات">
-              {priceGroups.map((group, index) => (
+          <div className="shell carousel-controls">
+            <button
+              type="button"
+              aria-label="اسلاید قبلی"
+              onClick={() =>
+                setActiveSlide(
+                  (current) =>
+                    (current - 1 + heroSlides.length) % heroSlides.length,
+                )
+              }
+            >
+              →
+            </button>
+            <div className="carousel-dots" aria-label="انتخاب اسلاید">
+              {heroSlides.map((item, index) => (
                 <button
-                  key={group.name}
                   type="button"
-                  role="tab"
-                  aria-selected={index === activePrices}
-                  className={index === activePrices ? "is-active" : ""}
-                  onClick={() => setActivePrices(index)}
+                  key={item.id}
+                  className={index === activeSlide ? "is-active" : ""}
+                  aria-label={`اسلاید ${index + 1}: ${item.label}`}
+                  aria-current={index === activeSlide ? "true" : undefined}
+                  onClick={() => setActiveSlide(index)}
+                />
+              ))}
+            </div>
+            <button
+              type="button"
+              aria-label="اسلاید بعدی"
+              onClick={() =>
+                setActiveSlide((current) => (current + 1) % heroSlides.length)
+              }
+            >
+              ←
+            </button>
+            {!reduceMotion ? (
+              <button
+                className="carousel-pause"
+                type="button"
+                aria-label={carouselPaused ? "ادامه پخش اسلایدها" : "توقف اسلایدها"}
+                aria-pressed={carouselPaused}
+                onClick={() => setCarouselPaused((paused) => !paused)}
+              >
+                {carouselPaused ? "پخش" : "توقف"}
+              </button>
+            ) : null}
+          </div>
+        </section>
+
+        <section className="products section" id="products">
+          <div className="shell">
+            <SectionTitle
+              eyebrow="گروه‌های محصول"
+              title="محصول مورد نیاز خود را انتخاب کنید"
+              description="برای دیدن مشخصات قابل تأمین و تماس با واحد فروش، یک گروه محصول را انتخاب کنید."
+            />
+            <div className="category-grid">
+              {productGroups.map((group) => (
+                <button
+                  className="category-card"
+                  type="button"
+                  key={group.id}
+                  onClick={() => goToGroup(group.id)}
                 >
-                  {group.name}
+                  <img
+                    src={group.image}
+                    alt=""
+                    width="480"
+                    height="320"
+                    loading="lazy"
+                    decoding="async"
+                  />
+                  <span>
+                    <strong>{group.label}</strong>
+                    <small>{group.description}</small>
+                  </span>
+                  <b aria-hidden="true">←</b>
                 </button>
               ))}
             </div>
-
-            <div className="table-wrap">
-              <table>
-                <thead>
-                  <tr>
-                    <th>نام محصول</th>
-                    <th>واحد فروش</th>
-                    <th>قیمت (تومان)</th>
-                    <th>نوسان</th>
-                    <th />
-                  </tr>
-                </thead>
-                <tbody>
-                  {activeGroup.rows.map((row) => (
-                    <tr key={row[0]}>
-                      <td>
-                        <span className="product-dot" />
-                        <strong>{row[0]}</strong>
-                      </td>
-                      <td>{row[1]}</td>
-                      <td className="price-number">{row[2]}</td>
-                      <td>
-                        <span className={`trend trend-${row[3]}`}>
-                          {row[3] === "up" ? "↑ ۰.۴٪" : row[3] === "down" ? "↓ ۰.۲٪" : "—"}
-                        </span>
-                      </td>
-                      <td>
-                        <button type="button" onClick={() => setQuoteOpen(true)}>
-                          خرید
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-
-            <div className="price-footer">
-              <p>
-                قیمت نهایی با توجه به وزن باسکول، مقصد و شرایط بارگیری محاسبه می‌شود.
-              </p>
-              <button
-                className="button button-dark"
-                type="button"
-                onClick={() => setQuoteOpen(true)}
-              >
-                دریافت پیش‌فاکتور <span>←</span>
-              </button>
-            </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      <section className="section about-section" id="about">
-        <div className="container about-grid">
-          <div className="about-visual">
-            <div className="about-photo" />
-            <div className="experience-card">
-              <strong>+۱۵</strong>
-              <span>سال تجربه در بازار فولاد</span>
-            </div>
-            <div className="steel-stamp">FOULAD BONYAN / QC</div>
-          </div>
-          <div className="about-copy">
-            <span className="section-kicker">خرید مطمئن، بدون پیچیدگی</span>
-            <h2>فقط آهن نمی‌فروشیم؛ خیال شما را از تأمین راحت می‌کنیم.</h2>
-            <p>
-              فولاد بنیان یک تجربه ساده و حرفه‌ای برای استعلام، مقایسه و خرید
-              آهن‌آلات است. از انتخاب برند و سایز تا بارگیری و تحویل، تمام
-              جزئیات سفارش با یک کارشناس ثابت پیگیری می‌شود.
+        <section className="prices section" id="prices">
+          <div className="shell">
+            <SectionTitle
+              eyebrow="راهنمای استعلام"
+              title="محصولات قابل تأمین"
+              description="قیمت آهن به‌صورت لحظه‌ای تغییر می‌کند؛ برای قیمت قطعی، موجودی و زمان تحویل با واحد فروش تماس بگیرید."
+            />
+
+            <p className="search-status" role="status" aria-live="polite">
+              {searchMessage}
+              {committedSearch ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setCommittedSearch("");
+                    setSearchInput("");
+                    setSearchMessage("همه محصولات نمایش داده می‌شوند.");
+                    setActiveGroup(productGroups[0].id);
+                  }}
+                >
+                  پاک‌کردن جست‌وجو
+                </button>
+              ) : null}
             </p>
-            <div className="about-points">
-              <div><b>۲,۵۰۰+</b><span>تن ظرفیت تأمین روزانه</span></div>
-              <div><b>۹۸٪</b><span>رضایت از تحویل سفارش</span></div>
-              <div><b>۳۱</b><span>استان تحت پوشش</span></div>
-            </div>
-            <button
-              className="text-link"
-              type="button"
-              onClick={() => setQuoteOpen(true)}
-            >
-              گفتگو با کارشناس فروش <span>←</span>
-            </button>
-          </div>
-        </div>
-      </section>
 
-      <section className="section process-section" id="process">
-        <div className="container">
-          <div className="process-heading">
-            <div>
-              <span className="section-kicker">مسیر یک خرید مطمئن</span>
-              <h2>از درخواست شما تا تحویل بار</h2>
+            <div className="product-tabs" role="tablist" aria-label="گروه محصولات">
+              {productGroups.map((group, index) => {
+                const selected = visibleGroup?.id === group.id;
+                return (
+                  <button
+                    type="button"
+                    role="tab"
+                    id={`tab-${group.id}`}
+                    aria-selected={selected}
+                    aria-controls={`panel-${group.id}`}
+                    tabIndex={selected ? 0 : -1}
+                    key={group.id}
+                    ref={(node) => {
+                      tabRefs.current[index] = node;
+                    }}
+                    onKeyDown={(event) => moveTabFocus(event, index)}
+                    onClick={() => {
+                      setCommittedSearch("");
+                      setSearchInput("");
+                      setSearchMessage("");
+                      setActiveGroup(group.id);
+                    }}
+                  >
+                    {group.shortLabel}
+                  </button>
+                );
+              })}
             </div>
-            <p>چهار قدم روشن؛ بدون سردرگمی و تماس‌های پراکنده.</p>
-          </div>
-          <div className="steps-grid">
-            {steps.map((item, index) => (
-              <div className="step-card" key={item[1]}>
-                <span className="step-number">{item[0]}</span>
-                <div className="step-symbol">
-                  {index === 0 ? "✎" : index === 1 ? "▤" : index === 2 ? "✓" : "↦"}
+
+            {visibleGroup ? (
+              <div
+                className="product-panel"
+                role="tabpanel"
+                id={`panel-${visibleGroup.id}`}
+                aria-labelledby={`tab-${visibleGroup.id}`}
+                tabIndex={0}
+              >
+                <div className="table-scroll">
+                  <table>
+                    <caption className="sr-only">
+                      فهرست محصولات {visibleGroup.label}
+                    </caption>
+                    <thead>
+                      <tr>
+                        <th scope="col">محصول</th>
+                        <th scope="col">مبدأ تأمین</th>
+                        <th scope="col">واحد فروش</th>
+                        <th scope="col">وضعیت قیمت</th>
+                        <th scope="col">اقدام</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {visibleGroup.rows.map((row) => (
+                        <tr key={`${visibleGroup.id}-${row.product}`}>
+                          <th scope="row" data-label="محصول">
+                            {row.product}
+                          </th>
+                          <td data-label="مبدأ تأمین">{row.origin}</td>
+                          <td data-label="واحد فروش">{row.unit}</td>
+                          <td data-label="وضعیت قیمت">
+                            <span className="price-status">استعلام روز</span>
+                          </td>
+                          <td data-label="اقدام">
+                            <a href={phones[0].href}>تماس برای قیمت</a>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
-                <h3>{item[1]}</h3>
-                <p>{item[2]}</p>
-                {index < steps.length - 1 && <i className="step-line" />}
               </div>
-            ))}
+            ) : (
+              <div className="empty-state" role="status">
+                <h3>محصولی پیدا نشد</h3>
+                <p>عبارت دیگری جست‌وجو کنید یا با واحد فروش تماس بگیرید.</p>
+                <a href={phones[0].href} dir="ltr">
+                  {phones[0].label}
+                </a>
+              </div>
+            )}
           </div>
-        </div>
-      </section>
+        </section>
 
-      <section className="quote-banner">
-        <div className="container quote-banner-inner">
-          <div className="quote-metal" aria-hidden="true">
-            <span />
-            <span />
-            <span />
+        <section className="about section" id="about">
+          <div className="shell about-grid">
+            <div className="about-copy">
+              <SectionTitle
+                eyebrow="درباره بنیان فولاد داریا"
+                title="از انتخاب محصول تا هماهنگی تحویل"
+                description="بنیان فولاد داریا برای استعلام موجودی، مقایسه گزینه‌های تأمین و هماهنگی سفارش در کنار خریداران ساختمانی و صنعتی است."
+              />
+              <ul className="feature-list">
+                <li>
+                  <strong>استعلام شفاف</strong>
+                  <span>قیمت نهایی پس از مشخص‌شدن نوع، ابعاد، مقدار و محل تحویل اعلام می‌شود.</span>
+                </li>
+                <li>
+                  <strong>راهنمایی پیش از خرید</strong>
+                  <span>مشخصات سفارش قبل از ثبت نهایی با خریدار مرور می‌شود.</span>
+                </li>
+                <li>
+                  <strong>پیگیری هماهنگ</strong>
+                  <span>هماهنگی موجودی و تحویل از طریق واحد فروش انجام می‌شود.</span>
+                </li>
+              </ul>
+            </div>
+            <div className="about-visual">
+              <img
+                src="/categories/04-profile.jpg"
+                alt="پروفیل‌های فولادی آماده تأمین"
+                width="900"
+                height="675"
+                loading="lazy"
+                decoding="async"
+              />
+              <div>
+                <strong>برای انتخاب دقیق‌تر نیاز به راهنمایی دارید؟</strong>
+                <a href={phones[0].href}>تماس با واحد فروش</a>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="quote-section section" aria-labelledby="quote-heading">
+          <div className="shell quote-inner">
+            <div>
+              <span>استعلام خرید</span>
+              <h2 id="quote-heading">مشخصات سفارش خود را با ما در میان بگذارید</h2>
+              <p>
+                نوع محصول، ابعاد، مقدار و شهر مقصد را آماده کنید تا واحد فروش
+                بتواند استعلام دقیق‌تری ارائه کند.
+              </p>
+            </div>
+            <a href={phones[0].href}>تماس با واحد فروش</a>
+          </div>
+        </section>
+      </main>
+
+      <footer className="site-footer" id="contact">
+        <div className="shell footer-grid">
+          <div>
+            <Brand />
+            <p>
+              استعلام و تأمین مقاطع فولادی برای پروژه‌های ساختمانی و صنعتی.
+            </p>
           </div>
           <div>
-            <span>برای پروژه‌تان قیمت می‌خواهید؟</span>
-            <h2>فهرست خرید را بفرستید؛ سریع برآورد می‌کنیم.</h2>
-            <p>پاسخ اولیه در کمتر از ۳۰ دقیقه کاری</p>
+            <h2>دسترسی سریع</h2>
+            <a href="#products">محصولات</a>
+            <a href="#prices">راهنمای استعلام</a>
+            <a href="#about">درباره ما</a>
           </div>
-          <button
-            className="button button-white"
-            type="button"
-            onClick={() => setQuoteOpen(true)}
-          >
-            ثبت درخواست خرید <span>←</span>
-          </button>
-        </div>
-      </section>
-
-      <footer id="footer">
-        <div className="container footer-main">
-          <div className="footer-brand">
-            <a className="brand brand-light" href="#">
-              <span className="brand-mark">F</span>
-              <span><strong>فولاد بنیان</strong><small>بازار حرفه‌ای آهن</small></span>
-            </a>
-            <p>
-              تجربه‌ای شفاف، سریع و قابل اعتماد برای تأمین آهن‌آلات ساختمانی و
-              صنعتی.
-            </p>
-            <div className="footer-phones">
-              <small>مرکز تماس و فروش</small>
-              <a href="tel:+982188888180" dir="ltr">۰۲۱ - ۸۸۸۸ ۸۱۸۰</a>
-              <a href="tel:+982188888280" dir="ltr">۰۲۱ - ۸۸۸۸ ۸۲۸۰</a>
-              <a href="tel:+982188888122" dir="ltr">۰۲۱ - ۸۸۸۸ ۸۱۲۲</a>
-            </div>
+          <div>
+            <h2>شماره‌های تماس</h2>
+            {phones.map((phone) => (
+              <a href={phone.href} key={phone.href} dir="ltr">
+                {phone.label}
+              </a>
+            ))}
           </div>
-          <div className="footer-column">
-            <h4>محصولات</h4>
-            <a href="#prices">میلگرد</a>
-            <a href="#prices">تیرآهن و هاش</a>
-            <a href="#prices">انواع ورق</a>
-            <a href="#prices">پروفیل و قوطی</a>
-            <a href="#prices">لوله و اتصالات</a>
-          </div>
-          <div className="footer-column">
-            <h4>خدمات مشتریان</h4>
-            <a href="#process">راهنمای خرید</a>
-            <a href="#prices">استعلام قیمت</a>
-            <a href="#about">کنترل کیفیت</a>
-            <a href="#footer">شرایط ارسال</a>
-            <a href="#footer">پرسش‌های متداول</a>
-          </div>
-          <div className="footer-column footer-address">
-            <h4>با ما در ارتباط باشید</h4>
-            <p>آجودانیه پورابتهاج نبش لشکری ساختمان سرو واحد ۳۰۳</p>
-            <p>شنبه تا چهارشنبه، ۸:۳۰ تا ۱۷:۳۰</p>
+          <div>
+            <h2>نشانی دفتر</h2>
+            <address>{address}</address>
           </div>
         </div>
-        <div className="footer-bottom">
-          <div className="container">
-            <span>© ۱۴۰۵ فولاد بنیان — نسخه نمایشی</span>
-            <span>طراحی‌شده برای یک خرید حرفه‌ای</span>
-          </div>
+        <div className="shell footer-bottom">
+          <span>
+            © {new Date().getFullYear().toLocaleString("fa-IR")} بنیان فولاد داریا
+          </span>
+          <a href="#top">بازگشت به بالا ↑</a>
         </div>
       </footer>
 
-      <button
-        className={`theme-trigger ${themeOpen ? "is-open" : ""}`}
-        type="button"
-        onClick={() => setThemeOpen((value) => !value)}
-        aria-label="تنظیم رنگ‌های قالب"
-        aria-expanded={themeOpen}
-      >
-        <span className="palette-icon">◐</span>
-        <span>رنگ قالب</span>
-      </button>
-
-      <aside className={`theme-panel ${themeOpen ? "is-open" : ""}`}>
-        <div className="theme-panel-head">
-          <div>
-            <small>شخصی‌سازی زنده</small>
-            <strong>رنگ‌های قالب</strong>
-          </div>
-          <button
-            type="button"
-            onClick={() => setThemeOpen(false)}
-            aria-label="بستن تنظیمات رنگ"
-          >
-            ×
-          </button>
-        </div>
-        <p>دو رنگ اصلی برند را تغییر دهید؛ نتیجه همان لحظه دیده می‌شود.</p>
-        <label className="color-control">
-          <span>
-            <b>رنگ اصلی</b>
-            <small>دکمه‌ها و تأکیدها</small>
-          </span>
-          <span className="color-input">
-            <input
-              type="color"
-              value={isHex(primary) ? primary : DEFAULT_PRIMARY}
-              onChange={(event) => updateColor("primary", event.target.value.toUpperCase())}
-              aria-label="انتخاب رنگ اصلی"
-            />
-            <input
-              type="text"
-              value={primary}
-              maxLength={7}
-              dir="ltr"
-              onChange={(event) => updateColor("primary", event.target.value)}
-              aria-label="کد رنگ اصلی"
-            />
-          </span>
-        </label>
-        <label className="color-control">
-          <span>
-            <b>رنگ ثانویه</b>
-            <small>پس‌زمینه‌های تیره</small>
-          </span>
-          <span className="color-input">
-            <input
-              type="color"
-              value={isHex(secondary) ? secondary : DEFAULT_SECONDARY}
-              onChange={(event) => updateColor("secondary", event.target.value.toUpperCase())}
-              aria-label="انتخاب رنگ ثانویه"
-            />
-            <input
-              type="text"
-              value={secondary}
-              maxLength={7}
-              dir="ltr"
-              onChange={(event) => updateColor("secondary", event.target.value)}
-              aria-label="کد رنگ ثانویه"
-            />
-          </span>
-        </label>
-        <button className="reset-theme" type="button" onClick={resetTheme}>
-          بازگشت به رنگ‌های پیش‌فرض
-        </button>
-      </aside>
-
-      {quoteOpen && (
-        <div
-          className="modal-backdrop"
-          role="presentation"
-          onMouseDown={(event) => {
-            if (event.target === event.currentTarget) setQuoteOpen(false);
-          }}
-        >
-          <section
-            className="quote-modal"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="quote-title"
-          >
-            <button
-              className="modal-close"
-              type="button"
-              onClick={() => setQuoteOpen(false)}
-              aria-label="بستن پنجره"
-            >
-              ×
-            </button>
-            {submitted ? (
-              <div className="success-state">
-                <span>✓</span>
-                <h2>درخواست نمایشی ثبت شد</h2>
-                <p>در نسخه واقعی، کارشناس فروش با مشتری تماس می‌گیرد.</p>
-                <button
-                  className="button button-dark"
-                  type="button"
-                  onClick={() => {
-                    setQuoteOpen(false);
-                    setSubmitted(false);
-                  }}
-                >
-                  بستن
-                </button>
-              </div>
-            ) : (
-              <>
-                <span className="section-kicker">پاسخ‌گویی سریع</span>
-                <h2 id="quote-title">استعلام قیمت و ثبت درخواست خرید</h2>
-                <p>اطلاعات اولیه را وارد کنید تا برآورد مناسب‌تری دریافت کنید.</p>
-                <form onSubmit={submitQuote}>
-                  <label>
-                    نام و نام خانوادگی
-                    <input required placeholder="مثلاً علی رضایی" />
-                  </label>
-                  <label>
-                    شماره تماس
-                    <input required inputMode="tel" placeholder="۰۹۱۲ ۱۲۳ ۴۵۶۷" />
-                  </label>
-                  <label className="full-field">
-                    شرح درخواست
-                    <textarea
-                      required
-                      rows={4}
-                      placeholder="نوع محصول، سایز، مقدار و شهر مقصد..."
-                    />
-                  </label>
-                  <button className="button button-dark full-field" type="submit">
-                    ثبت درخواست نمایشی <span>←</span>
-                  </button>
-                </form>
-              </>
-            )}
-          </section>
-        </div>
-      )}
-
-      <div className="mobile-actions">
-        <a href="tel:+982188888180">☎ تماس با فروش</a>
-        <button type="button" onClick={() => setQuoteOpen(true)}>
-          استعلام قیمت
-        </button>
+      <div className="mobile-actions" aria-label="اقدام‌های سریع">
+        <a href={phones[0].href}>
+          <span aria-hidden="true">☎</span>
+          تماس
+        </a>
+        <a href={phones[0].href}>استعلام خرید</a>
       </div>
-    </main>
+    </div>
   );
 }

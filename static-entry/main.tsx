@@ -1,12 +1,18 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import "../app/globals.css";
 import IronDemo from "../app/IronDemo";
+import "../app/globals.css";
 
 document.documentElement.lang = "fa";
 document.documentElement.dir = "rtl";
 
-createRoot(document.getElementById("root")!).render(
+const root = document.getElementById("root");
+
+if (!root) {
+  throw new Error("React root element was not found.");
+}
+
+createRoot(root).render(
   <StrictMode>
     <IronDemo />
   </StrictMode>,
