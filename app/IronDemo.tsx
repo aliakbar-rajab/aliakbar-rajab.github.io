@@ -170,6 +170,16 @@ export default function IronDemo() {
   }, []);
 
   useEffect(() => {
+    if (document.getElementById("fb-preloader-script")) return;
+
+    const script = document.createElement("script");
+    script.id = "fb-preloader-script";
+    script.src = "/preloader/fb-preloader.js";
+    script.async = true;
+    document.body.appendChild(script);
+  }, []);
+
+  useEffect(() => {
     const timer = window.setInterval(
       () => setSlide((current) => (current + 1) % slides.length),
       6500,
@@ -209,7 +219,7 @@ export default function IronDemo() {
   const activeGroup = priceGroups[activePrices];
 
   return (
-    <main className="site-shell" style={themeStyle}>
+    <main id="fb-site" className="site-shell" style={themeStyle}>
       <div className="demo-ribbon">نسخه نمایشی برای ارائه به مشتری</div>
 
       <header className="site-header">

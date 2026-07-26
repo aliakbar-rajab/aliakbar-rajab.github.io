@@ -38,7 +38,15 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="fa" dir="rtl">
-      <body>{children}</body>
+      <head>
+        <link rel="stylesheet" href="/preloader/fb-preloader.css" />
+      </head>
+      <body>
+        <noscript>
+          <style>{"#fb-site{opacity:1!important}"}</style>
+        </noscript>
+        {children}
+      </body>
     </html>
   );
 }
