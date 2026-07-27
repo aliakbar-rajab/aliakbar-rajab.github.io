@@ -17,9 +17,12 @@ test("brand, contact details, RTL, and palette match the approved contract", asy
   assert.match(combined, /بنیان فولاد داریا/);
   assert.match(combined, /BONYAN FOULAD DARIA/);
   assert.doesNotMatch(combined, /Foolad/i);
-  assert.match(component, /021-88888180/);
   assert.match(component, /021-88888280/);
+  assert.match(component, /021-88888780/);
   assert.match(component, /021-88888122/);
+  assert.match(component, /021-88889005/);
+  assert.match(component, /021-88889006/);
+  assert.doesNotMatch(combined, /021-88888180|\+98-21-88888180/);
   assert.match(
     component,
     /آجودانیه پورابتهاج نبش لشکری ساختمان سرو واحد ۳۰۳/,
@@ -37,7 +40,11 @@ test("there is no sales form or simulated lead submission", async () => {
 
   assert.doesNotMatch(component, /<form className="quote-form"|submitQuote|fetch\(/);
   assert.doesNotMatch(workflow, /LEAD_ENDPOINT/);
-  assert.match(component, /tel:\+982188888180/);
+  assert.match(component, /tel:\+982188888280/);
+  assert.match(component, /tel:\+982188888780/);
+  assert.match(component, /tel:\+982188888122/);
+  assert.match(component, /tel:\+982188889005/);
+  assert.match(component, /tel:\+982188889006/);
   assert.match(
     component,
     /\(max-width: 900px\) and \(hover: none\) and \(pointer: coarse\)/,
