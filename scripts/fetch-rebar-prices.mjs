@@ -19,6 +19,18 @@ const sources = [
     url: "https://www.fooladiranian.com/productlist/%D9%85%DB%8C%D9%84%DA%AF%D8%B1%D8%AF-%D8%B3%D8%A7%D8%AF%D9%87/",
     minimumItems: 20,
   },
+  {
+    id: "stainless",
+    label: "میلگرد استیل",
+    url: "https://www.fooladiranian.com/productlist/%D9%85%DB%8C%D9%84%DA%AF%D8%B1%D8%AF-%D8%A7%D8%B3%D8%AA%DB%8C%D9%84/",
+    minimumItems: 20,
+  },
+  {
+    id: "alloy",
+    label: "میلگرد آلیاژی",
+    url: "https://www.fooladiranian.com/productlist/%D9%85%DB%8C%D9%84%DA%AF%D8%B1%D8%AF-%D8%A2%D9%84%DB%8C%D8%A7%DA%98%DB%8C/",
+    minimumItems: 40,
+  },
 ];
 
 const persianDateFormatter = new Intl.DateTimeFormat("fa-IR-u-ca-persian", {
@@ -69,6 +81,8 @@ function parseNextData(html, source) {
       title: String(item.title ?? ""),
       size: metaValue(item, "سایز"),
       standard: metaValue(item, "استاندارد"),
+      grade: metaValue(item, "گرید"),
+      branchLength: metaValue(item, "طول شاخه"),
       form: metaValue(item, "حالت"),
       approximateWeight: metaValue(item, "وزن تقریبی"),
       delivery: metaValue(item, "محل تحویل"),
@@ -104,6 +118,11 @@ function parseNextData(html, source) {
   return {
     id: source.id,
     label: source.label,
+    groupingLabel:
+      source.id === "stainless" || source.id === "alloy"
+        ? "گرید"
+        : "کارخانه",
+    specificationLabel: source.id === "stainless" ? "گرید" : "استاندارد",
     sourceTitle: String(shopData.title ?? source.label),
     sourceUrl: source.url,
     summary: {

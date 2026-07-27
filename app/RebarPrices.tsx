@@ -6,6 +6,8 @@ type RebarRow = {
   title: string;
   size: string;
   standard: string;
+  grade: string;
+  branchLength: string;
   form: string;
   approximateWeight: string;
   delivery: string;
@@ -26,8 +28,10 @@ type RebarFactory = {
 };
 
 type RebarCategory = {
-  id: "ribbed" | "simple";
+  id: "ribbed" | "simple" | "stainless" | "alloy";
   label: string;
+  groupingLabel: string;
+  specificationLabel: string;
   sourceTitle: string;
   sourceUrl: string;
   summary: {
@@ -57,6 +61,13 @@ const priceData = importedPriceData as RebarPriceData;
 const initialCategory =
   priceData.categories.find((category) => category.id === "ribbed") ??
   priceData.categories[0];
+
+export type RebarViewRequest = {
+  requestId: number;
+  categoryId?: RebarCategory["id"];
+  factory?: string;
+  size?: string;
+};
 
 function formatNumber(value: number, maximumFractionDigits = 0) {
   return value.toLocaleString("fa-IR", { maximumFractionDigits });
@@ -111,12 +122,22 @@ function TaxSwitch({
   );
 }
 
-export default function RebarPrices({ phoneHref }: { phoneHref: string }) {
+export default function RebarPrices({
+  phoneHref,
+  requestedView,
+}: {
+  phoneHref: string;
+  requestedView?: RebarViewRequest;
+}) {
   const factorySelectId = useId();
   const sizeSelectId = useId();
-  const [categoryId, setCategoryId] = useState(initialCategory.id);
-  const [factoryFilter, setFactoryFilter] = useState("");
-  const [sizeFilter, setSizeFilter] = useState("");
+  const [categoryId, setCategoryId] = useState(
+    requestedView?.categoryId ?? initialCategory.id,
+  );
+  const [factoryFilter, setFactoryFilter] = useState(
+    requestedView?.factory ?? "",
+  );
+  const [sizeFilter, setSizeFilter] = useState(requestedView?.size ?? "");
   const [taxIncluded, setTaxIncluded] = useState(false);
   const [calculatorOpen, setCalculatorOpen] = useState(false);
   const [diameter, setDiameter] = useState("16");
@@ -214,7 +235,15 @@ export default function RebarPrices({ phoneHref }: { phoneHref: string }) {
             key={item.id}
             onClick={() => changeCategory(item.id)}
           >
-            <span aria-hidden="true">{item.id === "ribbed" ? "╱╱" : "━"}</span>
+            <span aria-hidden="true">
+              {item.id === "ribbed"
+                ? "╱╱"
+                : item.id === "simple"
+                  ? "━"
+                  : item.id === "stainless"
+                    ? "◈"
+                    : "◆"}
+            </span>
             قیمت {item.label}
           </button>
         ))}
@@ -270,7 +299,7 @@ export default function RebarPrices({ phoneHref }: { phoneHref: string }) {
                   ),
                 )} ردیف قیمت از ${formatNumber(
                   filteredFactories.length,
-                )} کارخانه`
+                )} ${category.groupingLabel}`
               : "برای این فیلتر قیمتی پیدا نشد."}
           </p>
 
@@ -282,7 +311,9 @@ export default function RebarPrices({ phoneHref }: { phoneHref: string }) {
                     checked={taxIncluded}
                     onChange={() => setTaxIncluded((current) => !current)}
                   />
-                  <h4>قیمت {category.label} {factory.name}</h4>
+                  <h4>
+                    قیمت {category.label} {factory.name}
+                  </h4>
                   <p>
                     <span aria-hidden="true">▣</span> آخرین بروزرسانی:{" "}
                     <b>{factory.updatedDate || "—"}</b>
@@ -292,13 +323,14 @@ export default function RebarPrices({ phoneHref }: { phoneHref: string }) {
                 <div className="table-scroll">
                   <table className="rebar-price-table">
                     <caption className="sr-only">
-                      قیمت {category.label} کارخانه {factory.name}
+                      قیمت {category.label} {category.groupingLabel}{" "}
+                      {factory.name}
                     </caption>
                     <thead>
                       <tr>
                         <th scope="col" aria-label="جزئیات" />
                         <th scope="col">سایز</th>
-                        <th scope="col">استاندارد</th>
+                        <th scope="col">{category.specificationLabel}</th>
                         <th scope="col">محل تحویل</th>
                         <th scope="col">قیمت</th>
                         <th scope="col">نوسان</th>
@@ -325,8 +357,8 @@ export default function RebarPrices({ phoneHref }: { phoneHref: string }) {
                               <td data-label="سایز">
                                 {formatNumber(Number(row.size), 1)}
                               </td>
-                              <td data-label="استاندارد">
-                                {row.standard || "—"}
+                              <td data-label={category.specificationLabel}>
+                                {row.standard || row.grade || "—"}
                               </td>
                               <td data-label="محل تحویل">
                                 {row.delivery || "—"}
@@ -380,12 +412,24 @@ export default function RebarPrices({ phoneHref }: { phoneHref: string }) {
                                     <dd>{row.approximateWeight || "—"}</dd>
                                   </div>
                                   <div>
+                                    <dt>طول شاخه</dt>
+                                    <dd>
+                                      {row.branchLength
+                                        ? `${row.branchLength} متر`
+                                        : "—"}
+                                    </dd>
+                                  </div>
+                                  <div>
+                                    <dt>گرید</dt>
+                                    <dd>{row.grade || "—"}</dd>
+                                  </div>
+                                  <div>
                                     <dt>واحد</dt>
                                     <dd>{row.unit}</dd>
                                   </div>
                                   <div>
-                                    <dt>کارخانه</dt>
-                                    <dd>{row.factory}</dd>
+                                    <dt>{category.groupingLabel}</dt>
+                                    <dd>{row.factory || factory.name}</dd>
                                   </div>
                                   <div>
                                     <dt>آخرین بروزرسانی</dt>
@@ -443,7 +487,7 @@ export default function RebarPrices({ phoneHref }: { phoneHref: string }) {
               {activeFilterCount ? <b>{formatNumber(activeFilterCount)}</b> : null}
             </header>
             <div className="filter-fields">
-              <label htmlFor={factorySelectId}>کارخانه</label>
+              <label htmlFor={factorySelectId}>{category.groupingLabel}</label>
               <select
                 id={factorySelectId}
                 value={factoryFilter}
@@ -452,7 +496,7 @@ export default function RebarPrices({ phoneHref }: { phoneHref: string }) {
                   setShowAllFactories(false);
                 }}
               >
-                <option value="">همه کارخانه‌ها</option>
+                <option value="">همه {category.groupingLabel}‌ها</option>
                 {category.filters.factories.map((factory) => (
                   <option value={factory} key={factory}>
                     {factory}

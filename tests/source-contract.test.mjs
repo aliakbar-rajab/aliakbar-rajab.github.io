@@ -107,8 +107,9 @@ test("source exposes one H1 and complete social metadata", async () => {
 });
 
 test("rebar prices are sourced, validated, and refreshed on a schedule", async () => {
-  const [component, fetcher, workflow, priceData] = await Promise.all([
+  const [component, navigation, fetcher, workflow, priceData] = await Promise.all([
     read("../app/RebarPrices.tsx"),
+    read("../app/IronDemo.tsx"),
     read("../scripts/fetch-rebar-prices.mjs"),
     read("../.github/workflows/pages.yml"),
     read("../app/data/rebar-prices.json").then(JSON.parse),
@@ -116,17 +117,26 @@ test("rebar prices are sourced, validated, and refreshed on a schedule", async (
 
   assert.deepEqual(
     priceData.categories.map((category) => category.label).sort(),
-    ["میلگرد آجدار", "میلگرد ساده"].sort(),
+    [
+      "میلگرد آجدار",
+      "میلگرد ساده",
+      "میلگرد استیل",
+      "میلگرد آلیاژی",
+    ].sort(),
   );
   assert.match(component, /rebar-kind-tabs/);
   assert.match(component, /ارزش افزوده/);
   assert.match(component, /محاسبه وزن میلگرد/);
+  assert.match(navigation, /قیمت میلگرد استیل/);
+  assert.match(navigation, /قیمت میلگرد آلیاژی/);
+  assert.match(navigation, /کارخانه‌های میلگرد/);
+  assert.match(navigation, /سایزهای میلگرد/);
   assert.match(fetcher, /__NEXT_DATA__/);
   assert.match(fetcher, /www\.fooladiranian\.com\/productlist/);
   assert.match(fetcher, /existingDataIsUsable/);
   assert.match(workflow, /schedule:/);
   assert.match(workflow, /17 \*\/4 \* \* \*/);
-  assert.equal(priceData.categories.length, 2);
+  assert.equal(priceData.categories.length, 4);
   assert.ok(
     priceData.categories.every((category) =>
       category.factories.some((factory) => factory.rows.length > 0),

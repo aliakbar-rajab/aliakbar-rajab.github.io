@@ -8,7 +8,7 @@ import {
   useSyncExternalStore,
 } from "react";
 import { filterProductGroups } from "./site-logic.mjs";
-import RebarPrices from "./RebarPrices";
+import RebarPrices, { type RebarViewRequest } from "./RebarPrices";
 
 type ProductRow = {
   product: string;
@@ -135,6 +135,51 @@ const productGroups: ProductGroup[] = [
 
 const heroSlides = productGroups.slice(0, 3);
 
+const rebarTypeLinks: Array<{
+  id: NonNullable<RebarViewRequest["categoryId"]>;
+  label: string;
+}> = [
+  { id: "ribbed", label: "قیمت میلگرد آجدار" },
+  { id: "simple", label: "قیمت میلگرد ساده" },
+  { id: "stainless", label: "قیمت میلگرد استیل" },
+  { id: "alloy", label: "قیمت میلگرد آلیاژی" },
+];
+
+const rebarFactories = [
+  "ذوب آهن",
+  "میانه",
+  "شاهین بناب",
+  "نیشابور",
+  "راد همدان",
+  "ظفر بناب",
+  "زاگرس",
+  "ابهر",
+  "ابرکوه",
+  "آناهیتا گیلان",
+  "شاهرود",
+  "کوثر اهواز",
+  "امیرکبیر",
+  "فایکو",
+  "کویر کاشان",
+  "اروند",
+];
+
+const rebarSizes = [
+  "8",
+  "10",
+  "12",
+  "14",
+  "16",
+  "18",
+  "20",
+  "22",
+  "25",
+  "28",
+  "32",
+  "36",
+  "40",
+];
+
 function subscribeToMedia(query: string, callback: () => void) {
   const media = window.matchMedia(query);
   media.addEventListener("change", callback);
@@ -192,6 +237,9 @@ export default function IronDemo() {
   const [searchInput, setSearchInput] = useState("");
   const [committedSearch, setCommittedSearch] = useState("");
   const [searchMessage, setSearchMessage] = useState("");
+  const [rebarViewRequest, setRebarViewRequest] = useState<RebarViewRequest>({
+    requestId: 0,
+  });
 
   const isMobile = useMediaQuery("(max-width: 900px)");
   const reduceMotion = useMediaQuery("(prefers-reduced-motion: reduce)");
@@ -241,6 +289,31 @@ export default function IronDemo() {
     setSearchInput("");
     setSearchMessage("");
     setActiveGroup(groupId);
+    if (groupId === "rebar") {
+      setRebarViewRequest((current) => ({
+        requestId: current.requestId + 1,
+        categoryId: "ribbed",
+      }));
+    }
+    setProductsOpen(false);
+    setMobileNavOpen(false);
+    document.getElementById("prices")?.scrollIntoView({
+      behavior: reduceMotion ? "auto" : "smooth",
+      block: "start",
+    });
+  };
+
+  const goToRebarView = (
+    view: Omit<RebarViewRequest, "requestId">,
+  ) => {
+    setCommittedSearch("");
+    setSearchInput("");
+    setSearchMessage("");
+    setActiveGroup("rebar");
+    setRebarViewRequest((current) => ({
+      ...view,
+      requestId: current.requestId + 1,
+    }));
     setProductsOpen(false);
     setMobileNavOpen(false);
     document.getElementById("prices")?.scrollIntoView({
@@ -368,19 +441,83 @@ export default function IronDemo() {
                 aria-controls="product-navigation"
                 onClick={() => setProductsOpen((open) => !open)}
               >
-                محصولات <span aria-hidden="true">⌄</span>
+                قیمت روز محصولات <span aria-hidden="true">⌄</span>
               </button>
               {productsOpen ? (
-                <div id="product-navigation" className="product-dropdown">
-                  {productGroups.map((group) => (
-                    <button
-                      type="button"
-                      key={group.id}
-                      onClick={() => goToGroup(group.id)}
-                    >
-                      {group.label}
-                    </button>
-                  ))}
+                <div
+                  id="product-navigation"
+                  className="product-dropdown rebar-mega-menu"
+                >
+                  <section className="mega-rebar-types">
+                    <h2>انواع میلگرد</h2>
+                    {rebarTypeLinks.map((item) => (
+                      <button
+                        type="button"
+                        key={item.id}
+                        onClick={() =>
+                          goToRebarView({ categoryId: item.id })
+                        }
+                      >
+                        {item.label}
+                      </button>
+                    ))}
+                  </section>
+
+                  <section className="mega-rebar-factories">
+                    <h2>کارخانه‌های میلگرد</h2>
+                    <div>
+                      {rebarFactories.map((factory) => (
+                        <button
+                          type="button"
+                          key={factory}
+                          onClick={() =>
+                            goToRebarView({
+                              categoryId: "ribbed",
+                              factory:
+                                factory === "ابهر" ? "سیادن ابهر" : factory,
+                            })
+                          }
+                        >
+                          میلگرد {factory}
+                        </button>
+                      ))}
+                    </div>
+                  </section>
+
+                  <section className="mega-rebar-sizes">
+                    <h2>سایزهای میلگرد</h2>
+                    <div>
+                      {rebarSizes.map((size) => (
+                        <button
+                          type="button"
+                          key={size}
+                          onClick={() =>
+                            goToRebarView({
+                              categoryId: "ribbed",
+                              size,
+                            })
+                          }
+                        >
+                          میلگرد {Number(size).toLocaleString("fa-IR")}
+                        </button>
+                      ))}
+                    </div>
+                  </section>
+
+                  <section className="mega-other-products">
+                    <h2>سایر محصولات</h2>
+                    <div>
+                      {productGroups.slice(1).map((group) => (
+                        <button
+                          type="button"
+                          key={group.id}
+                          onClick={() => goToGroup(group.id)}
+                        >
+                          قیمت {group.label}
+                        </button>
+                      ))}
+                    </div>
+                  </section>
                 </div>
               ) : null}
             </div>
@@ -572,7 +709,11 @@ export default function IronDemo() {
             </div>
 
             {visibleGroup?.id === "rebar" ? (
-              <RebarPrices phoneHref={phones[0].href} />
+              <RebarPrices
+                key={rebarViewRequest.requestId}
+                phoneHref={phones[0].href}
+                requestedView={rebarViewRequest}
+              />
             ) : visibleGroup ? (
               <div
                 className="product-panel"
