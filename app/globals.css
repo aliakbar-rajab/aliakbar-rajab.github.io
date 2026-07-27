@@ -690,9 +690,9 @@ noscript {
 
 .products,
 .about {
-  background-color: #d9dde0;
+  background-color: #3b3b3e;
   background-image:
-    linear-gradient(rgb(248 249 250 / 66%), rgb(248 249 250 / 66%)),
+    linear-gradient(rgb(59 59 62 / 74%), rgb(59 59 62 / 74%)),
     url("/textures/chequered-plate.jpg");
   background-position:
     center,
@@ -703,6 +703,18 @@ noscript {
   background-size:
     auto,
     max(100%, 1600px) auto;
+}
+
+.products .section-heading h2,
+.about .section-heading h2,
+.about .feature-list strong {
+  color: var(--white);
+}
+
+.products .section-heading p,
+.about .section-heading p,
+.about .feature-list span {
+  color: #e1e1e4;
 }
 
 .section-heading {
