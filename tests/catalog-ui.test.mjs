@@ -18,13 +18,33 @@ globalThis.MutationObserver = dom.window.MutationObserver;
 globalThis.getComputedStyle = dom.window.getComputedStyle;
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 
-const { cleanup, render, screen, within } = await import(
+// jsdom implements neither of these, and IronDemo calls both. Every query
+// reports false, which is the desktop / motion-allowed case.
+dom.window.Element.prototype.scrollIntoView = () => {};
+dom.window.matchMedia = (query) => ({
+  media: query,
+  matches: false,
+  onchange: null,
+  addEventListener: () => {},
+  removeEventListener: () => {},
+  addListener: () => {},
+  removeListener: () => {},
+  dispatchEvent: () => false,
+});
+
+const { act, cleanup, fireEvent, render, screen, within } = await import(
   "@testing-library/react"
 );
 const userEvent = (await import("@testing-library/user-event")).default;
 const { PriceCatalog } = await import("../app/RebarPrices.tsx");
+const IronDemo = (await import("../app/IronDemo.tsx")).default;
 
 afterEach(cleanup);
+
+const settle = () =>
+  act(async () => {
+    await new Promise((resolve) => setTimeout(resolve, 0));
+  });
 
 const row = (id, status, percent) => ({
   id,
@@ -128,6 +148,38 @@ test("trend direction is textual and no fake chart is exposed", () => {
   assert.match(within(table).getByText(/کاهش/).textContent, /کاهش/);
   assert.equal(within(table).queryByText("نمودار"), null);
   assert.equal(within(table).queryByLabelText("روند قیمت"), null);
+});
+
+test("F2: a search that is still loading does not report 'no products found'", async () => {
+  render(React.createElement(IronDemo));
+  await settle();
+
+  const input = screen.getByRole("searchbox", { name: "جست‌وجوی محصول" });
+  await act(async () => {
+    fireEvent.change(input, { target: { value: "نیشابور" } });
+  });
+
+  // Submit and flush only the state that lands before submitSearch awaits the
+  // catalog chunks. This is the in-flight window the user actually sees.
+  act(() => {
+    fireEvent.submit(input.closest("form"));
+  });
+
+  assert.match(
+    document.body.textContent,
+    /در حال جست‌وجوی «نیشابور»/,
+    "the status region should say a search is running",
+  );
+  assert.doesNotMatch(
+    document.body.textContent,
+    /محصولی پیدا نشد/,
+    "a search that has not resolved yet must not claim there are no products",
+  );
+
+  // Once the live catalogs land, the real result must be reported.
+  await settle();
+  assert.match(document.body.textContent, /نتیجه برای «نیشابور» پیدا شد/);
+  assert.doesNotMatch(document.body.textContent, /محصولی پیدا نشد/);
 });
 
 test("calculator rejects fractional branch quantities", async () => {

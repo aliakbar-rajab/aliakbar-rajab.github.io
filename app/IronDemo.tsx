@@ -495,8 +495,8 @@ export default function IronDemo() {
   const submitSearch = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const query = searchInput.trim();
-    setCommittedSearch(query);
     if (!query) {
+      setCommittedSearch("");
       setSearchGroups(null);
       setActiveGroup(productGroups[0].id);
       resetGroupView(productGroups[0].id);
@@ -508,13 +508,20 @@ export default function IronDemo() {
       try {
         groups = await loadCatalogSearchGroups();
       } catch {
+        // committedSearch is deliberately left alone: applying it while
+        // searchGroups is still null filters the placeholder rows in
+        // productGroups, which match nothing, so the whole price section would
+        // collapse into "no products found" instead of showing this message.
         setSearchMessage(
           "دریافت فهرست زنده محصولات ممکن نشد. لطفاً دوباره تلاش کنید.",
         );
         setSearchLoading(false);
         return;
       }
+      // Commit the query only now that the live rows it will be matched against
+      // are available, so no render ever pairs a query with the placeholders.
       setSearchGroups(groups);
+      setCommittedSearch(query);
       const results = filterProductGroups(groups, query);
       if (results.length > 0) {
       const resultGroupId = results[0].id as ProductGroupId;
