@@ -168,3 +168,43 @@ test("rebar prices are sourced, validated, and refreshed on a schedule", async (
     ),
   );
 });
+
+test("beam and hash prices are sourced and exposed through the catalog", async () => {
+  const [component, navigation, fetcher, priceData, packageJson] =
+    await Promise.all([
+      read("../app/BeamPrices.tsx"),
+      read("../app/IronDemo.tsx"),
+      read("../scripts/fetch-beam-prices.mjs"),
+      read("../app/data/beam-prices.json").then(JSON.parse),
+      read("../package.json").then(JSON.parse),
+    ]);
+
+  assert.deepEqual(
+    priceData.categories.map((category) => category.label),
+    ["تیرآهن", "تیرآهن هاش"],
+  );
+  assert.match(component, /beam-kind-tabs/);
+  assert.match(component, /PriceCatalog/);
+  assert.match(navigation, /قیمت هاش/);
+  assert.match(navigation, /کارخانه‌های تیرآهن/);
+  assert.match(navigation, /سایزهای تیرآهن/);
+  assert.match(navigation, /<BeamPrices/);
+  assert.match(fetcher, /__NEXT_DATA__/);
+  assert.match(
+    fetcher,
+    /%D8%AA%DB%8C%D8%B1%D8%A2%D9%87%D9%86-%D9%87%D8%A7%D8%B4/,
+  );
+  assert.match(fetcher, /existingDataIsUsable/);
+  assert.match(packageJson.scripts["prices:update"], /prices:update:beam/);
+  assert.equal(priceData.categories.length, 2);
+  assert.ok(
+    priceData.categories.every((category) =>
+      category.factories.some((factory) => factory.rows.length > 0),
+    ),
+  );
+  assert.ok(
+    priceData.categories
+      .find((category) => category.id === "beam")
+      .factories.length >= 8,
+  );
+});

@@ -1,7 +1,7 @@
 import { Fragment, useId, useMemo, useState } from "react";
 import importedPriceData from "./data/rebar-prices.json";
 
-type RebarRow = {
+type CatalogRow = {
   id: number;
   title: string;
   size: string;
@@ -20,15 +20,15 @@ type RebarRow = {
   updatedDate: string;
 };
 
-type RebarFactory = {
+type CatalogFactory = {
   name: string;
   updatedAt: number;
   updatedDate: string;
-  rows: RebarRow[];
+  rows: CatalogRow[];
 };
 
-type RebarCategory = {
-  id: "ribbed" | "simple" | "stainless" | "alloy";
+type CatalogCategory = {
+  id: string;
   label: string;
   groupingLabel: string;
   specificationLabel: string;
@@ -46,27 +46,37 @@ type RebarCategory = {
     sizes: string[];
     factories: string[];
   };
-  factories: RebarFactory[];
+  factories: CatalogFactory[];
 };
 
-type RebarPriceData = {
+export type CatalogPriceData = {
   fetchedAt: string;
   sourceName: string;
   sourceHome: string;
   taxRate: number;
-  categories: RebarCategory[];
+  categories: CatalogCategory[];
 };
 
-const priceData = importedPriceData as RebarPriceData;
-const initialCategory =
-  priceData.categories.find((category) => category.id === "ribbed") ??
-  priceData.categories[0];
+export type CatalogViewRequest = {
+  requestId: number;
+  categoryId?: string;
+  factory?: string;
+  size?: string;
+};
 
 export type RebarViewRequest = {
   requestId: number;
-  categoryId?: RebarCategory["id"];
+  categoryId?: "ribbed" | "simple" | "stainless" | "alloy";
   factory?: string;
   size?: string;
+};
+
+export type PriceCatalogConfig = {
+  productLabel: string;
+  initialCategoryId: string;
+  categoryIcons: Record<string, string>;
+  tabClassName?: string;
+  showWeightCalculator?: boolean;
 };
 
 function formatNumber(value: number, maximumFractionDigits = 0) {
@@ -122,13 +132,24 @@ function TaxSwitch({
   );
 }
 
-export default function RebarPrices({
+export function PriceCatalog({
+  priceData,
+  config,
   phoneHref,
   requestedView,
 }: {
+  priceData: CatalogPriceData;
+  config: PriceCatalogConfig;
   phoneHref: string;
-  requestedView?: RebarViewRequest;
+  requestedView?: CatalogViewRequest;
 }) {
+  const initialCategory =
+    priceData.categories.find(
+      (category) => category.id === config.initialCategoryId,
+    ) ?? priceData.categories[0];
+  if (!initialCategory) {
+    throw new Error(`داده قیمت ${config.productLabel} در دسترس نیست.`);
+  }
   const factorySelectId = useId();
   const sizeSelectId = useId();
   const [categoryId, setCategoryId] = useState(
@@ -198,7 +219,7 @@ export default function RebarPrices({
     timeZone: "Asia/Tehran",
   }).format(new Date(priceData.fetchedAt));
 
-  const changeCategory = (id: RebarCategory["id"]) => {
+  const changeCategory = (id: string) => {
     setCategoryId(id);
     setFactoryFilter("");
     setSizeFilter("");
@@ -226,7 +247,11 @@ export default function RebarPrices({
 
   return (
     <div className="rebar-prices">
-      <div className="rebar-kind-tabs" role="tablist" aria-label="نوع میلگرد">
+      <div
+        className={`rebar-kind-tabs ${config.tabClassName ?? ""}`.trim()}
+        role="tablist"
+        aria-label={`نوع ${config.productLabel}`}
+      >
         {priceData.categories.map((item) => (
           <button
             type="button"
@@ -235,15 +260,7 @@ export default function RebarPrices({
             key={item.id}
             onClick={() => changeCategory(item.id)}
           >
-            <span aria-hidden="true">
-              {item.id === "ribbed"
-                ? "╱╱"
-                : item.id === "simple"
-                  ? "━"
-                  : item.id === "stainless"
-                    ? "◈"
-                    : "◆"}
-            </span>
+            <span aria-hidden="true">{config.categoryIcons[item.id] ?? "◆"}</span>
             قیمت {item.label}
           </button>
         ))}
@@ -251,8 +268,13 @@ export default function RebarPrices({
 
       <div className="rebar-layout">
         <div className="rebar-main">
-          <section className="rebar-summary" aria-labelledby="rebar-price-title">
-            <h3 id="rebar-price-title">قیمت {category.label}</h3>
+          <section
+            className="rebar-summary"
+            aria-labelledby={`catalog-price-title-${category.id}`}
+          >
+            <h3 id={`catalog-price-title-${category.id}`}>
+              قیمت {category.label}
+            </h3>
             <p>
               قیمت {category.label} امروز {category.summary.date} در بازه‌ای بین{" "}
               <b>{summaryPrice(category.summary.min)}</b> تا{" "}
@@ -374,7 +396,9 @@ export default function RebarPrices({
                                   taxIncluded,
                                   priceData.taxRate,
                                 )}
-                                {row.price ? <small> تومان</small> : null}
+                                {row.price ? (
+                                  <small> تومان / {row.unit}</small>
+                                ) : null}
                               </td>
                               <td
                                 data-label="نوسان"
@@ -415,7 +439,9 @@ export default function RebarPrices({
                                     <dt>طول شاخه</dt>
                                     <dd>
                                       {row.branchLength
-                                        ? `${row.branchLength} متر`
+                                        ? row.branchLength.includes("متر")
+                                          ? row.branchLength
+                                          : `${row.branchLength} متر`
                                         : "—"}
                                     </dd>
                                   </div>
@@ -455,7 +481,8 @@ export default function RebarPrices({
               type="button"
               onClick={() => setShowAllFactories(true)}
             >
-              نمایش {formatNumber(remainingFactories)} کارخانه دیگر
+              نمایش {formatNumber(remainingFactories)}{" "}
+              {category.groupingLabel} دیگر
               <span aria-hidden="true">↓</span>
             </button>
           ) : null}
@@ -479,7 +506,10 @@ export default function RebarPrices({
           ) : null}
         </div>
 
-        <aside className="rebar-sidebar" aria-label="فیلترهای قیمت میلگرد">
+        <aside
+          className="rebar-sidebar"
+          aria-label={`فیلترهای قیمت ${config.productLabel}`}
+        >
           <section className="filter-card">
             <header>
               <span aria-hidden="true">⌁</span>
@@ -532,7 +562,8 @@ export default function RebarPrices({
             </div>
           </section>
 
-          <section className="calculator-card">
+          {config.showWeightCalculator ? (
+            <section className="calculator-card">
             <button
               type="button"
               aria-expanded={calculatorOpen}
@@ -589,7 +620,8 @@ export default function RebarPrices({
                 </p>
               </div>
             ) : null}
-          </section>
+            </section>
+          ) : null}
 
           <section className="price-source-card">
             <span>آخرین دریافت داده</span>
@@ -612,5 +644,35 @@ export default function RebarPrices({
         </aside>
       </div>
     </div>
+  );
+}
+
+const rebarPriceData = importedPriceData as CatalogPriceData;
+const rebarConfig: PriceCatalogConfig = {
+  productLabel: "میلگرد",
+  initialCategoryId: "ribbed",
+  categoryIcons: {
+    ribbed: "╱╱",
+    simple: "━",
+    stainless: "◈",
+    alloy: "◆",
+  },
+  showWeightCalculator: true,
+};
+
+export default function RebarPrices({
+  phoneHref,
+  requestedView,
+}: {
+  phoneHref: string;
+  requestedView?: RebarViewRequest;
+}) {
+  return (
+    <PriceCatalog
+      priceData={rebarPriceData}
+      config={rebarConfig}
+      phoneHref={phoneHref}
+      requestedView={requestedView}
+    />
   );
 }

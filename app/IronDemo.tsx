@@ -9,6 +9,7 @@ import {
 } from "react";
 import { filterProductGroups } from "./site-logic.mjs";
 import RebarPrices, { type RebarViewRequest } from "./RebarPrices";
+import BeamPrices, { type BeamViewRequest } from "./BeamPrices";
 
 type ProductRow = {
   product: string;
@@ -180,6 +181,27 @@ const rebarSizes = [
   "40",
 ];
 
+const beamTypeLinks: Array<{
+  id: NonNullable<BeamViewRequest["categoryId"]>;
+  label: string;
+}> = [
+  { id: "beam", label: "قیمت تیرآهن" },
+  { id: "hash", label: "قیمت هاش" },
+];
+
+const beamFactories = [
+  "ذوب آهن",
+  "یزد",
+  "فایکو",
+  "ناب تبریز",
+  "شاهین بناب",
+  "کرمانشاه",
+  "ماهان",
+  "اهواز",
+];
+
+const beamSizes = ["12", "14", "16", "18", "20", "22", "24", "27", "30"];
+
 function subscribeToMedia(query: string, callback: () => void) {
   const media = window.matchMedia(query);
   media.addEventListener("change", callback);
@@ -231,6 +253,7 @@ function SectionTitle({
 export default function IronDemo() {
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [productsOpen, setProductsOpen] = useState(false);
+  const [megaProduct, setMegaProduct] = useState<"rebar" | "beam">("rebar");
   const [activeSlide, setActiveSlide] = useState(0);
   const [carouselPaused, setCarouselPaused] = useState(false);
   const [activeGroup, setActiveGroup] = useState(productGroups[0].id);
@@ -238,6 +261,9 @@ export default function IronDemo() {
   const [committedSearch, setCommittedSearch] = useState("");
   const [searchMessage, setSearchMessage] = useState("");
   const [rebarViewRequest, setRebarViewRequest] = useState<RebarViewRequest>({
+    requestId: 0,
+  });
+  const [beamViewRequest, setBeamViewRequest] = useState<BeamViewRequest>({
     requestId: 0,
   });
 
@@ -298,6 +324,11 @@ export default function IronDemo() {
         requestId: current.requestId + 1,
         categoryId: "ribbed",
       }));
+    } else if (groupId === "beam") {
+      setBeamViewRequest((current) => ({
+        requestId: current.requestId + 1,
+        categoryId: "beam",
+      }));
     }
     setProductsOpen(false);
     setMobileNavOpen(false);
@@ -315,6 +346,23 @@ export default function IronDemo() {
     setSearchMessage("");
     setActiveGroup("rebar");
     setRebarViewRequest((current) => ({
+      ...view,
+      requestId: current.requestId + 1,
+    }));
+    setProductsOpen(false);
+    setMobileNavOpen(false);
+    document.getElementById("prices")?.scrollIntoView({
+      behavior: reduceMotion ? "auto" : "smooth",
+      block: "start",
+    });
+  };
+
+  const goToBeamView = (view: Omit<BeamViewRequest, "requestId">) => {
+    setCommittedSearch("");
+    setSearchInput("");
+    setSearchMessage("");
+    setActiveGroup("beam");
+    setBeamViewRequest((current) => ({
       ...view,
       requestId: current.requestId + 1,
     }));
@@ -443,7 +491,13 @@ export default function IronDemo() {
                 type="button"
                 aria-expanded={productsOpen}
                 aria-controls="product-navigation"
-                onClick={() => setProductsOpen((open) => !open)}
+                onClick={() => {
+                  const nextOpen = !productsOpen;
+                  if (nextOpen) {
+                    setMegaProduct(activeGroup === "beam" ? "beam" : "rebar");
+                  }
+                  setProductsOpen(nextOpen);
+                }}
               >
                 قیمت روز محصولات <span aria-hidden="true">⌄</span>
               </button>
@@ -452,74 +506,156 @@ export default function IronDemo() {
                   id="product-navigation"
                   className="product-dropdown rebar-mega-menu"
                 >
-                  <section className="mega-rebar-types">
-                    <h2>انواع میلگرد</h2>
-                    {rebarTypeLinks.map((item) => (
-                      <button
-                        type="button"
-                        key={item.id}
-                        onClick={() =>
-                          goToRebarView({ categoryId: item.id })
-                        }
-                      >
-                        {item.label}
-                      </button>
-                    ))}
-                  </section>
+                  {megaProduct === "rebar" ? (
+                    <>
+                      <section className="mega-rebar-types">
+                        <h2>انواع میلگرد</h2>
+                        {rebarTypeLinks.map((item) => (
+                          <button
+                            type="button"
+                            key={item.id}
+                            onClick={() =>
+                              goToRebarView({ categoryId: item.id })
+                            }
+                          >
+                            {item.label}
+                          </button>
+                        ))}
+                      </section>
 
-                  <section className="mega-rebar-factories">
-                    <h2>کارخانه‌های میلگرد</h2>
-                    <div>
-                      {rebarFactories.map((factory) => (
-                        <button
-                          type="button"
-                          key={factory}
-                          onClick={() =>
-                            goToRebarView({
-                              categoryId: "ribbed",
-                              factory:
-                                factory === "ابهر" ? "سیادن ابهر" : factory,
-                            })
-                          }
-                        >
-                          میلگرد {factory}
-                        </button>
-                      ))}
-                    </div>
-                  </section>
+                      <section className="mega-rebar-factories">
+                        <h2>کارخانه‌های میلگرد</h2>
+                        <div>
+                          {rebarFactories.map((factory) => (
+                            <button
+                              type="button"
+                              key={factory}
+                              onClick={() =>
+                                goToRebarView({
+                                  categoryId: "ribbed",
+                                  factory:
+                                    factory === "ابهر"
+                                      ? "سیادن ابهر"
+                                      : factory,
+                                })
+                              }
+                            >
+                              میلگرد {factory}
+                            </button>
+                          ))}
+                        </div>
+                      </section>
 
-                  <section className="mega-rebar-sizes">
-                    <h2>سایزهای میلگرد</h2>
-                    <div>
-                      {rebarSizes.map((size) => (
-                        <button
-                          type="button"
-                          key={size}
-                          onClick={() =>
-                            goToRebarView({
-                              categoryId: "ribbed",
-                              size,
-                            })
-                          }
-                        >
-                          میلگرد {Number(size).toLocaleString("fa-IR")}
-                        </button>
-                      ))}
-                    </div>
-                  </section>
+                      <section className="mega-rebar-sizes">
+                        <h2>سایزهای میلگرد</h2>
+                        <div>
+                          {rebarSizes.map((size) => (
+                            <button
+                              type="button"
+                              key={size}
+                              onClick={() =>
+                                goToRebarView({
+                                  categoryId: "ribbed",
+                                  size,
+                                })
+                              }
+                            >
+                              میلگرد {Number(size).toLocaleString("fa-IR")}
+                            </button>
+                          ))}
+                        </div>
+                      </section>
+                    </>
+                  ) : (
+                    <>
+                      <section className="mega-rebar-types">
+                        <h2>انواع تیرآهن</h2>
+                        {beamTypeLinks.map((item) => (
+                          <button
+                            type="button"
+                            key={item.id}
+                            onClick={() =>
+                              goToBeamView({ categoryId: item.id })
+                            }
+                          >
+                            {item.label}
+                          </button>
+                        ))}
+                      </section>
+
+                      <section className="mega-rebar-factories">
+                        <h2>کارخانه‌های تیرآهن</h2>
+                        <div>
+                          {beamFactories.map((factory) => (
+                            <button
+                              type="button"
+                              key={factory}
+                              onClick={() =>
+                                goToBeamView({
+                                  categoryId: "beam",
+                                  factory,
+                                })
+                              }
+                            >
+                              تیرآهن {factory}
+                            </button>
+                          ))}
+                        </div>
+                      </section>
+
+                      <section className="mega-rebar-sizes">
+                        <h2>سایزهای تیرآهن</h2>
+                        <div>
+                          {beamSizes.map((size) => (
+                            <button
+                              type="button"
+                              key={size}
+                              onClick={() =>
+                                goToBeamView({
+                                  categoryId: "beam",
+                                  size,
+                                })
+                              }
+                            >
+                              تیرآهن {Number(size).toLocaleString("fa-IR")}
+                            </button>
+                          ))}
+                        </div>
+                      </section>
+                    </>
+                  )}
 
                   <section className="mega-other-products">
                     <h2>سایر محصولات</h2>
                     <div>
-                      {productGroups.slice(1).map((group) => (
-                        <button
-                          type="button"
-                          key={group.id}
-                          onClick={() => goToGroup(group.id)}
-                        >
-                          قیمت {group.label}
-                        </button>
-                      ))}
+                      <button
+                        type="button"
+                        aria-pressed={megaProduct === "rebar"}
+                        onClick={() => setMegaProduct("rebar")}
+                      >
+                        قیمت میلگرد
+                      </button>
+                      <button
+                        type="button"
+                        aria-pressed={megaProduct === "beam"}
+                        onClick={() => setMegaProduct("beam")}
+                      >
+                        قیمت تیرآهن
+                      </button>
+                      {productGroups
+                        .filter(
+                          (group) =>
+                            group.id !== "rebar" && group.id !== "beam",
+                        )
+                        .map((group) => (
+                          <button
+                            type="button"
+                            key={group.id}
+                            onClick={() => goToGroup(group.id)}
+                          >
+                            قیمت {group.label}
+                          </button>
+                        ))}
                     </div>
                   </section>
                 </div>
@@ -717,6 +853,12 @@ export default function IronDemo() {
                 key={rebarViewRequest.requestId}
                 phoneHref={contactHref}
                 requestedView={rebarViewRequest}
+              />
+            ) : visibleGroup?.id === "beam" ? (
+              <BeamPrices
+                key={beamViewRequest.requestId}
+                phoneHref={contactHref}
+                requestedView={beamViewRequest}
               />
             ) : visibleGroup ? (
               <div

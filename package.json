@@ -8,7 +8,9 @@
   },
   "scripts": {
     "dev": "vite",
-    "prices:update": "node scripts/fetch-rebar-prices.mjs",
+    "prices:update:rebar": "node scripts/fetch-rebar-prices.mjs",
+    "prices:update:beam": "node scripts/fetch-beam-prices.mjs",
+    "prices:update": "npm run prices:update:rebar && npm run prices:update:beam",
     "build": "npm run prices:update && vite build",
     "preview": "vite preview",
     "lint": "eslint .",

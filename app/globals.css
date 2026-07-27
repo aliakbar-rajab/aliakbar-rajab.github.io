@@ -508,6 +508,11 @@ noscript {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
+.mega-other-products button[aria-pressed="true"] {
+  background: var(--brand-dark);
+  color: var(--white);
+}
+
 .hero {
   position: relative;
   min-height: clamp(31rem, 62vw, 39rem);
@@ -937,6 +942,10 @@ tbody td a,
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 0.7rem;
   margin-bottom: 1rem;
+}
+
+.rebar-kind-tabs.beam-kind-tabs {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .rebar-kind-tabs button {

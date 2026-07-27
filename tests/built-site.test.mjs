@@ -36,4 +36,6 @@ test("built JavaScript has no external image or fake form dependency", async () 
   const javascript = await readDist(asset.slice(1));
   assert.doesNotMatch(javascript, /images\.pexels\.com|submitQuote|VITE_LEAD_ENDPOINT/);
   assert.match(javascript, /BONYAN FOULAD DARIA/);
+  assert.match(javascript, /قیمت تیرآهن هاش/);
+  assert.match(javascript, /کارخانه‌های تیرآهن/);
 });
