@@ -29,6 +29,7 @@ type ProductGroup = {
   label: string;
   shortLabel: string;
   image: string;
+  heroImage?: string;
   description: string;
   rows: ProductRow[];
 };
@@ -63,6 +64,7 @@ const productGroups: ProductGroup[] = [
     label: "میلگرد",
     shortLabel: "میلگرد",
     image: "/categories/01-rebar.jpg",
+    heroImage: "/categories/hero-rebar-1680.jpg",
     description: "میلگرد آجدار و ساده برای پروژه‌های ساختمانی و صنعتی",
     rows: [
       { product: "میلگرد آجدار", origin: "کارخانه‌های معتبر", unit: "کیلوگرم" },
@@ -75,6 +77,7 @@ const productGroups: ProductGroup[] = [
     label: "تیرآهن",
     shortLabel: "تیرآهن",
     image: "/categories/02-ibeam.jpg",
+    heroImage: "/categories/hero-beam-1680.jpg",
     description: "تیرآهن IPE، هاش و مقاطع سازه‌ای",
     rows: [
       { product: "تیرآهن IPE", origin: "کارخانه‌های معتبر", unit: "شاخه" },
@@ -87,6 +90,7 @@ const productGroups: ProductGroup[] = [
     label: "ورق فولادی",
     shortLabel: "ورق",
     image: "/categories/03-sheet-coil.jpg",
+    heroImage: "/categories/hero-sheet-1680.jpg",
     description: "ورق سیاه، گالوانیزه، روغنی و رنگی",
     rows: [
       { product: "ورق سیاه", origin: "کارخانه‌های معتبر", unit: "کیلوگرم" },
@@ -810,10 +814,11 @@ export default function IronDemo() {
         >
           <img
             className="hero-image"
-            src={slide.image}
+            src={slide.heroImage ?? slide.image}
             alt=""
-            width="1600"
-            height="900"
+            width="1672"
+            height="941"
+            decoding="async"
             fetchPriority="high"
           />
           <div className="hero-overlay" />

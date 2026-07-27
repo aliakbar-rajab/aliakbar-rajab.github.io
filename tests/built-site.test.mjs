@@ -16,6 +16,9 @@ test("production output contains required GitHub Pages files", async () => {
       "fonts/b-titr-bold.woff",
       "preloader/fb-preloader.js",
       "preloader/assets/tr2.mp4",
+      "categories/hero-rebar-1680.jpg",
+      "categories/hero-beam-1680.jpg",
+      "categories/hero-sheet-1680.jpg",
     ].map((path) => access(new URL(`../dist/${path}`, import.meta.url))),
   );
 });

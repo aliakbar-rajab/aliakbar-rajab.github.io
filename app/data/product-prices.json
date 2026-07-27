@@ -49734,8 +49734,8 @@
             "min": 64900,
             "max": 196200,
             "average": 82000,
-            "percent": 0.1,
-            "status": "up"
+            "percent": 0,
+            "status": "same"
           },
           "filters": {
             "sizes": [
@@ -49752,14 +49752,271 @@
               "26"
             ],
             "factories": [
+              "استاندارد اروپا",
               "ناب تبریز",
               "شکفته",
-              "سپهر ایرانیان",
-              "استاندارد اروپا",
-              "آریان فولاد"
+              "آریان فولاد",
+              "سپهر ایرانیان"
             ]
           },
           "factories": [
+            {
+              "name": "استاندارد اروپا",
+              "updatedAt": 1785160931,
+              "updatedDate": "۱۴۰۵/۵/۵",
+              "rows": [
+                {
+                  "id": 6160,
+                  "title": "ناودانی 6.5 استاندارد اروپا 12 متری",
+                  "size": "6.5",
+                  "specification": "12",
+                  "standard": "",
+                  "grade": "",
+                  "branchLength": "12",
+                  "form": "",
+                  "approximateWeight": "",
+                  "delivery": "تهران",
+                  "unit": "کیلوگرم",
+                  "factory": "استاندارد اروپا",
+                  "specifications": [
+                    {
+                      "label": "طول شاخه",
+                      "value": "12"
+                    }
+                  ],
+                  "price": null,
+                  "percent": 0,
+                  "status": "same",
+                  "updatedAt": 1785052476,
+                  "updatedDate": "۱۴۰۵/۵/۴"
+                },
+                {
+                  "id": 6163,
+                  "title": "ناودانی 8 استاندارد اروپا 12 متری",
+                  "size": "8",
+                  "specification": "12",
+                  "standard": "",
+                  "grade": "",
+                  "branchLength": "12",
+                  "form": "",
+                  "approximateWeight": "",
+                  "delivery": "تهران",
+                  "unit": "کیلوگرم",
+                  "factory": "استاندارد اروپا",
+                  "specifications": [
+                    {
+                      "label": "طول شاخه",
+                      "value": "12"
+                    }
+                  ],
+                  "price": 78800,
+                  "percent": 0,
+                  "status": "same",
+                  "updatedAt": 1785160930,
+                  "updatedDate": "۱۴۰۵/۵/۵"
+                },
+                {
+                  "id": 6171,
+                  "title": "ناودانی 10 استاندارد اروپا 12 متری",
+                  "size": "10",
+                  "specification": "12",
+                  "standard": "",
+                  "grade": "",
+                  "branchLength": "12",
+                  "form": "",
+                  "approximateWeight": "",
+                  "delivery": "تهران",
+                  "unit": "کیلوگرم",
+                  "factory": "استاندارد اروپا",
+                  "specifications": [
+                    {
+                      "label": "طول شاخه",
+                      "value": "12"
+                    }
+                  ],
+                  "price": 78800,
+                  "percent": 0,
+                  "status": "same",
+                  "updatedAt": 1785160931,
+                  "updatedDate": "۱۴۰۵/۵/۵"
+                },
+                {
+                  "id": 6175,
+                  "title": "ناودانی 12 استاندارد اروپا 12 متری",
+                  "size": "12",
+                  "specification": "12",
+                  "standard": "",
+                  "grade": "",
+                  "branchLength": "12",
+                  "form": "",
+                  "approximateWeight": "",
+                  "delivery": "تهران",
+                  "unit": "کیلوگرم",
+                  "factory": "استاندارد اروپا",
+                  "specifications": [
+                    {
+                      "label": "طول شاخه",
+                      "value": "12"
+                    }
+                  ],
+                  "price": 79300,
+                  "percent": 0,
+                  "status": "same",
+                  "updatedAt": 1785160931,
+                  "updatedDate": "۱۴۰۵/۵/۵"
+                },
+                {
+                  "id": 6177,
+                  "title": "ناودانی 14 استاندارد اروپا 12 متری",
+                  "size": "14",
+                  "specification": "12",
+                  "standard": "",
+                  "grade": "",
+                  "branchLength": "12",
+                  "form": "",
+                  "approximateWeight": "",
+                  "delivery": "تهران",
+                  "unit": "کیلوگرم",
+                  "factory": "استاندارد اروپا",
+                  "specifications": [
+                    {
+                      "label": "طول شاخه",
+                      "value": "12"
+                    }
+                  ],
+                  "price": 83500,
+                  "percent": 0,
+                  "status": "same",
+                  "updatedAt": 1785160931,
+                  "updatedDate": "۱۴۰۵/۵/۵"
+                },
+                {
+                  "id": 6180,
+                  "title": "ناودانی 16 استاندارد اروپا 12 متری",
+                  "size": "16",
+                  "specification": "12",
+                  "standard": "",
+                  "grade": "",
+                  "branchLength": "12",
+                  "form": "",
+                  "approximateWeight": "",
+                  "delivery": "تهران",
+                  "unit": "کیلوگرم",
+                  "factory": "استاندارد اروپا",
+                  "specifications": [
+                    {
+                      "label": "طول شاخه",
+                      "value": "12"
+                    }
+                  ],
+                  "price": 79000,
+                  "percent": 0,
+                  "status": "same",
+                  "updatedAt": 1785160931,
+                  "updatedDate": "۱۴۰۵/۵/۵"
+                },
+                {
+                  "id": 6181,
+                  "title": "ناودانی 18 استاندارد اروپا 12 متری",
+                  "size": "18",
+                  "specification": "12",
+                  "standard": "",
+                  "grade": "",
+                  "branchLength": "12",
+                  "form": "",
+                  "approximateWeight": "",
+                  "delivery": "تهران",
+                  "unit": "کیلوگرم",
+                  "factory": "استاندارد اروپا",
+                  "specifications": [
+                    {
+                      "label": "طول شاخه",
+                      "value": "12"
+                    }
+                  ],
+                  "price": 80600,
+                  "percent": 0,
+                  "status": "same",
+                  "updatedAt": 1785160931,
+                  "updatedDate": "۱۴۰۵/۵/۵"
+                },
+                {
+                  "id": 6183,
+                  "title": "ناودانی 22 استاندارد اروپا 12 متری",
+                  "size": "22",
+                  "specification": "12",
+                  "standard": "",
+                  "grade": "",
+                  "branchLength": "12",
+                  "form": "",
+                  "approximateWeight": "",
+                  "delivery": "تهران",
+                  "unit": "کیلوگرم",
+                  "factory": "استاندارد اروپا",
+                  "specifications": [
+                    {
+                      "label": "طول شاخه",
+                      "value": "12"
+                    }
+                  ],
+                  "price": 164500,
+                  "percent": 0,
+                  "status": "same",
+                  "updatedAt": 1785160931,
+                  "updatedDate": "۱۴۰۵/۵/۵"
+                },
+                {
+                  "id": 6184,
+                  "title": "ناودانی 24 استاندارد اروپا 12 متری",
+                  "size": "24",
+                  "specification": "12",
+                  "standard": "",
+                  "grade": "",
+                  "branchLength": "12",
+                  "form": "",
+                  "approximateWeight": "",
+                  "delivery": "تهران",
+                  "unit": "کیلوگرم",
+                  "factory": "استاندارد اروپا",
+                  "specifications": [
+                    {
+                      "label": "طول شاخه",
+                      "value": "12"
+                    }
+                  ],
+                  "price": 186600,
+                  "percent": 0,
+                  "status": "same",
+                  "updatedAt": 1785160931,
+                  "updatedDate": "۱۴۰۵/۵/۵"
+                },
+                {
+                  "id": 6185,
+                  "title": "ناودانی 26 استاندارد اروپا 12 متری",
+                  "size": "26",
+                  "specification": "12",
+                  "standard": "",
+                  "grade": "",
+                  "branchLength": "12",
+                  "form": "",
+                  "approximateWeight": "",
+                  "delivery": "تهران",
+                  "unit": "کیلوگرم",
+                  "factory": "استاندارد اروپا",
+                  "specifications": [
+                    {
+                      "label": "طول شاخه",
+                      "value": "12"
+                    }
+                  ],
+                  "price": 196200,
+                  "percent": 0,
+                  "status": "same",
+                  "updatedAt": 1785160931,
+                  "updatedDate": "۱۴۰۵/۵/۵"
+                }
+              ]
+            },
             {
               "name": "ناب تبریز",
               "updatedAt": 1785082955,
@@ -50150,6 +50407,63 @@
               ]
             },
             {
+              "name": "آریان فولاد",
+              "updatedAt": 1785052476,
+              "updatedDate": "۱۴۰۵/۵/۴",
+              "rows": [
+                {
+                  "id": 6173,
+                  "title": "ناودانی 10 آریان فولاد 12 متری",
+                  "size": "10",
+                  "specification": "12",
+                  "standard": "",
+                  "grade": "",
+                  "branchLength": "12",
+                  "form": "",
+                  "approximateWeight": "",
+                  "delivery": "تهران",
+                  "unit": "کیلوگرم",
+                  "factory": "آریان فولاد",
+                  "specifications": [
+                    {
+                      "label": "طول شاخه",
+                      "value": "12"
+                    }
+                  ],
+                  "price": 65240,
+                  "percent": 0,
+                  "status": "same",
+                  "updatedAt": 1785052476,
+                  "updatedDate": "۱۴۰۵/۵/۴"
+                },
+                {
+                  "id": 329,
+                  "title": "ناودانی 10 آریان فولاد 6 متری",
+                  "size": "10",
+                  "specification": "6",
+                  "standard": "",
+                  "grade": "",
+                  "branchLength": "6",
+                  "form": "",
+                  "approximateWeight": "",
+                  "delivery": "تهران",
+                  "unit": "کیلوگرم",
+                  "factory": "آریان فولاد",
+                  "specifications": [
+                    {
+                      "label": "طول شاخه",
+                      "value": "6"
+                    }
+                  ],
+                  "price": 71760,
+                  "percent": 0,
+                  "status": "same",
+                  "updatedAt": 1785052476,
+                  "updatedDate": "۱۴۰۵/۵/۴"
+                }
+              ]
+            },
+            {
               "name": "سپهر ایرانیان",
               "updatedAt": 1785052476,
               "updatedDate": "۱۴۰۵/۵/۴",
@@ -50299,320 +50613,6 @@
                     }
                   ],
                   "price": null,
-                  "percent": 0,
-                  "status": "same",
-                  "updatedAt": 1785052476,
-                  "updatedDate": "۱۴۰۵/۵/۴"
-                }
-              ]
-            },
-            {
-              "name": "استاندارد اروپا",
-              "updatedAt": 1785052476,
-              "updatedDate": "۱۴۰۵/۵/۴",
-              "rows": [
-                {
-                  "id": 6160,
-                  "title": "ناودانی 6.5 استاندارد اروپا 12 متری",
-                  "size": "6.5",
-                  "specification": "12",
-                  "standard": "",
-                  "grade": "",
-                  "branchLength": "12",
-                  "form": "",
-                  "approximateWeight": "",
-                  "delivery": "تهران",
-                  "unit": "کیلوگرم",
-                  "factory": "استاندارد اروپا",
-                  "specifications": [
-                    {
-                      "label": "طول شاخه",
-                      "value": "12"
-                    }
-                  ],
-                  "price": null,
-                  "percent": 0,
-                  "status": "same",
-                  "updatedAt": 1785052476,
-                  "updatedDate": "۱۴۰۵/۵/۴"
-                },
-                {
-                  "id": 6163,
-                  "title": "ناودانی 8 استاندارد اروپا 12 متری",
-                  "size": "8",
-                  "specification": "12",
-                  "standard": "",
-                  "grade": "",
-                  "branchLength": "12",
-                  "form": "",
-                  "approximateWeight": "",
-                  "delivery": "تهران",
-                  "unit": "کیلوگرم",
-                  "factory": "استاندارد اروپا",
-                  "specifications": [
-                    {
-                      "label": "طول شاخه",
-                      "value": "12"
-                    }
-                  ],
-                  "price": 78800,
-                  "percent": 0.13,
-                  "status": "up",
-                  "updatedAt": 1785052476,
-                  "updatedDate": "۱۴۰۵/۵/۴"
-                },
-                {
-                  "id": 6171,
-                  "title": "ناودانی 10 استاندارد اروپا 12 متری",
-                  "size": "10",
-                  "specification": "12",
-                  "standard": "",
-                  "grade": "",
-                  "branchLength": "12",
-                  "form": "",
-                  "approximateWeight": "",
-                  "delivery": "تهران",
-                  "unit": "کیلوگرم",
-                  "factory": "استاندارد اروپا",
-                  "specifications": [
-                    {
-                      "label": "طول شاخه",
-                      "value": "12"
-                    }
-                  ],
-                  "price": 78800,
-                  "percent": 0.13,
-                  "status": "up",
-                  "updatedAt": 1785052476,
-                  "updatedDate": "۱۴۰۵/۵/۴"
-                },
-                {
-                  "id": 6175,
-                  "title": "ناودانی 12 استاندارد اروپا 12 متری",
-                  "size": "12",
-                  "specification": "12",
-                  "standard": "",
-                  "grade": "",
-                  "branchLength": "12",
-                  "form": "",
-                  "approximateWeight": "",
-                  "delivery": "تهران",
-                  "unit": "کیلوگرم",
-                  "factory": "استاندارد اروپا",
-                  "specifications": [
-                    {
-                      "label": "طول شاخه",
-                      "value": "12"
-                    }
-                  ],
-                  "price": 79300,
-                  "percent": 0.13,
-                  "status": "up",
-                  "updatedAt": 1785052476,
-                  "updatedDate": "۱۴۰۵/۵/۴"
-                },
-                {
-                  "id": 6177,
-                  "title": "ناودانی 14 استاندارد اروپا 12 متری",
-                  "size": "14",
-                  "specification": "12",
-                  "standard": "",
-                  "grade": "",
-                  "branchLength": "12",
-                  "form": "",
-                  "approximateWeight": "",
-                  "delivery": "تهران",
-                  "unit": "کیلوگرم",
-                  "factory": "استاندارد اروپا",
-                  "specifications": [
-                    {
-                      "label": "طول شاخه",
-                      "value": "12"
-                    }
-                  ],
-                  "price": 83500,
-                  "percent": 5.83,
-                  "status": "up",
-                  "updatedAt": 1785052476,
-                  "updatedDate": "۱۴۰۵/۵/۴"
-                },
-                {
-                  "id": 6180,
-                  "title": "ناودانی 16 استاندارد اروپا 12 متری",
-                  "size": "16",
-                  "specification": "12",
-                  "standard": "",
-                  "grade": "",
-                  "branchLength": "12",
-                  "form": "",
-                  "approximateWeight": "",
-                  "delivery": "تهران",
-                  "unit": "کیلوگرم",
-                  "factory": "استاندارد اروپا",
-                  "specifications": [
-                    {
-                      "label": "طول شاخه",
-                      "value": "12"
-                    }
-                  ],
-                  "price": 79000,
-                  "percent": 0.13,
-                  "status": "up",
-                  "updatedAt": 1785052476,
-                  "updatedDate": "۱۴۰۵/۵/۴"
-                },
-                {
-                  "id": 6181,
-                  "title": "ناودانی 18 استاندارد اروپا 12 متری",
-                  "size": "18",
-                  "specification": "12",
-                  "standard": "",
-                  "grade": "",
-                  "branchLength": "12",
-                  "form": "",
-                  "approximateWeight": "",
-                  "delivery": "تهران",
-                  "unit": "کیلوگرم",
-                  "factory": "استاندارد اروپا",
-                  "specifications": [
-                    {
-                      "label": "طول شاخه",
-                      "value": "12"
-                    }
-                  ],
-                  "price": 80600,
-                  "percent": 0.12,
-                  "status": "up",
-                  "updatedAt": 1785052476,
-                  "updatedDate": "۱۴۰۵/۵/۴"
-                },
-                {
-                  "id": 6183,
-                  "title": "ناودانی 22 استاندارد اروپا 12 متری",
-                  "size": "22",
-                  "specification": "12",
-                  "standard": "",
-                  "grade": "",
-                  "branchLength": "12",
-                  "form": "",
-                  "approximateWeight": "",
-                  "delivery": "تهران",
-                  "unit": "کیلوگرم",
-                  "factory": "استاندارد اروپا",
-                  "specifications": [
-                    {
-                      "label": "طول شاخه",
-                      "value": "12"
-                    }
-                  ],
-                  "price": 164500,
-                  "percent": 0.12,
-                  "status": "up",
-                  "updatedAt": 1785052476,
-                  "updatedDate": "۱۴۰۵/۵/۴"
-                },
-                {
-                  "id": 6184,
-                  "title": "ناودانی 24 استاندارد اروپا 12 متری",
-                  "size": "24",
-                  "specification": "12",
-                  "standard": "",
-                  "grade": "",
-                  "branchLength": "12",
-                  "form": "",
-                  "approximateWeight": "",
-                  "delivery": "تهران",
-                  "unit": "کیلوگرم",
-                  "factory": "استاندارد اروپا",
-                  "specifications": [
-                    {
-                      "label": "طول شاخه",
-                      "value": "12"
-                    }
-                  ],
-                  "price": 186600,
-                  "percent": 0.11,
-                  "status": "up",
-                  "updatedAt": 1785052476,
-                  "updatedDate": "۱۴۰۵/۵/۴"
-                },
-                {
-                  "id": 6185,
-                  "title": "ناودانی 26 استاندارد اروپا 12 متری",
-                  "size": "26",
-                  "specification": "12",
-                  "standard": "",
-                  "grade": "",
-                  "branchLength": "12",
-                  "form": "",
-                  "approximateWeight": "",
-                  "delivery": "تهران",
-                  "unit": "کیلوگرم",
-                  "factory": "استاندارد اروپا",
-                  "specifications": [
-                    {
-                      "label": "طول شاخه",
-                      "value": "12"
-                    }
-                  ],
-                  "price": 196200,
-                  "percent": 0.1,
-                  "status": "up",
-                  "updatedAt": 1785052476,
-                  "updatedDate": "۱۴۰۵/۵/۴"
-                }
-              ]
-            },
-            {
-              "name": "آریان فولاد",
-              "updatedAt": 1785052476,
-              "updatedDate": "۱۴۰۵/۵/۴",
-              "rows": [
-                {
-                  "id": 329,
-                  "title": "ناودانی 10 آریان فولاد 6 متری",
-                  "size": "10",
-                  "specification": "6",
-                  "standard": "",
-                  "grade": "",
-                  "branchLength": "6",
-                  "form": "",
-                  "approximateWeight": "",
-                  "delivery": "تهران",
-                  "unit": "کیلوگرم",
-                  "factory": "آریان فولاد",
-                  "specifications": [
-                    {
-                      "label": "طول شاخه",
-                      "value": "6"
-                    }
-                  ],
-                  "price": 71760,
-                  "percent": 0,
-                  "status": "same",
-                  "updatedAt": 1785052476,
-                  "updatedDate": "۱۴۰۵/۵/۴"
-                },
-                {
-                  "id": 6173,
-                  "title": "ناودانی 10 آریان فولاد 12 متری",
-                  "size": "10",
-                  "specification": "12",
-                  "standard": "",
-                  "grade": "",
-                  "branchLength": "12",
-                  "form": "",
-                  "approximateWeight": "",
-                  "delivery": "تهران",
-                  "unit": "کیلوگرم",
-                  "factory": "آریان فولاد",
-                  "specifications": [
-                    {
-                      "label": "طول شاخه",
-                      "value": "12"
-                    }
-                  ],
-                  "price": 65240,
                   "percent": 0,
                   "status": "same",
                   "updatedAt": 1785052476,

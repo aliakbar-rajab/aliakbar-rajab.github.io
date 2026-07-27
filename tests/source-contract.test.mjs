@@ -131,6 +131,15 @@ test("source exposes one H1 and complete social metadata", async () => {
   assert.match(sitemap, /<loc>https:\/\/aliakbar-rajab\.github\.io\/<\/loc>/);
 });
 
+test("homepage hero uses sharp landscape images", async () => {
+  const component = await read("../app/IronDemo.tsx");
+  assert.match(component, /hero-rebar-1680\.jpg/);
+  assert.match(component, /hero-beam-1680\.jpg/);
+  assert.match(component, /hero-sheet-1680\.jpg/);
+  assert.match(component, /width="1672"/);
+  assert.match(component, /height="941"/);
+});
+
 test("rebar prices are sourced, validated, and refreshed on a schedule", async () => {
   const [component, navigation, fetcher, workflow, priceData] = await Promise.all([
     read("../app/RebarPrices.tsx"),
