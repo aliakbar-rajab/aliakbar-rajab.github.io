@@ -1,4 +1,5 @@
-import importedPriceData from "./data/beam-prices.json";
+import { useEffect, useState } from "react";
+import { loadBeamPriceData } from "./catalog-data";
 import {
   PriceCatalog,
   type CatalogPriceData,
@@ -10,7 +11,6 @@ export type BeamViewRequest = Omit<CatalogViewRequest, "categoryId"> & {
   categoryId?: "beam" | "hash";
 };
 
-const beamPriceData = importedPriceData as CatalogPriceData;
 const beamConfig: PriceCatalogConfig = {
   productLabel: "تیرآهن",
   initialCategoryId: "beam",
@@ -28,9 +28,41 @@ export default function BeamPrices({
   phoneHref: string;
   requestedView?: BeamViewRequest;
 }) {
+  const [priceData, setPriceData] = useState<CatalogPriceData | null>(null);
+  const [loadError, setLoadError] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    loadBeamPriceData()
+      .then((data) => {
+        if (active) setPriceData(data);
+      })
+      .catch(() => {
+        if (active) setLoadError(true);
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  if (loadError) {
+    return (
+      <p className="catalog-load-state" role="alert">
+        دریافت قیمت تیرآهن ممکن نشد. لطفاً صفحه را دوباره بارگذاری کنید.
+      </p>
+    );
+  }
+  if (!priceData) {
+    return (
+      <p className="catalog-load-state" role="status">
+        در حال دریافت قیمت تیرآهن…
+      </p>
+    );
+  }
+
   return (
     <PriceCatalog
-      priceData={beamPriceData}
+      priceData={priceData}
       config={beamConfig}
       phoneHref={phoneHref}
       requestedView={requestedView}

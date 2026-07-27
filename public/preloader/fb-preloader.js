@@ -73,15 +73,6 @@
         "در حال آماده‌سازی وب‌سایت بنیان فولاد داریا",
       );
       overlay.innerHTML = `
-        <video
-          class="fb-preloader__video"
-          muted
-          playsinline
-          preload="auto"
-          aria-hidden="true"
-        >
-          <source src="/preloader/assets/tr2.mp4" type="video/mp4">
-        </video>
         <div class="fb-preloader__shade"></div>
         <div class="fb-preloader__brand" aria-hidden="true">
           <strong>
@@ -101,23 +92,10 @@
       site?.setAttribute("inert", "");
       site?.setAttribute("aria-hidden", "true");
 
-      const video = overlay.querySelector("video");
       const skip = overlay.querySelector("button");
       skip?.addEventListener("click", finish, { once: true });
-      video?.addEventListener("ended", finish, { once: true });
-      video?.addEventListener("error", finish, { once: true });
-      video?.addEventListener("stalled", finish, { once: true });
-
-      watchdog = window.setTimeout(finish, 8000);
-      if (video) {
-        video.playbackRate = 1.25;
-        const playPromise = video.play();
-        if (playPromise && typeof playPromise.catch === "function") {
-          playPromise.catch(finish);
-        }
-      } else {
-        finish();
-      }
+      skip?.focus();
+      watchdog = window.setTimeout(finish, 1200);
     } catch {
       finish();
     }

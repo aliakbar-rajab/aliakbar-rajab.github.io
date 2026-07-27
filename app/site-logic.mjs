@@ -22,7 +22,7 @@ export function normalizeSearchText(value = "") {
 
 /**
  * Search all product groups and retain only groups containing matching rows.
- * @param {Array<{id:string,label:string,rows:Array<{product:string,origin:string,unit:string}>}>} groups
+ * @param {Array<{id:string,label:string,rows:Array<{product:string,origin:string,unit:string,categoryId?:string,factory?:string,size?:string,searchText?:string}>}>} groups
  * @param {string} query
  */
 export function filterProductGroups(groups, query) {
@@ -34,7 +34,7 @@ export function filterProductGroups(groups, query) {
       ...group,
       rows: group.rows.filter((row) =>
         normalizeSearchText(
-          `${group.label} ${row.product} ${row.origin} ${row.unit}`,
+          `${group.label} ${row.product} ${row.origin} ${row.unit} ${row.searchText ?? ""}`,
         ).includes(needle),
       ),
     }))

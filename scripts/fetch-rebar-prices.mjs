@@ -1,6 +1,7 @@
-import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
+import { mkdir, rename, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { validateCatalogPriceData } from "../app/catalog-validation.mjs";
 
 const projectRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const outputPath = resolve(projectRoot, "app", "data", "rebar-prices.json");
@@ -62,6 +63,17 @@ function formatPersianDate(unixTimestamp) {
     .replace(/\u200f/g, "");
 }
 
+function deriveRebarSize(item, source) {
+  const sourceSize = metaValue(item, "سایز");
+  if (source.id !== "ribbed" && source.id !== "simple") return sourceSize;
+  const title = String(item.title ?? "");
+  const match =
+    source.id === "simple"
+      ? title.match(/میلگرد\s+ساده\s+(\d+(?:[./]\d+)?)/)
+      : title.match(/میلگرد\s+(\d+(?:[./]\d+)?)/);
+  return match?.[1]?.replace("/", ".") ?? sourceSize;
+}
+
 function parseNextData(html, source) {
   const match = html.match(
     /<script id="__NEXT_DATA__" type="application\/json">(.*?)<\/script>/s,
@@ -79,7 +91,7 @@ function parseNextData(html, source) {
     const rows = (factoryGroup.productsitem ?? []).map((item) => ({
       id: Number(item.id),
       title: String(item.title ?? ""),
-      size: metaValue(item, "سایز"),
+      size: deriveRebarSize(item, source),
       standard: metaValue(item, "استاندارد"),
       grade: metaValue(item, "گرید"),
       branchLength: metaValue(item, "طول شاخه"),
@@ -163,55 +175,35 @@ async function fetchSource(source) {
   return parseNextData(await response.text(), source);
 }
 
-async function existingDataIsUsable() {
-  try {
-    const existing = JSON.parse(await readFile(outputPath, "utf8"));
-    return (
-      Array.isArray(existing.categories) &&
-      existing.categories.length === sources.length &&
-      existing.categories.every((category) => category.factories?.length)
-    );
-  } catch {
-    return false;
-  }
-}
-
 async function main() {
-  try {
-    const categories = await Promise.all(sources.map(fetchSource));
-    const payload = {
-      fetchedAt: new Date().toISOString(),
-      sourceName: "فولاد ایرانیان",
-      sourceHome: "https://www.fooladiranian.com/",
-      taxRate: 0.1,
-      categories,
-    };
+  const categories = await Promise.all(sources.map(fetchSource));
+  const payload = {
+    fetchedAt: new Date().toISOString(),
+    sourceName: "فولاد ایرانیان",
+    sourceHome: "https://www.fooladiranian.com/",
+    taxRate: 0.1,
+    categories,
+  };
+  validateCatalogPriceData(payload, {
+    expectedCategoryIds: sources.map((source) => source.id),
+  });
 
-    await mkdir(dirname(outputPath), { recursive: true });
-    await writeFile(temporaryPath, `${JSON.stringify(payload, null, 2)}\n`);
-    await rename(temporaryPath, outputPath);
+  await mkdir(dirname(outputPath), { recursive: true });
+  await writeFile(temporaryPath, `${JSON.stringify(payload, null, 2)}\n`);
+  await rename(temporaryPath, outputPath);
 
-    const itemCount = categories.reduce(
-      (total, category) =>
-        total +
-        category.factories.reduce(
-          (factoryTotal, factory) => factoryTotal + factory.rows.length,
-          0,
-        ),
-      0,
-    );
-    console.log(
-      `قیمت‌های میلگرد از منبع بروزرسانی شد: ${itemCount.toLocaleString("fa-IR")} ردیف`,
-    );
-  } catch (error) {
-    if (await existingDataIsUsable()) {
-      console.warn(
-        `دریافت قیمت تازه ممکن نبود؛ آخرین داده معتبر حفظ شد. ${error.message}`,
-      );
-      return;
-    }
-    throw error;
-  }
+  const itemCount = categories.reduce(
+    (total, category) =>
+      total +
+      category.factories.reduce(
+        (factoryTotal, factory) => factoryTotal + factory.rows.length,
+        0,
+      ),
+    0,
+  );
+  console.log(
+    `قیمت‌های میلگرد از منبع بروزرسانی شد: ${itemCount.toLocaleString("fa-IR")} ردیف`,
+  );
 }
 
 await main();

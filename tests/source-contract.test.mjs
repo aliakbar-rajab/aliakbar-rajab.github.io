@@ -61,9 +61,9 @@ test("preloader is session-scoped and fail-open", async () => {
   assert.doesNotMatch(css, /#fb-site\s*\{[^}]*opacity\s*:\s*0/is);
   assert.match(script, /sessionStorage/);
   assert.match(script, /prefers-reduced-motion/);
-  assert.match(script, /window\.setTimeout\(finish,\s*8000\)/);
-  assert.match(script, /video\?\.addEventListener\("error", finish/);
-  assert.equal((script.match(/tr2\.mp4/g) ?? []).length, 1);
+  assert.match(script, /window\.setTimeout\(finish,\s*1200\)/);
+  assert.doesNotMatch(script, /<video|tr2\.mp4|preload="auto"/);
+  assert.match(script, /skip\?\.focus\(\)/);
   assert.match(html, /href="\/fonts\/b-titr-bold\.woff"/);
   assert.match(css, /font-family:\s*"B Titr"/);
   assert.match(css, /url\("\/fonts\/b-titr-bold\.woff"\)/);
@@ -167,7 +167,8 @@ test("rebar prices are sourced, validated, and refreshed on a schedule", async (
   assert.match(navigation, /سایزهای میلگرد/);
   assert.match(fetcher, /__NEXT_DATA__/);
   assert.match(fetcher, /www\.fooladiranian\.com\/productlist/);
-  assert.match(fetcher, /existingDataIsUsable/);
+  assert.doesNotMatch(fetcher, /existingDataIsUsable|console\.warn/);
+  assert.match(fetcher, /validateCatalogPriceData/);
   assert.match(workflow, /schedule:/);
   assert.match(workflow, /17 \*\/4 \* \* \*/);
   assert.equal(priceData.categories.length, 4);
@@ -209,7 +210,8 @@ test("beam and hash prices are sourced and exposed through the catalog", async (
     fetcher,
     /%D8%AA%DB%8C%D8%B1%D8%A2%D9%87%D9%86-%D9%87%D8%A7%D8%B4/,
   );
-  assert.match(fetcher, /existingDataIsUsable/);
+  assert.doesNotMatch(fetcher, /existingDataIsUsable|console\.warn/);
+  assert.match(fetcher, /validateCatalogPriceData/);
   assert.match(packageJson.scripts["prices:update"], /prices:update:beam/);
   assert.equal(priceData.categories.length, 2);
   assert.ok(
@@ -270,7 +272,7 @@ test("all remaining product groups expose complete live price catalogs", async (
   assert.ok(rows.some((row) => row.specifications?.length));
   assert.match(component, /PriceCatalog/);
   assert.match(navigation, /<ProductPrices/);
-  assert.match(navigation, /getProductPriceCatalog/);
+  assert.match(navigation, /loadProductPriceCatalog/);
   assert.match(navigation, /انواع \{megaCatalog\.label\}/);
   assert.match(fetcher, /__NEXT_DATA__/);
   assert.match(fetcher, /mapWithConcurrency/);
@@ -278,6 +280,31 @@ test("all remaining product groups expose complete live price catalogs", async (
   assert.match(fetcher, /پروفیل-صنعتی/);
   assert.match(fetcher, /لوله-مانیسمان/);
   assert.match(fetcher, /توری-حصاری/);
-  assert.match(fetcher, /existingDataIsUsable/);
+  assert.doesNotMatch(fetcher, /existingDataIsUsable|console\.warn/);
+  assert.match(fetcher, /validateProductPricePayload/);
   assert.match(packageJson.scripts["prices:update"], /prices:update:products/);
+});
+
+test("deployment workflow pins actions and limits write permissions by job", async () => {
+  const workflow = await read("../.github/workflows/pages.yml");
+
+  assert.doesNotMatch(
+    workflow,
+    /uses:\s+actions\/[\w-]+@v\d+\s*$/m,
+  );
+  assert.match(workflow, /permissions:\s*\{\}/);
+  assert.match(
+    workflow,
+    /refresh:[\s\S]*?permissions:\s*\n\s+contents: write[\s\S]*?prices:update/,
+  );
+  assert.match(
+    workflow,
+    /build:[\s\S]*?contents: read[\s\S]*?pages: write/,
+  );
+  assert.match(
+    workflow,
+    /deploy:[\s\S]*?pages: write[\s\S]*?id-token: write/,
+  );
+  assert.match(workflow, /force-with-lease="price-data:/);
+  assert.match(workflow, /git checkout FETCH_HEAD -- app\/data/);
 });

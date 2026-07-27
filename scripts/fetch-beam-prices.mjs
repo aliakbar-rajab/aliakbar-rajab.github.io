@@ -1,6 +1,7 @@
-import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
+import { mkdir, rename, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { validateCatalogPriceData } from "../app/catalog-validation.mjs";
 
 const projectRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const outputPath = resolve(projectRoot, "app", "data", "beam-prices.json");
@@ -168,55 +169,35 @@ async function fetchSource(source) {
   return parseNextData(await response.text(), source);
 }
 
-async function existingDataIsUsable() {
-  try {
-    const existing = JSON.parse(await readFile(outputPath, "utf8"));
-    return (
-      Array.isArray(existing.categories) &&
-      existing.categories.length === sources.length &&
-      existing.categories.every((category) => category.factories?.length)
-    );
-  } catch {
-    return false;
-  }
-}
-
 async function main() {
-  try {
-    const categories = await Promise.all(sources.map(fetchSource));
-    const payload = {
-      fetchedAt: new Date().toISOString(),
-      sourceName: "فولاد ایرانیان",
-      sourceHome: "https://www.fooladiranian.com/",
-      taxRate: 0.1,
-      categories,
-    };
+  const categories = await Promise.all(sources.map(fetchSource));
+  const payload = {
+    fetchedAt: new Date().toISOString(),
+    sourceName: "فولاد ایرانیان",
+    sourceHome: "https://www.fooladiranian.com/",
+    taxRate: 0.1,
+    categories,
+  };
+  validateCatalogPriceData(payload, {
+    expectedCategoryIds: sources.map((source) => source.id),
+  });
 
-    await mkdir(dirname(outputPath), { recursive: true });
-    await writeFile(temporaryPath, `${JSON.stringify(payload, null, 2)}\n`);
-    await rename(temporaryPath, outputPath);
+  await mkdir(dirname(outputPath), { recursive: true });
+  await writeFile(temporaryPath, `${JSON.stringify(payload, null, 2)}\n`);
+  await rename(temporaryPath, outputPath);
 
-    const itemCount = categories.reduce(
-      (total, category) =>
-        total +
-        category.factories.reduce(
-          (factoryTotal, factory) => factoryTotal + factory.rows.length,
-          0,
-        ),
-      0,
-    );
-    console.log(
-      `قیمت‌های تیرآهن از منبع بروزرسانی شد: ${itemCount.toLocaleString("fa-IR")} ردیف`,
-    );
-  } catch (error) {
-    if (await existingDataIsUsable()) {
-      console.warn(
-        `دریافت قیمت تازه تیرآهن ممکن نبود؛ آخرین داده معتبر حفظ شد. ${error.message}`,
-      );
-      return;
-    }
-    throw error;
-  }
+  const itemCount = categories.reduce(
+    (total, category) =>
+      total +
+      category.factories.reduce(
+        (factoryTotal, factory) => factoryTotal + factory.rows.length,
+        0,
+      ),
+    0,
+  );
+  console.log(
+    `قیمت‌های تیرآهن از منبع بروزرسانی شد: ${itemCount.toLocaleString("fa-IR")} ردیف`,
+  );
 }
 
 await main();

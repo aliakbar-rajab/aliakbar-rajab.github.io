@@ -1,6 +1,7 @@
-import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
+import { mkdir, rename, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { validateProductPricePayload } from "../app/catalog-validation.mjs";
 
 const projectRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const outputPath = resolve(projectRoot, "app", "data", "product-prices.json");
@@ -56,8 +57,14 @@ const catalogs = [
     label: "قوطی و پروفیل",
     initialCategoryId: "box-profile",
     sources: [
-      source("box-profile", "قوطی و پروفیل", "قوطی-و-پروفیل"),
-      source("building-profile", "پروفیل ساختمانی", "پروفیل-ساختمانی"),
+      source("box-profile", "قوطی و پروفیل", "قوطی-و-پروفیل", "ضخامت", "گروه"),
+      source(
+        "building-profile",
+        "پروفیل ساختمانی",
+        "پروفیل-ساختمانی",
+        "ضخامت",
+        "گروه",
+      ),
       source("industrial-profile", "پروفیل صنعتی", "پروفیل-صنعتی"),
       source(
         "stainless-profile",
@@ -325,72 +332,47 @@ async function mapWithConcurrency(items, concurrency, mapper) {
   return results;
 }
 
-async function existingDataIsUsable() {
-  try {
-    const existing = JSON.parse(await readFile(outputPath, "utf8"));
-    return (
-      Array.isArray(existing.catalogs) &&
-      existing.catalogs.length === catalogs.length &&
-      existing.catalogs.every(
-        (catalog) =>
-          catalog.categories?.length &&
-          catalog.categories.every((category) => category.factories?.length),
-      )
-    );
-  } catch {
-    return false;
-  }
-}
-
 async function main() {
-  try {
-    const fetchedCategories = await mapWithConcurrency(
-      sources,
-      6,
-      fetchSource,
-    );
-    const categoriesById = new Map(
-      fetchedCategories.map((category) => [category.id, category]),
-    );
-    const outputCatalogs = catalogs.map((catalog) => ({
+  const fetchedCategories = await mapWithConcurrency(sources, 6, fetchSource);
+  const categoriesById = new Map(
+    fetchedCategories.map((category) => [category.id, category]),
+  );
+  const outputCatalogs = catalogs.map((catalog) => ({
+    id: catalog.id,
+    label: catalog.label,
+    initialCategoryId: catalog.initialCategoryId,
+    categories: catalog.sources.map((item) => categoriesById.get(item.id)),
+  }));
+  const payload = {
+    fetchedAt: new Date().toISOString(),
+    sourceName: "فولاد ایرانیان",
+    sourceHome: "https://www.fooladiranian.com/",
+    taxRate: 0.1,
+    catalogs: outputCatalogs,
+  };
+  validateProductPricePayload(payload, {
+    expectedCatalogs: catalogs.map((catalog) => ({
       id: catalog.id,
-      label: catalog.label,
-      initialCategoryId: catalog.initialCategoryId,
-      categories: catalog.sources.map((item) => categoriesById.get(item.id)),
-    }));
-    const payload = {
-      fetchedAt: new Date().toISOString(),
-      sourceName: "فولاد ایرانیان",
-      sourceHome: "https://www.fooladiranian.com/",
-      taxRate: 0.1,
-      catalogs: outputCatalogs,
-    };
+      categoryIds: catalog.sources.map((item) => item.id),
+    })),
+  });
 
-    await mkdir(dirname(outputPath), { recursive: true });
-    await writeFile(temporaryPath, `${JSON.stringify(payload, null, 2)}\n`);
-    await rename(temporaryPath, outputPath);
+  await mkdir(dirname(outputPath), { recursive: true });
+  await writeFile(temporaryPath, `${JSON.stringify(payload, null, 2)}\n`);
+  await rename(temporaryPath, outputPath);
 
-    const itemCount = fetchedCategories.reduce(
-      (total, category) =>
-        total +
-        category.factories.reduce(
-          (factoryTotal, factory) => factoryTotal + factory.rows.length,
-          0,
-        ),
-      0,
-    );
-    console.log(
-      `قیمت تمام محصولات از منبع بروزرسانی شد: ${itemCount.toLocaleString("fa-IR")} ردیف در ${fetchedCategories.length.toLocaleString("fa-IR")} دسته`,
-    );
-  } catch (error) {
-    if (await existingDataIsUsable()) {
-      console.warn(
-        `دریافت قیمت تازه همه محصولات ممکن نبود؛ آخرین داده معتبر حفظ شد. ${error.message}`,
-      );
-      return;
-    }
-    throw error;
-  }
+  const itemCount = fetchedCategories.reduce(
+    (total, category) =>
+      total +
+      category.factories.reduce(
+        (factoryTotal, factory) => factoryTotal + factory.rows.length,
+        0,
+      ),
+    0,
+  );
+  console.log(
+    `قیمت تمام محصولات از منبع بروزرسانی شد: ${itemCount.toLocaleString("fa-IR")} ردیف در ${fetchedCategories.length.toLocaleString("fa-IR")} دسته`,
+  );
 }
 
 await main();

@@ -1,11 +1,11 @@
+import { useEffect, useState } from "react";
 import {
   PriceCatalog,
   type CatalogPriceData,
   type PriceCatalogConfig,
 } from "./RebarPrices";
 import {
-  getProductPriceCatalog,
-  productPricePayload,
+  loadProductPricePayload,
   type ProductCatalogId,
   type ProductViewRequest,
 } from "./product-price-data";
@@ -21,12 +21,49 @@ export default function ProductPrices({
   phoneHref: string;
   requestedView?: ProductViewRequest;
 }) {
-  const catalog = getProductPriceCatalog(catalogId);
+  const [loaded, setLoaded] = useState<{
+    payload: Awaited<ReturnType<typeof loadProductPricePayload>>;
+    catalog: Awaited<ReturnType<typeof loadProductPricePayload>>["catalogs"][number];
+  } | null>(null);
+  const [loadError, setLoadError] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    loadProductPricePayload()
+      .then((payload) => {
+        const catalog = payload.catalogs.find((item) => item.id === catalogId);
+        if (!catalog) throw new Error(`Unknown catalog ${catalogId}`);
+        if (active) setLoaded({ payload, catalog });
+      })
+      .catch(() => {
+        if (active) setLoadError(true);
+      });
+    return () => {
+      active = false;
+    };
+  }, [catalogId]);
+
+  if (loadError) {
+    return (
+      <p className="catalog-load-state" role="alert">
+        دریافت قیمت این گروه ممکن نشد. لطفاً صفحه را دوباره بارگذاری کنید.
+      </p>
+    );
+  }
+  if (!loaded) {
+    return (
+      <p className="catalog-load-state" role="status">
+        در حال دریافت قیمت محصولات…
+      </p>
+    );
+  }
+
+  const { payload, catalog } = loaded;
   const priceData: CatalogPriceData = {
-    fetchedAt: productPricePayload.fetchedAt,
-    sourceName: productPricePayload.sourceName,
-    sourceHome: productPricePayload.sourceHome,
-    taxRate: productPricePayload.taxRate,
+    fetchedAt: payload.fetchedAt,
+    sourceName: payload.sourceName,
+    sourceHome: payload.sourceHome,
+    taxRate: payload.taxRate,
     categories: catalog.categories,
   };
   const config: PriceCatalogConfig = {
