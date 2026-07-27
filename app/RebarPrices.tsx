@@ -482,7 +482,7 @@ export function PriceCatalog({
                       </tr>
                     </thead>
                     <tbody>
-                      {factory.rows.map((row) => {
+                      {factory.rows.map((row, rowIndex) => {
                         const expanded = expandedRows.has(row.id);
                         const trend = getTrendPresentation(
                           row.status,
@@ -490,7 +490,11 @@ export function PriceCatalog({
                         );
                         return (
                           <Fragment key={row.id}>
-                            <tr className="rebar-row-group">
+                            <tr
+                              className={`rebar-row-group${
+                                rowIndex % 2 === 1 ? " is-dark-row" : ""
+                              }`}
+                            >
                               <td data-label="جزئیات" className="row-expand-cell">
                                 <button
                                   type="button"

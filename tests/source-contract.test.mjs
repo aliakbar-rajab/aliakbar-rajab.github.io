@@ -68,8 +68,11 @@ test("preloader is session-scoped and fail-open", async () => {
   assert.doesNotMatch(css, /#fb-site\s*\{[^}]*opacity\s*:\s*0/is);
   assert.match(script, /sessionStorage/);
   assert.match(script, /prefers-reduced-motion/);
-  assert.match(script, /window\.setTimeout\(finish,\s*1200\)/);
-  assert.doesNotMatch(script, /<video|tr2\.mp4|preload="auto"/);
+  assert.match(script, /window\.setTimeout\(finish,\s*8000\)/);
+  assert.match(script, /<video[\s\S]*?autoplay[\s\S]*?preload="auto"/);
+  assert.equal((script.match(/tr2\.mp4/g) ?? []).length, 1);
+  assert.match(script, /video\?\.addEventListener\("ended", finish/);
+  assert.match(script, /video\?\.addEventListener\("error", finish/);
   assert.match(script, /skip\?\.focus\(\)/);
   assert.match(html, /href="\/fonts\/b-titr-bold\.woff"/);
   assert.match(css, /font-family:\s*"B Titr"/);
