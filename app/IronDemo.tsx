@@ -1123,20 +1123,6 @@ export default function IronDemo() {
                 </li>
               </ul>
             </div>
-            <div className="about-visual">
-              <img
-                src="/categories/04-profile.jpg"
-                alt="پروفیل‌های فولادی آماده تأمین"
-                width="900"
-                height="675"
-                loading="lazy"
-                decoding="async"
-              />
-              <div>
-                <strong>برای انتخاب دقیق‌تر نیاز به راهنمایی دارید؟</strong>
-                <a href={contactHref}>تماس با واحد فروش</a>
-              </div>
-            </div>
           </div>
         </section>
 

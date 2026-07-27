@@ -150,6 +150,16 @@ test("homepage hero uses sharp landscape images", async () => {
   assert.match(component, /height="941"/);
 });
 
+test("about section does not render the square-profile photo", async () => {
+  const component = await read("../app/IronDemo.tsx");
+  const aboutSection = component.match(
+    /<section className="about section"[\s\S]*?<\/section>/,
+  )?.[0];
+
+  assert.ok(aboutSection);
+  assert.doesNotMatch(aboutSection, /about-visual|<img/);
+});
+
 test("homepage uses the supplied dense steel tread photo and cross-fades banners every 1.7 seconds", async () => {
   const [component, css, texture] = await Promise.all([
     read("../app/IronDemo.tsx"),
