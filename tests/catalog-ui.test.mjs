@@ -150,6 +150,35 @@ test("trend direction is textual and no fake chart is exposed", () => {
   assert.equal(within(table).queryByLabelText("روند قیمت"), null);
 });
 
+test("catalog rows alternate between light and dark treatments", () => {
+  const firstRow = row(1, "down", -2);
+  const secondRow = row(2, "up", 3);
+  const stripedCategory = category("striped", "راه‌راه", firstRow);
+  stripedCategory.factories[0].rows = [firstRow, secondRow];
+
+  render(
+    React.createElement(PriceCatalog, {
+      priceData: {
+        ...priceData,
+        categories: [stripedCategory],
+      },
+      config: {
+        ...config,
+        initialCategoryId: "striped",
+        categoryIcons: { striped: "۱" },
+      },
+      phoneHref: "tel:+982100000000",
+    }),
+  );
+
+  const rows = screen
+    .getByRole("table")
+    .querySelectorAll("tbody tr.rebar-row-group");
+  assert.equal(rows.length, 2);
+  assert.equal(rows[0].classList.contains("is-dark-row"), false);
+  assert.equal(rows[1].classList.contains("is-dark-row"), true);
+});
+
 test("F4: a sub-one-percent move keeps its magnitude instead of showing zero", () => {
   const smallMove = row(3, "up", 0.14);
   render(

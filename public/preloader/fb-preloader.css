@@ -29,6 +29,7 @@
   overflow: hidden;
 }
 
+.fb-preloader__video,
 .fb-preloader__shade {
   position: absolute;
   inset: 0;
@@ -36,10 +37,14 @@
   height: 100%;
 }
 
+.fb-preloader__video {
+  object-fit: cover;
+}
+
 .fb-preloader__shade {
   background:
-    linear-gradient(135deg, rgb(246 181 0 / 10%), transparent 48%),
-    radial-gradient(circle at 50% 42%, #333339, #18181b 72%);
+    linear-gradient(180deg, rgb(15 15 17 / 32%), rgb(15 15 17 / 74%)),
+    radial-gradient(circle at 50% 42%, transparent, rgb(0 0 0 / 34%));
 }
 
 .fb-preloader__brand {
