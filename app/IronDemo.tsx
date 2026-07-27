@@ -8,13 +8,18 @@ import {
   useSyncExternalStore,
 } from "react";
 import { filterProductGroups } from "./site-logic.mjs";
+import { buildCatalogSearchGroups } from "./catalog-search.mjs";
+import { createRetryableLoader } from "./catalog-cache";
+import { loadBeamPriceData, loadRebarPriceData } from "./catalog-data";
 import RebarPrices, { type RebarViewRequest } from "./RebarPrices";
 import BeamPrices, { type BeamViewRequest } from "./BeamPrices";
 import ProductPrices from "./ProductPrices";
 import { localizeCatalogValue } from "./catalog-utils";
 import {
-  getProductPriceCatalog,
+  loadProductPriceCatalog,
+  loadProductPricePayload,
   type ProductCatalogId,
+  type ProductPriceCatalog,
   type ProductViewRequest,
 } from "./product-price-data";
 
@@ -22,6 +27,10 @@ type ProductRow = {
   product: string;
   origin: string;
   unit: string;
+  categoryId?: string;
+  factory?: string;
+  size?: string;
+  searchText?: string;
 };
 
 type ProductGroup = {
@@ -58,7 +67,15 @@ const phones = [
 const address =
   "آجودانیه پورابتهاج نبش لشکری ساختمان سرو واحد ۳۰۳";
 
-const productGroups: ProductGroup[] = [
+// rows is filled in by buildCatalogSearchGroups from the live catalogs. It is
+// deliberately empty here: search only ever runs once those have loaded, so any
+// placeholder listed at this level would be unreachable.
+//
+// Exported so the empty-rows invariant can be asserted directly in tests.
+// allowConstantExport does not cover array initialisers, and moving this to its
+// own module would drag the ProductGroup/ProductGroupId types with it.
+// eslint-disable-next-line react-refresh/only-export-components
+export const productGroups: ProductGroup[] = [
   {
     id: "rebar",
     label: "میلگرد",
@@ -66,11 +83,7 @@ const productGroups: ProductGroup[] = [
     image: "/categories/01-rebar.jpg",
     heroImage: "/categories/hero-rebar-1680.jpg",
     description: "میلگرد آجدار و ساده برای پروژه‌های ساختمانی و صنعتی",
-    rows: [
-      { product: "میلگرد آجدار", origin: "کارخانه‌های معتبر", unit: "کیلوگرم" },
-      { product: "میلگرد ساده", origin: "کارخانه‌های معتبر", unit: "کیلوگرم" },
-      { product: "کلاف میلگرد", origin: "کارخانه‌های معتبر", unit: "کیلوگرم" },
-    ],
+    rows: [],
   },
   {
     id: "beam",
@@ -79,11 +92,7 @@ const productGroups: ProductGroup[] = [
     image: "/categories/02-ibeam.jpg",
     heroImage: "/categories/hero-beam-1680.jpg",
     description: "تیرآهن IPE، هاش و مقاطع سازه‌ای",
-    rows: [
-      { product: "تیرآهن IPE", origin: "کارخانه‌های معتبر", unit: "شاخه" },
-      { product: "تیرآهن هاش سبک", origin: "کارخانه‌های معتبر", unit: "شاخه" },
-      { product: "تیرآهن هاش سنگین", origin: "کارخانه‌های معتبر", unit: "شاخه" },
-    ],
+    rows: [],
   },
   {
     id: "sheet",
@@ -92,11 +101,7 @@ const productGroups: ProductGroup[] = [
     image: "/categories/03-sheet-coil.jpg",
     heroImage: "/categories/hero-sheet-1680.jpg",
     description: "ورق سیاه، گالوانیزه، روغنی و رنگی",
-    rows: [
-      { product: "ورق سیاه", origin: "کارخانه‌های معتبر", unit: "کیلوگرم" },
-      { product: "ورق گالوانیزه", origin: "کارخانه‌های معتبر", unit: "کیلوگرم" },
-      { product: "ورق روغنی", origin: "کارخانه‌های معتبر", unit: "کیلوگرم" },
-    ],
+    rows: [],
   },
   {
     id: "profile",
@@ -104,11 +109,7 @@ const productGroups: ProductGroup[] = [
     shortLabel: "پروفیل",
     image: "/categories/04-profile.jpg",
     description: "پروفیل ساختمانی و صنعتی در ابعاد گوناگون",
-    rows: [
-      { product: "قوطی ساختمانی", origin: "کارخانه‌های معتبر", unit: "شاخه" },
-      { product: "پروفیل صنعتی", origin: "کارخانه‌های معتبر", unit: "شاخه" },
-      { product: "پروفیل در و پنجره", origin: "کارخانه‌های معتبر", unit: "شاخه" },
-    ],
+    rows: [],
   },
   {
     id: "pipe",
@@ -116,11 +117,7 @@ const productGroups: ProductGroup[] = [
     shortLabel: "لوله",
     image: "/categories/05-pipe.jpg",
     description: "لوله صنعتی، گازی و داربستی",
-    rows: [
-      { product: "لوله صنعتی", origin: "کارخانه‌های معتبر", unit: "شاخه" },
-      { product: "لوله گازی", origin: "کارخانه‌های معتبر", unit: "شاخه" },
-      { product: "لوله داربستی", origin: "کارخانه‌های معتبر", unit: "شاخه" },
-    ],
+    rows: [],
   },
   {
     id: "angle",
@@ -128,11 +125,7 @@ const productGroups: ProductGroup[] = [
     shortLabel: "نبشی",
     image: "/categories/06-angle.jpg",
     description: "نبشی بال مساوی و بال نامساوی",
-    rows: [
-      { product: "نبشی بال مساوی", origin: "کارخانه‌های معتبر", unit: "شاخه" },
-      { product: "نبشی بال نامساوی", origin: "کارخانه‌های معتبر", unit: "شاخه" },
-      { product: "نبشی لقمه", origin: "کارخانه‌های معتبر", unit: "کیلوگرم" },
-    ],
+    rows: [],
   },
   {
     id: "channel",
@@ -140,11 +133,7 @@ const productGroups: ProductGroup[] = [
     shortLabel: "ناودانی",
     image: "/categories/07-channel.jpg",
     description: "ناودانی سبک و سنگین برای مصارف سازه‌ای",
-    rows: [
-      { product: "ناودانی سبک", origin: "کارخانه‌های معتبر", unit: "شاخه" },
-      { product: "ناودانی سنگین", origin: "کارخانه‌های معتبر", unit: "شاخه" },
-      { product: "ناودانی UPE", origin: "کارخانه‌های معتبر", unit: "شاخه" },
-    ],
+    rows: [],
   },
   {
     id: "wire",
@@ -152,15 +141,21 @@ const productGroups: ProductGroup[] = [
     shortLabel: "مفتول",
     image: "/categories/08-wire.jpg",
     description: "مفتول سیاه، گالوانیزه و محصولات سیمی",
-    rows: [
-      { product: "مفتول سیاه", origin: "کارخانه‌های معتبر", unit: "کیلوگرم" },
-      { product: "مفتول گالوانیزه", origin: "کارخانه‌های معتبر", unit: "کیلوگرم" },
-      { product: "توری و مش", origin: "کارخانه‌های معتبر", unit: "مترمربع" },
-    ],
+    rows: [],
   },
 ];
 
 const heroSlides = productGroups.slice(0, 3);
+
+const loadCatalogSearchGroups = createRetryableLoader<ProductGroup[]>(() =>
+  Promise.all([
+    loadRebarPriceData(),
+    loadBeamPriceData(),
+    loadProductPricePayload(),
+  ]).then(([rebar, beam, products]) =>
+    buildCatalogSearchGroups(productGroups, { rebar, beam, products }),
+  ),
+);
 
 const rebarTypeLinks: Array<{
   id: NonNullable<RebarViewRequest["categoryId"]>;
@@ -286,6 +281,12 @@ export default function IronDemo() {
   const [searchInput, setSearchInput] = useState("");
   const [committedSearch, setCommittedSearch] = useState("");
   const [searchMessage, setSearchMessage] = useState("");
+  const [searchGroups, setSearchGroups] = useState<ProductGroup[] | null>(null);
+  const [searchLoading, setSearchLoading] = useState(false);
+  const [loadedMegaCatalog, setLoadedMegaCatalog] =
+    useState<ProductPriceCatalog | null>(null);
+  const [megaCatalogError, setMegaCatalogError] =
+    useState<ProductCatalogId | null>(null);
   const [rebarViewRequest, setRebarViewRequest] = useState<RebarViewRequest>({
     requestId: 0,
   });
@@ -307,17 +308,22 @@ export default function IronDemo() {
   const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
 
   const filteredGroups = useMemo(
-    () => filterProductGroups(productGroups, committedSearch),
-    [committedSearch],
+    () => filterProductGroups(searchGroups ?? productGroups, committedSearch),
+    [committedSearch, searchGroups],
   );
 
   const visibleGroup =
     filteredGroups.find((group) => group.id === activeGroup) ??
     filteredGroups[0] ??
     null;
-  const megaCatalog = isProductCatalogId(megaProduct)
-    ? getProductPriceCatalog(megaProduct)
-    : null;
+  const megaCatalog =
+    isProductCatalogId(megaProduct) && loadedMegaCatalog?.id === megaProduct
+      ? loadedMegaCatalog
+      : null;
+  const megaCatalogLoading =
+    isProductCatalogId(megaProduct) &&
+    !megaCatalog &&
+    megaCatalogError !== megaProduct;
   const megaInitialCategory = megaCatalog
     ? (megaCatalog.categories.find(
         (category) => category.id === megaCatalog.initialCategoryId,
@@ -352,6 +358,26 @@ export default function IronDemo() {
     };
   }, [productsOpen]);
 
+  useEffect(() => {
+    if (!productsOpen || !isProductCatalogId(megaProduct)) {
+      return undefined;
+    }
+    let active = true;
+    loadProductPriceCatalog(megaProduct)
+      .then((catalog) => {
+        if (active) {
+          setLoadedMegaCatalog(catalog);
+          setMegaCatalogError(null);
+        }
+      })
+      .catch(() => {
+        if (active) setMegaCatalogError(megaProduct);
+      });
+    return () => {
+      active = false;
+    };
+  }, [megaProduct, productsOpen]);
+
   const resetGroupView = (groupId: ProductGroupId) => {
     if (groupId === "rebar") {
       setRebarViewRequest((current) => ({
@@ -364,10 +390,8 @@ export default function IronDemo() {
         categoryId: "beam",
       }));
     } else if (isProductCatalogId(groupId)) {
-      const catalog = getProductPriceCatalog(groupId);
       setProductViewRequest((current) => ({
         requestId: current.requestId + 1,
-        categoryId: catalog.initialCategoryId,
       }));
     }
   };
@@ -442,23 +466,69 @@ export default function IronDemo() {
     });
   };
 
-  const submitSearch = (event: FormEvent<HTMLFormElement>) => {
+  const submitSearch = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const query = searchInput.trim();
-    const results = filterProductGroups(productGroups, query);
-    setCommittedSearch(query);
     if (!query) {
+      setCommittedSearch("");
+      setSearchGroups(null);
       setActiveGroup(productGroups[0].id);
       resetGroupView(productGroups[0].id);
       setSearchMessage("همه محصولات نمایش داده می‌شوند.");
-    } else if (results.length > 0) {
+    } else {
+      setSearchLoading(true);
+      setSearchMessage(`در حال جست‌وجوی «${query}»…`);
+      let groups: ProductGroup[];
+      try {
+        groups = await loadCatalogSearchGroups();
+      } catch {
+        // committedSearch is deliberately left alone: applying it while
+        // searchGroups is still null filters the placeholder rows in
+        // productGroups, which match nothing, so the whole price section would
+        // collapse into "no products found" instead of showing this message.
+        setSearchMessage(
+          "دریافت فهرست زنده محصولات ممکن نشد. لطفاً دوباره تلاش کنید.",
+        );
+        setSearchLoading(false);
+        return;
+      }
+      // Commit the query only now that the live rows it will be matched against
+      // are available, so no render ever pairs a query with the placeholders.
+      setSearchGroups(groups);
+      setCommittedSearch(query);
+      const results = filterProductGroups(groups, query);
+      if (results.length > 0) {
       const resultGroupId = results[0].id as ProductGroupId;
+      const firstRow = results[0].rows[0];
       setActiveGroup(resultGroupId);
-      resetGroupView(resultGroupId);
+      if (resultGroupId === "rebar") {
+        setRebarViewRequest((current) => ({
+          requestId: current.requestId + 1,
+          categoryId: firstRow.categoryId as RebarViewRequest["categoryId"],
+          factory: firstRow.factory,
+          size: firstRow.size,
+        }));
+      } else if (resultGroupId === "beam") {
+        setBeamViewRequest((current) => ({
+          requestId: current.requestId + 1,
+          categoryId: firstRow.categoryId as BeamViewRequest["categoryId"],
+          factory: firstRow.factory,
+          size: firstRow.size,
+        }));
+      } else {
+        setProductViewRequest((current) => ({
+          requestId: current.requestId + 1,
+          categoryId: firstRow.categoryId,
+          factory: firstRow.factory,
+          size: firstRow.size,
+        }));
+      }
       const count = results.reduce((sum, group) => sum + group.rows.length, 0);
       setSearchMessage(`${count.toLocaleString("fa-IR")} نتیجه برای «${query}» پیدا شد.`);
-    } else {
-      setSearchMessage(`نتیجه‌ای برای «${query}» پیدا نشد.`);
+      } else {
+        setSearchMessage(`نتیجه‌ای برای «${query}» پیدا نشد.`);
+      }
+      setSearchLoading(false);
     }
     document.getElementById("prices")?.scrollIntoView({
       behavior: reduceMotion ? "auto" : "smooth",
@@ -523,8 +593,12 @@ export default function IronDemo() {
               value={searchInput}
               onChange={(event) => setSearchInput(event.target.value)}
             />
-            <button type="submit" aria-label="جست‌وجو">
-              جست‌وجو
+            <button
+              type="submit"
+              aria-label="جست‌وجو"
+              disabled={searchLoading}
+            >
+              {searchLoading ? "در حال جست‌وجو…" : "جست‌وجو"}
             </button>
           </form>
 
@@ -762,7 +836,15 @@ export default function IronDemo() {
                         </div>
                       </section>
                     </>
-                  ) : null}
+                  ) : megaCatalogLoading ? (
+                    <p className="catalog-load-state" role="status">
+                      در حال دریافت فهرست محصولات…
+                    </p>
+                  ) : (
+                    <p className="catalog-load-state" role="alert">
+                      دریافت فهرست این گروه ممکن نشد.
+                    </p>
+                  )}
 
                   <section className="mega-other-products">
                     <h2>گروه محصولات</h2>
@@ -932,6 +1014,7 @@ export default function IronDemo() {
                   onClick={() => {
                     setCommittedSearch("");
                     setSearchInput("");
+                    setSearchGroups(null);
                     setSearchMessage("همه محصولات نمایش داده می‌شوند.");
                     setActiveGroup(productGroups[0].id);
                     resetGroupView(productGroups[0].id);
@@ -968,26 +1051,7 @@ export default function IronDemo() {
               })}
             </div>
 
-            {visibleGroup?.id === "rebar" ? (
-              <RebarPrices
-                key={rebarViewRequest.requestId}
-                phoneHref={contactHref}
-                requestedView={rebarViewRequest}
-              />
-            ) : visibleGroup?.id === "beam" ? (
-              <BeamPrices
-                key={beamViewRequest.requestId}
-                phoneHref={contactHref}
-                requestedView={beamViewRequest}
-              />
-            ) : visibleGroup && isProductCatalogId(visibleGroup.id) ? (
-              <ProductPrices
-                key={`${visibleGroup.id}-${productViewRequest.requestId}`}
-                catalogId={visibleGroup.id}
-                phoneHref={contactHref}
-                requestedView={productViewRequest}
-              />
-            ) : visibleGroup ? (
+            {visibleGroup ? (
               <div
                 className="product-panel"
                 role="tabpanel"
@@ -995,39 +1059,26 @@ export default function IronDemo() {
                 aria-labelledby={`tab-${visibleGroup.id}`}
                 tabIndex={0}
               >
-                <div className="table-scroll">
-                  <table>
-                    <caption className="sr-only">
-                      فهرست محصولات {visibleGroup.label}
-                    </caption>
-                    <thead>
-                      <tr>
-                        <th scope="col">محصول</th>
-                        <th scope="col">مبدأ تأمین</th>
-                        <th scope="col">واحد فروش</th>
-                        <th scope="col">وضعیت قیمت</th>
-                        <th scope="col">اقدام</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {visibleGroup.rows.map((row) => (
-                        <tr key={`${visibleGroup.id}-${row.product}`}>
-                          <th scope="row" data-label="محصول">
-                            {row.product}
-                          </th>
-                          <td data-label="مبدأ تأمین">{row.origin}</td>
-                          <td data-label="واحد فروش">{row.unit}</td>
-                          <td data-label="وضعیت قیمت">
-                            <span className="price-status">استعلام روز</span>
-                          </td>
-                          <td data-label="اقدام">
-                            <a href={contactHref}>تماس برای قیمت</a>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                {visibleGroup.id === "rebar" ? (
+                  <RebarPrices
+                    key={rebarViewRequest.requestId}
+                    phoneHref={contactHref}
+                    requestedView={rebarViewRequest}
+                  />
+                ) : visibleGroup.id === "beam" ? (
+                  <BeamPrices
+                    key={beamViewRequest.requestId}
+                    phoneHref={contactHref}
+                    requestedView={beamViewRequest}
+                  />
+                ) : isProductCatalogId(visibleGroup.id) ? (
+                  <ProductPrices
+                    key={`${visibleGroup.id}-${productViewRequest.requestId}`}
+                    catalogId={visibleGroup.id}
+                    phoneHref={contactHref}
+                    requestedView={productViewRequest}
+                  />
+                ) : null}
               </div>
             ) : (
               <div className="empty-state" role="status">

@@ -1,6 +1,10 @@
-import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
+import { mkdir, rename, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import {
+  deriveSummaryFromRows,
+  validateCatalogPriceData,
+} from "../app/catalog-validation.mjs";
 
 const projectRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const outputPath = resolve(projectRoot, "app", "data", "beam-prices.json");
@@ -37,33 +41,11 @@ function metaValue(item, key) {
   return meta?.value ? String(meta.value) : "";
 }
 
-function normaliseSummaryPrice(value) {
-  const numericValue = Number(value);
-  if (!Number.isFinite(numericValue)) return 0;
-  return Math.floor(numericValue / 1_000) * 100;
-}
-
 function formatPersianDate(unixTimestamp) {
   if (!unixTimestamp) return "";
   return persianDateFormatter
     .format(new Date(Number(unixTimestamp) * 1_000))
     .replace(/\u200f/g, "");
-}
-
-function deriveSummary(rows) {
-  const prices = rows
-    .map((row) => row.price)
-    .filter((price) => Number.isFinite(price) && price > 0);
-  if (!prices.length) {
-    return { min: 0, max: 0, average: 0 };
-  }
-  return {
-    min: Math.min(...prices),
-    max: Math.max(...prices),
-    average: Math.round(
-      prices.reduce((total, price) => total + price, 0) / prices.length,
-    ),
-  };
 }
 
 function parseNextData(html, source) {
@@ -116,18 +98,10 @@ function parseNextData(html, source) {
   }
 
   const compare = shopData.price_compare;
-  const derivedSummary = deriveSummary(rows);
-  const sourceSummary = {
-    min: normaliseSummaryPrice(compare.min_price),
-    max: normaliseSummaryPrice(compare.max_price),
-    average: normaliseSummaryPrice(compare.avg_price),
-  };
-  const summary =
-    sourceSummary.min > 0 &&
-    sourceSummary.max > 0 &&
-    sourceSummary.average > 0
-      ? sourceSummary
-      : derivedSummary;
+  // Derived from the rows, never from compare.min_price/max_price/avg_price:
+  // the upstream fields are rial and rounding them to hundreds of toman
+  // produced prices that appear in no row of the table.
+  const summary = deriveSummaryFromRows(rows);
 
   return {
     id: source.id,
@@ -168,55 +142,35 @@ async function fetchSource(source) {
   return parseNextData(await response.text(), source);
 }
 
-async function existingDataIsUsable() {
-  try {
-    const existing = JSON.parse(await readFile(outputPath, "utf8"));
-    return (
-      Array.isArray(existing.categories) &&
-      existing.categories.length === sources.length &&
-      existing.categories.every((category) => category.factories?.length)
-    );
-  } catch {
-    return false;
-  }
-}
-
 async function main() {
-  try {
-    const categories = await Promise.all(sources.map(fetchSource));
-    const payload = {
-      fetchedAt: new Date().toISOString(),
-      sourceName: "فولاد ایرانیان",
-      sourceHome: "https://www.fooladiranian.com/",
-      taxRate: 0.1,
-      categories,
-    };
+  const categories = await Promise.all(sources.map(fetchSource));
+  const payload = {
+    fetchedAt: new Date().toISOString(),
+    sourceName: "فولاد ایرانیان",
+    sourceHome: "https://www.fooladiranian.com/",
+    taxRate: 0.1,
+    categories,
+  };
+  validateCatalogPriceData(payload, {
+    expectedCategoryIds: sources.map((source) => source.id),
+  });
 
-    await mkdir(dirname(outputPath), { recursive: true });
-    await writeFile(temporaryPath, `${JSON.stringify(payload, null, 2)}\n`);
-    await rename(temporaryPath, outputPath);
+  await mkdir(dirname(outputPath), { recursive: true });
+  await writeFile(temporaryPath, `${JSON.stringify(payload, null, 2)}\n`);
+  await rename(temporaryPath, outputPath);
 
-    const itemCount = categories.reduce(
-      (total, category) =>
-        total +
-        category.factories.reduce(
-          (factoryTotal, factory) => factoryTotal + factory.rows.length,
-          0,
-        ),
-      0,
-    );
-    console.log(
-      `قیمت‌های تیرآهن از منبع بروزرسانی شد: ${itemCount.toLocaleString("fa-IR")} ردیف`,
-    );
-  } catch (error) {
-    if (await existingDataIsUsable()) {
-      console.warn(
-        `دریافت قیمت تازه تیرآهن ممکن نبود؛ آخرین داده معتبر حفظ شد. ${error.message}`,
-      );
-      return;
-    }
-    throw error;
-  }
+  const itemCount = categories.reduce(
+    (total, category) =>
+      total +
+      category.factories.reduce(
+        (factoryTotal, factory) => factoryTotal + factory.rows.length,
+        0,
+      ),
+    0,
+  );
+  console.log(
+    `قیمت‌های تیرآهن از منبع بروزرسانی شد: ${itemCount.toLocaleString("fa-IR")} ردیف`,
+  );
 }
 
 await main();

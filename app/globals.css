@@ -1329,13 +1329,17 @@ tbody td a,
   color: #10a966 !important;
 }
 
-.chart-glyph {
-  display: inline-grid;
+.catalog-load-state {
+  min-height: 8rem;
+  display: grid;
   place-items: center;
-  color: #e15f35;
-  font-family: Arial, sans-serif;
-  font-size: 1.4rem;
-  font-weight: 900;
+  margin: 0;
+  padding: 1.5rem;
+  border: 1px solid #e0e1e8;
+  border-radius: 12px;
+  background: #fff;
+  color: var(--muted);
+  text-align: center;
 }
 
 .rebar-detail-row {

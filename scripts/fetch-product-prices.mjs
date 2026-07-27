@@ -1,6 +1,10 @@
-import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
+import { mkdir, rename, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import {
+  deriveSummaryFromRows,
+  validateProductPricePayload,
+} from "../app/catalog-validation.mjs";
 
 const projectRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const outputPath = resolve(projectRoot, "app", "data", "product-prices.json");
@@ -56,8 +60,14 @@ const catalogs = [
     label: "قوطی و پروفیل",
     initialCategoryId: "box-profile",
     sources: [
-      source("box-profile", "قوطی و پروفیل", "قوطی-و-پروفیل"),
-      source("building-profile", "پروفیل ساختمانی", "پروفیل-ساختمانی"),
+      source("box-profile", "قوطی و پروفیل", "قوطی-و-پروفیل", "ضخامت", "گروه"),
+      source(
+        "building-profile",
+        "پروفیل ساختمانی",
+        "پروفیل-ساختمانی",
+        "ضخامت",
+        "گروه",
+      ),
       source("industrial-profile", "پروفیل صنعتی", "پروفیل-صنعتی"),
       source(
         "stainless-profile",
@@ -157,33 +167,11 @@ function metaValue(item, key) {
     : "";
 }
 
-function normaliseSummaryPrice(value) {
-  const numericValue = Number(value);
-  if (!Number.isFinite(numericValue)) return 0;
-  return Math.floor(numericValue / 1_000) * 100;
-}
-
 function formatPersianDate(unixTimestamp) {
   if (!unixTimestamp) return "";
   return persianDateFormatter
     .format(new Date(Number(unixTimestamp) * 1_000))
     .replace(/\u200f/g, "");
-}
-
-function deriveSummary(rows) {
-  const prices = rows
-    .map((row) => row.price)
-    .filter((price) => Number.isFinite(price) && price > 0);
-  if (!prices.length) {
-    return { min: 0, max: 0, average: 0 };
-  }
-  return {
-    min: Math.min(...prices),
-    max: Math.max(...prices),
-    average: Math.round(
-      prices.reduce((total, price) => total + price, 0) / prices.length,
-    ),
-  };
 }
 
 function compareSizeValues(first, second) {
@@ -257,18 +245,10 @@ function parseNextData(html, currentSource) {
   }
 
   const compare = shopData.price_compare;
-  const derivedSummary = deriveSummary(rows);
-  const sourceSummary = {
-    min: normaliseSummaryPrice(compare.min_price),
-    max: normaliseSummaryPrice(compare.max_price),
-    average: normaliseSummaryPrice(compare.avg_price),
-  };
-  const summary =
-    sourceSummary.min > 0 &&
-    sourceSummary.max > 0 &&
-    sourceSummary.average > 0
-      ? sourceSummary
-      : derivedSummary;
+  // Derived from the rows, never from compare.min_price/max_price/avg_price:
+  // the upstream fields are rial and rounding them to hundreds of toman
+  // produced prices that appear in no row of the table.
+  const summary = deriveSummaryFromRows(rows);
 
   return {
     id: currentSource.id,
@@ -325,72 +305,47 @@ async function mapWithConcurrency(items, concurrency, mapper) {
   return results;
 }
 
-async function existingDataIsUsable() {
-  try {
-    const existing = JSON.parse(await readFile(outputPath, "utf8"));
-    return (
-      Array.isArray(existing.catalogs) &&
-      existing.catalogs.length === catalogs.length &&
-      existing.catalogs.every(
-        (catalog) =>
-          catalog.categories?.length &&
-          catalog.categories.every((category) => category.factories?.length),
-      )
-    );
-  } catch {
-    return false;
-  }
-}
-
 async function main() {
-  try {
-    const fetchedCategories = await mapWithConcurrency(
-      sources,
-      6,
-      fetchSource,
-    );
-    const categoriesById = new Map(
-      fetchedCategories.map((category) => [category.id, category]),
-    );
-    const outputCatalogs = catalogs.map((catalog) => ({
+  const fetchedCategories = await mapWithConcurrency(sources, 6, fetchSource);
+  const categoriesById = new Map(
+    fetchedCategories.map((category) => [category.id, category]),
+  );
+  const outputCatalogs = catalogs.map((catalog) => ({
+    id: catalog.id,
+    label: catalog.label,
+    initialCategoryId: catalog.initialCategoryId,
+    categories: catalog.sources.map((item) => categoriesById.get(item.id)),
+  }));
+  const payload = {
+    fetchedAt: new Date().toISOString(),
+    sourceName: "فولاد ایرانیان",
+    sourceHome: "https://www.fooladiranian.com/",
+    taxRate: 0.1,
+    catalogs: outputCatalogs,
+  };
+  validateProductPricePayload(payload, {
+    expectedCatalogs: catalogs.map((catalog) => ({
       id: catalog.id,
-      label: catalog.label,
-      initialCategoryId: catalog.initialCategoryId,
-      categories: catalog.sources.map((item) => categoriesById.get(item.id)),
-    }));
-    const payload = {
-      fetchedAt: new Date().toISOString(),
-      sourceName: "فولاد ایرانیان",
-      sourceHome: "https://www.fooladiranian.com/",
-      taxRate: 0.1,
-      catalogs: outputCatalogs,
-    };
+      categoryIds: catalog.sources.map((item) => item.id),
+    })),
+  });
 
-    await mkdir(dirname(outputPath), { recursive: true });
-    await writeFile(temporaryPath, `${JSON.stringify(payload, null, 2)}\n`);
-    await rename(temporaryPath, outputPath);
+  await mkdir(dirname(outputPath), { recursive: true });
+  await writeFile(temporaryPath, `${JSON.stringify(payload, null, 2)}\n`);
+  await rename(temporaryPath, outputPath);
 
-    const itemCount = fetchedCategories.reduce(
-      (total, category) =>
-        total +
-        category.factories.reduce(
-          (factoryTotal, factory) => factoryTotal + factory.rows.length,
-          0,
-        ),
-      0,
-    );
-    console.log(
-      `قیمت تمام محصولات از منبع بروزرسانی شد: ${itemCount.toLocaleString("fa-IR")} ردیف در ${fetchedCategories.length.toLocaleString("fa-IR")} دسته`,
-    );
-  } catch (error) {
-    if (await existingDataIsUsable()) {
-      console.warn(
-        `دریافت قیمت تازه همه محصولات ممکن نبود؛ آخرین داده معتبر حفظ شد. ${error.message}`,
-      );
-      return;
-    }
-    throw error;
-  }
+  const itemCount = fetchedCategories.reduce(
+    (total, category) =>
+      total +
+      category.factories.reduce(
+        (factoryTotal, factory) => factoryTotal + factory.rows.length,
+        0,
+      ),
+    0,
+  );
+  console.log(
+    `قیمت تمام محصولات از منبع بروزرسانی شد: ${itemCount.toLocaleString("fa-IR")} ردیف در ${fetchedCategories.length.toLocaleString("fa-IR")} دسته`,
+  );
 }
 
 await main();

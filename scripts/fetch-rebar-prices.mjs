@@ -1,6 +1,10 @@
-import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
+import { mkdir, rename, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import {
+  deriveSummaryFromRows,
+  validateCatalogPriceData,
+} from "../app/catalog-validation.mjs";
 
 const projectRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const outputPath = resolve(projectRoot, "app", "data", "rebar-prices.json");
@@ -49,17 +53,22 @@ function metaValue(item, key) {
   return meta?.value ? String(meta.value) : "";
 }
 
-function normaliseSummaryPrice(value) {
-  const numericValue = Number(value);
-  if (!Number.isFinite(numericValue)) return 0;
-  return Math.floor(numericValue / 1_000) * 100;
-}
-
 function formatPersianDate(unixTimestamp) {
   if (!unixTimestamp) return "";
   return persianDateFormatter
     .format(new Date(Number(unixTimestamp) * 1_000))
     .replace(/\u200f/g, "");
+}
+
+function deriveRebarSize(item, source) {
+  const sourceSize = metaValue(item, "سایز");
+  if (source.id !== "ribbed" && source.id !== "simple") return sourceSize;
+  const title = String(item.title ?? "");
+  const match =
+    source.id === "simple"
+      ? title.match(/میلگرد\s+ساده\s+(\d+(?:[./]\d+)?)/)
+      : title.match(/میلگرد\s+(\d+(?:[./]\d+)?)/);
+  return match?.[1]?.replace("/", ".") ?? sourceSize;
 }
 
 function parseNextData(html, source) {
@@ -79,7 +88,7 @@ function parseNextData(html, source) {
     const rows = (factoryGroup.productsitem ?? []).map((item) => ({
       id: Number(item.id),
       title: String(item.title ?? ""),
-      size: metaValue(item, "سایز"),
+      size: deriveRebarSize(item, source),
       standard: metaValue(item, "استاندارد"),
       grade: metaValue(item, "گرید"),
       branchLength: metaValue(item, "طول شاخه"),
@@ -104,13 +113,10 @@ function parseNextData(html, source) {
     };
   });
 
-  const itemCount = factories.reduce(
-    (total, factory) => total + factory.rows.length,
-    0,
-  );
-  if (itemCount < source.minimumItems) {
+  const rows = factories.flatMap((factory) => factory.rows);
+  if (rows.length < source.minimumItems) {
     throw new Error(
-      `تعداد ردیف‌های ${source.label} کمتر از حد انتظار است (${itemCount}).`,
+      `تعداد ردیف‌های ${source.label} کمتر از حد انتظار است (${rows.length}).`,
     );
   }
 
@@ -127,9 +133,10 @@ function parseNextData(html, source) {
     sourceUrl: source.url,
     summary: {
       date: String(compare.date ?? ""),
-      min: normaliseSummaryPrice(compare.min_price),
-      max: normaliseSummaryPrice(compare.max_price),
-      average: normaliseSummaryPrice(compare.avg_price),
+      // Derived from the rows, never from compare.min_price/max_price/avg_price:
+      // the upstream fields are rial and rounding them to hundreds of toman
+      // produced prices that appear in no row of the table.
+      ...deriveSummaryFromRows(rows),
       percent: Number(compare.percent) || 0,
       status: String(compare.status ?? "same"),
     },
@@ -163,55 +170,35 @@ async function fetchSource(source) {
   return parseNextData(await response.text(), source);
 }
 
-async function existingDataIsUsable() {
-  try {
-    const existing = JSON.parse(await readFile(outputPath, "utf8"));
-    return (
-      Array.isArray(existing.categories) &&
-      existing.categories.length === sources.length &&
-      existing.categories.every((category) => category.factories?.length)
-    );
-  } catch {
-    return false;
-  }
-}
-
 async function main() {
-  try {
-    const categories = await Promise.all(sources.map(fetchSource));
-    const payload = {
-      fetchedAt: new Date().toISOString(),
-      sourceName: "فولاد ایرانیان",
-      sourceHome: "https://www.fooladiranian.com/",
-      taxRate: 0.1,
-      categories,
-    };
+  const categories = await Promise.all(sources.map(fetchSource));
+  const payload = {
+    fetchedAt: new Date().toISOString(),
+    sourceName: "فولاد ایرانیان",
+    sourceHome: "https://www.fooladiranian.com/",
+    taxRate: 0.1,
+    categories,
+  };
+  validateCatalogPriceData(payload, {
+    expectedCategoryIds: sources.map((source) => source.id),
+  });
 
-    await mkdir(dirname(outputPath), { recursive: true });
-    await writeFile(temporaryPath, `${JSON.stringify(payload, null, 2)}\n`);
-    await rename(temporaryPath, outputPath);
+  await mkdir(dirname(outputPath), { recursive: true });
+  await writeFile(temporaryPath, `${JSON.stringify(payload, null, 2)}\n`);
+  await rename(temporaryPath, outputPath);
 
-    const itemCount = categories.reduce(
-      (total, category) =>
-        total +
-        category.factories.reduce(
-          (factoryTotal, factory) => factoryTotal + factory.rows.length,
-          0,
-        ),
-      0,
-    );
-    console.log(
-      `قیمت‌های میلگرد از منبع بروزرسانی شد: ${itemCount.toLocaleString("fa-IR")} ردیف`,
-    );
-  } catch (error) {
-    if (await existingDataIsUsable()) {
-      console.warn(
-        `دریافت قیمت تازه ممکن نبود؛ آخرین داده معتبر حفظ شد. ${error.message}`,
-      );
-      return;
-    }
-    throw error;
-  }
+  const itemCount = categories.reduce(
+    (total, category) =>
+      total +
+      category.factories.reduce(
+        (factoryTotal, factory) => factoryTotal + factory.rows.length,
+        0,
+      ),
+    0,
+  );
+  console.log(
+    `قیمت‌های میلگرد از منبع بروزرسانی شد: ${itemCount.toLocaleString("fa-IR")} ردیف`,
+  );
 }
 
 await main();

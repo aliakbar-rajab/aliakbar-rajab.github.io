@@ -1,4 +1,5 @@
-import importedPriceData from "./data/product-prices.json";
+import { createRetryableLoader } from "./catalog-cache";
+import { validateProductPricePayload } from "./catalog-validation.mjs";
 import type {
   CatalogCategory,
   CatalogPriceData,
@@ -26,11 +27,16 @@ export type ProductPricePayload = Omit<CatalogPriceData, "categories"> & {
   catalogs: ProductPriceCatalog[];
 };
 
-export const productPricePayload = importedPriceData as ProductPricePayload;
-export const productPriceCatalogs = productPricePayload.catalogs;
+export const loadProductPricePayload = createRetryableLoader(
+  () =>
+    import("./data/product-prices.json").then((module) =>
+      validateProductPricePayload(module.default),
+    ) as Promise<ProductPricePayload>,
+);
 
-export function getProductPriceCatalog(catalogId: ProductCatalogId) {
-  const catalog = productPriceCatalogs.find((item) => item.id === catalogId);
+export async function loadProductPriceCatalog(catalogId: ProductCatalogId) {
+  const payload = await loadProductPricePayload();
+  const catalog = payload.catalogs.find((item) => item.id === catalogId);
   if (!catalog) {
     throw new Error(`داده قیمت گروه ${catalogId} در دسترس نیست.`);
   }

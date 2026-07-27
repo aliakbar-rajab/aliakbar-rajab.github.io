@@ -1,5 +1,18 @@
-import { Fragment, useId, useMemo, useState } from "react";
-import importedPriceData from "./data/rebar-prices.json";
+import {
+  Fragment,
+  useEffect,
+  useId,
+  useMemo,
+  useRef,
+  useState,
+  type KeyboardEvent as ReactKeyboardEvent,
+} from "react";
+import {
+  calculateRebarWeight,
+  getCategoryPricingState,
+  getTrendPresentation,
+} from "./catalog-behavior.mjs";
+import { loadRebarPriceData } from "./catalog-data";
 import { localizeCatalogValue } from "./catalog-utils";
 
 export type CatalogSpecification = {
@@ -87,6 +100,9 @@ export type PriceCatalogConfig = {
   showWeightCalculator?: boolean;
 };
 
+// Percent change is passed maximumFractionDigits: 2, matching the precision the
+// source publishes. At 0 any move under half a percent renders as "۰٪" next to
+// an up/down arrow, which reads as no change at all.
 function formatNumber(value: number, maximumFractionDigits = 0) {
   return value.toLocaleString("fa-IR", { maximumFractionDigits });
 }
@@ -204,6 +220,8 @@ export function PriceCatalog({
   }
   const factorySelectId = useId();
   const sizeSelectId = useId();
+  const tabsId = useId().replaceAll(":", "");
+  const categoryTabRefs = useRef<Array<HTMLButtonElement | null>>([]);
   const [categoryId, setCategoryId] = useState(
     requestedView?.categoryId ?? initialCategory.id,
   );
@@ -248,22 +266,17 @@ export function PriceCatalog({
   );
   const activeFilterCount = Number(Boolean(factoryFilter)) + Number(Boolean(sizeFilter));
 
-  const calculatorWeight = useMemo(() => {
-    const parsedDiameter = Number(diameter);
-    const parsedLength = Number(length);
-    const parsedQuantity = Number(quantity);
-    if (
-      !Number.isFinite(parsedDiameter) ||
-      !Number.isFinite(parsedLength) ||
-      !Number.isFinite(parsedQuantity) ||
-      parsedDiameter <= 0 ||
-      parsedLength <= 0 ||
-      parsedQuantity <= 0
-    ) {
-      return null;
-    }
-    return ((parsedDiameter ** 2) / 162) * parsedLength * parsedQuantity;
-  }, [diameter, length, quantity]);
+  const calculatorWeight = useMemo(
+    () => calculateRebarWeight(diameter, length, quantity),
+    [diameter, length, quantity],
+  );
+  const quantityInvalid =
+    quantity !== "" &&
+    (!Number.isInteger(Number(quantity)) || Number(quantity) <= 0);
+  const pricingState = useMemo(
+    () => getCategoryPricingState(category),
+    [category],
+  );
 
   const fetchedDate = new Intl.DateTimeFormat("fa-IR-u-ca-persian", {
     dateStyle: "short",
@@ -277,6 +290,29 @@ export function PriceCatalog({
     setSizeFilter("");
     setExpandedRows(new Set());
     setShowAllFactories(false);
+  };
+
+  const moveCategoryTabFocus = (
+    event: ReactKeyboardEvent<HTMLButtonElement>,
+    currentIndex: number,
+  ) => {
+    let targetIndex: number;
+    if (event.key === "ArrowLeft") {
+      targetIndex = (currentIndex + 1) % priceData.categories.length;
+    } else if (event.key === "ArrowRight") {
+      targetIndex =
+        (currentIndex - 1 + priceData.categories.length) %
+        priceData.categories.length;
+    } else if (event.key === "Home") {
+      targetIndex = 0;
+    } else if (event.key === "End") {
+      targetIndex = priceData.categories.length - 1;
+    } else {
+      return;
+    }
+    event.preventDefault();
+    changeCategory(priceData.categories[targetIndex].id);
+    categoryTabRefs.current[targetIndex]?.focus();
   };
 
   const clearFilters = () => {
@@ -304,13 +340,20 @@ export function PriceCatalog({
         role="tablist"
         aria-label={`نوع ${config.productLabel}`}
       >
-        {priceData.categories.map((item) => (
+        {priceData.categories.map((item, index) => (
           <button
             type="button"
             role="tab"
+            id={`${tabsId}-tab-${item.id}`}
             aria-selected={item.id === category.id}
+            aria-controls={`${tabsId}-panel-${item.id}`}
+            tabIndex={item.id === category.id ? 0 : -1}
             key={item.id}
+            ref={(node) => {
+              categoryTabRefs.current[index] = node;
+            }}
             onClick={() => changeCategory(item.id)}
+            onKeyDown={(event) => moveCategoryTabFocus(event, index)}
           >
             <span aria-hidden="true">{config.categoryIcons[item.id] ?? "◆"}</span>
             قیمت {item.label}
@@ -318,6 +361,12 @@ export function PriceCatalog({
         ))}
       </div>
 
+      <div
+        role="tabpanel"
+        id={`${tabsId}-panel-${category.id}`}
+        aria-labelledby={`${tabsId}-tab-${category.id}`}
+        tabIndex={0}
+      >
       <div className="rebar-layout">
         <div className="rebar-main">
           <section
@@ -327,16 +376,29 @@ export function PriceCatalog({
             <h3 id={`catalog-price-title-${category.id}`}>
               قیمت {category.label}
             </h3>
-            <p>
-              قیمت {category.label} امروز {category.summary.date} در بازه‌ای بین{" "}
-              <b>{summaryPrice(category.summary.min)}</b> تا{" "}
-              <b>{summaryPrice(category.summary.max)}</b> تومان
-              {taxIncluded
-                ? " (با احتساب ارزش افزوده) "
-                : " (بدون احتساب ارزش افزوده) "}
-              قرار دارد.
-            </p>
-            <div className="rebar-stats">
+            {!pricingState.hasPrices ? (
+              <p>
+                قیمت عددی {category.label} امروز اعلام نشده است. برای استعلام
+                قیمت و موجودی با واحد فروش تماس بگیرید.
+              </p>
+            ) : pricingState.units.length > 1 ? (
+              <p>
+                قیمت‌های {category.label} با واحدهای فروش متفاوت ثبت شده‌اند؛
+                مبلغ و واحد هر ردیف را در جدول بررسی کنید.
+              </p>
+            ) : (
+              <p>
+                قیمت {category.label} امروز {category.summary.date} در بازه‌ای
+                بین <b>{summaryPrice(category.summary.min)}</b> تا{" "}
+                <b>{summaryPrice(category.summary.max)}</b> تومان
+                {taxIncluded
+                  ? " (با احتساب ارزش افزوده) "
+                  : " (بدون احتساب ارزش افزوده) "}
+                قرار دارد.
+              </p>
+            )}
+            {pricingState.hasPrices && pricingState.units.length === 1 ? (
+              <div className="rebar-stats">
               <article className="is-max">
                 <StatIcon type="max" />
                 <span>بیشترین قیمت</span>
@@ -352,7 +414,15 @@ export function PriceCatalog({
               <article className="is-change">
                 <StatIcon type="change" />
                 <span>میزان نوسان روزانه</span>
-                <strong>{formatNumber(Math.abs(category.summary.percent))}٪</strong>
+                <strong>
+                  {
+                    getTrendPresentation(
+                      category.summary.status,
+                      category.summary.percent,
+                    ).direction
+                  }{" "}
+                  {formatNumber(Math.abs(category.summary.percent), 2)}٪
+                </strong>
                 <small>نسبت به روز قبل</small>
               </article>
               <article className="is-average">
@@ -361,7 +431,8 @@ export function PriceCatalog({
                 <strong>{summaryPrice(category.summary.average)}</strong>
                 <small>تومان</small>
               </article>
-            </div>
+              </div>
+            ) : null}
           </section>
 
           <p className="rebar-result-status" role="status" aria-live="polite">
@@ -408,12 +479,15 @@ export function PriceCatalog({
                         <th scope="col">محل تحویل</th>
                         <th scope="col">قیمت</th>
                         <th scope="col">نوسان</th>
-                        <th scope="col">نمودار</th>
                       </tr>
                     </thead>
                     <tbody>
                       {factory.rows.map((row) => {
                         const expanded = expandedRows.has(row.id);
+                        const trend = getTrendPresentation(
+                          row.status,
+                          row.percent,
+                        );
                         return (
                           <Fragment key={row.id}>
                             <tr className="rebar-row-group">
@@ -461,15 +535,11 @@ export function PriceCatalog({
                                 data-label="نوسان"
                                 className={`row-change is-${row.status}`}
                               >
-                                {formatNumber(Math.abs(row.percent))}٪
-                              </td>
-                              <td data-label="نمودار">
-                                <span
-                                  className="chart-glyph"
-                                  aria-label="روند قیمت"
-                                >
-                                  ↗
-                                </span>
+                                <span aria-hidden="true">{trend.symbol}</span>{" "}
+                                {trend.direction}{" "}
+                                {trend.amount
+                                  ? `${formatNumber(trend.amount, 2)}٪`
+                                  : ""}
                               </td>
                             </tr>
                             {expanded ? (
@@ -477,7 +547,7 @@ export function PriceCatalog({
                               <td
                                 className="rebar-row-detail"
                                 id={`row-detail-${row.id}`}
-                                colSpan={7}
+                                colSpan={6}
                               >
                                 <dl>
                                   {getRowDetails(
@@ -639,9 +709,18 @@ export function PriceCatalog({
                     min="1"
                     step="1"
                     value={quantity}
+                    aria-invalid={quantityInvalid}
+                    aria-describedby={
+                      quantityInvalid ? "rebar-quantity-error" : undefined
+                    }
                     onChange={(event) => setQuantity(event.target.value)}
                   />
                 </label>
+                {quantityInvalid ? (
+                  <small id="rebar-quantity-error" role="alert">
+                    تعداد شاخه باید یک عدد صحیح مثبت باشد.
+                  </small>
+                ) : null}
                 <p>
                   وزن تقریبی:
                   <strong>
@@ -676,11 +755,11 @@ export function PriceCatalog({
           </section>
         </aside>
       </div>
+      </div>
     </div>
   );
 }
 
-const rebarPriceData = importedPriceData as CatalogPriceData;
 const rebarConfig: PriceCatalogConfig = {
   productLabel: "میلگرد",
   initialCategoryId: "ribbed",
@@ -700,9 +779,41 @@ export default function RebarPrices({
   phoneHref: string;
   requestedView?: RebarViewRequest;
 }) {
+  const [priceData, setPriceData] = useState<CatalogPriceData | null>(null);
+  const [loadError, setLoadError] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    loadRebarPriceData()
+      .then((data) => {
+        if (active) setPriceData(data);
+      })
+      .catch(() => {
+        if (active) setLoadError(true);
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  if (loadError) {
+    return (
+      <p className="catalog-load-state" role="alert">
+        دریافت قیمت میلگرد ممکن نشد. لطفاً صفحه را دوباره بارگذاری کنید.
+      </p>
+    );
+  }
+  if (!priceData) {
+    return (
+      <p className="catalog-load-state" role="status">
+        در حال دریافت قیمت میلگرد…
+      </p>
+    );
+  }
+
   return (
     <PriceCatalog
-      priceData={rebarPriceData}
+      priceData={priceData}
       config={rebarConfig}
       phoneHref={phoneHref}
       requestedView={requestedView}
