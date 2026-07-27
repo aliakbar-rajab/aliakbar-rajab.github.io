@@ -147,14 +147,14 @@ test("homepage hero uses sharp landscape images", async () => {
   assert.match(component, /height="941"/);
 });
 
-test("homepage uses the supplied steel tread photo and rotates banners every five seconds", async () => {
+test("homepage uses the supplied steel tread photo and rotates banners every two seconds", async () => {
   const [component, css, texture] = await Promise.all([
     read("../app/IronDemo.tsx"),
     read("../app/globals.css"),
     readFile(new URL("../public/textures/chequered-plate.jpg", import.meta.url)),
   ]);
 
-  assert.match(component, /const HERO_SLIDE_INTERVAL_MS = 5_000/);
+  assert.match(component, /const HERO_SLIDE_INTERVAL_MS = 2_000/);
   assert.match(
     component,
     /window\.setInterval\(\(\) => \{[\s\S]*?\}, HERO_SLIDE_INTERVAL_MS\)/,

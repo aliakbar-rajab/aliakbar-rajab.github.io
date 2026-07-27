@@ -148,7 +148,7 @@ export const productGroups: ProductGroup[] = [
 ];
 
 const heroSlides = productGroups.slice(0, 3);
-const HERO_SLIDE_INTERVAL_MS = 5_000;
+const HERO_SLIDE_INTERVAL_MS = 2_000;
 
 const loadCatalogSearchGroups = createRetryableLoader<ProductGroup[]>(() =>
   Promise.all([
