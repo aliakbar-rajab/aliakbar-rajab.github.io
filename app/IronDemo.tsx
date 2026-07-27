@@ -148,7 +148,7 @@ export const productGroups: ProductGroup[] = [
 ];
 
 const heroSlides = productGroups.slice(0, 3);
-const HERO_SLIDE_INTERVAL_MS = 1_000;
+const HERO_SLIDE_INTERVAL_MS = 1_700;
 
 const loadCatalogSearchGroups = createRetryableLoader<ProductGroup[]>(() =>
   Promise.all([
@@ -897,15 +897,20 @@ export default function IronDemo() {
             }
           }}
         >
-          <img
-            className="hero-image"
-            src={slide.heroImage ?? slide.image}
-            alt=""
-            width="1672"
-            height="941"
-            decoding="async"
-            fetchPriority="high"
-          />
+          {heroSlides.map((item, index) => (
+            <img
+              className={`hero-image${
+                index === activeSlide ? " is-active" : ""
+              }`}
+              src={item.heroImage ?? item.image}
+              alt=""
+              width="1672"
+              height="941"
+              decoding="async"
+              fetchPriority={index === 0 ? "high" : "low"}
+              key={item.id}
+            />
+          ))}
           <div className="hero-overlay" />
           <div className="shell hero-content">
             <p className="hero-kicker">تأمین و استعلام مقاطع فولادی</p>

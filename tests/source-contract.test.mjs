@@ -150,7 +150,7 @@ test("homepage hero uses sharp landscape images", async () => {
   assert.match(component, /height="941"/);
 });
 
-test("homepage uses the supplied dense steel tread photo at native scale and rotates banners every second", async () => {
+test("homepage uses the supplied dense steel tread photo and cross-fades banners every 1.7 seconds", async () => {
   const [component, css, texture] = await Promise.all([
     read("../app/IronDemo.tsx"),
     read("../app/globals.css"),
@@ -159,10 +159,24 @@ test("homepage uses the supplied dense steel tread photo at native scale and rot
     ),
   ]);
 
-  assert.match(component, /const HERO_SLIDE_INTERVAL_MS = 1_000/);
+  assert.match(component, /const HERO_SLIDE_INTERVAL_MS = 1_700/);
   assert.match(
     component,
     /window\.setInterval\(\(\) => \{[\s\S]*?\}, HERO_SLIDE_INTERVAL_MS\)/,
+  );
+  assert.match(
+    component,
+    /heroSlides\.map\(\(item, index\) => \([\s\S]*?className=\{`hero-image\$\{/,
+  );
+  assert.match(
+    css,
+    /\.hero-image\s*\{[^}]*opacity:\s*0[^}]*transition:[^}]*opacity 650ms ease-in-out/is,
+  );
+  assert.match(css, /\.hero-image\.is-active\s*\{[^}]*opacity:\s*1/is);
+  assert.doesNotMatch(css, /@keyframes hero-reveal/);
+  assert.match(
+    css,
+    /nth-child\(even of \.rebar-row-group\)[\s\S]*?background:\s*#3b3b3e/is,
   );
   assert.match(
     css,
