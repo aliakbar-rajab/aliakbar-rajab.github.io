@@ -19,11 +19,11 @@
   --shell-gutter: 2rem;
 
   /* Extruded hero panel: physical depth of the raised display panel. */
-  --hero-radius: 26px;
-  --hero-depth: 14px;
-  --hero-side-depth: 8px;
+  --hero-radius: 28px;
+  --hero-depth: 30px;
+  --hero-side-depth: 12px;
   --hero-inset: 1rem; /* must stay <= 1rem so .hero .shell keeps page alignment */
-  --hero-overlap: 0.75rem;
+  --hero-backdrop: #17171b;
   font-family:
     "Vazirmatn", Tahoma, Arial, sans-serif;
   color: var(--ink);
@@ -539,13 +539,23 @@ noscript {
   font-weight: 900;
 }
 
-/* Outer wrapper: carries the extruded slab, so it must stay overflow: visible. */
+/*
+ * Outer wrapper: carries the extruded slab, so it must stay overflow: visible.
+ * The inset is padding rather than margin so the dark backdrop wraps the panel;
+ * that backdrop is what the next section fades out of, so no seam is left.
+ */
 .hero-frame {
   position: relative;
   z-index: 2;
   overflow: visible;
-  margin-block: var(--hero-inset) calc(var(--hero-overlap) * -1);
-  margin-inline: var(--hero-inset);
+  padding: var(--hero-inset);
+  padding-block-end: calc(var(--hero-inset) + var(--hero-depth));
+  background: linear-gradient(
+    180deg,
+    #2c2c31 0,
+    #1c1c21 calc(var(--hero-inset) * 1.6),
+    var(--hero-backdrop) 100%
+  );
 }
 
 /* The extruded slab, offset down/right so only its bottom and side edges show. */
@@ -553,40 +563,47 @@ noscript {
   content: "";
   position: absolute;
   z-index: 0;
-  inset: 0;
+  top: var(--hero-inset);
+  right: var(--hero-inset);
+  bottom: calc(var(--hero-inset) + var(--hero-depth));
+  left: var(--hero-inset);
   border-radius: var(--hero-radius);
   background:
-    /* catch-light along the top of the exposed bottom lip */
+    /* machined chamfer catching the light at the top of the exposed lip */
     linear-gradient(
       180deg,
       transparent calc(100% - var(--hero-depth)),
-      rgb(226 230 238 / 24%) calc(100% - var(--hero-depth) + 1px),
-      transparent calc(100% - var(--hero-depth) + 3px)
+      #c2c6cf calc(100% - var(--hero-depth)),
+      #8d919b calc(100% - var(--hero-depth) + 2px),
+      transparent calc(100% - var(--hero-depth) + 6px)
     ),
-    /* faint warm bounce from the brand yellow near the bottom edge */
+    /* warm bounce from the brand yellow just above the base */
     linear-gradient(
       180deg,
       transparent calc(100% - var(--hero-depth) * 0.6),
-      rgb(246 181 0 / 15%) calc(100% - var(--hero-depth) * 0.2),
-      transparent 100%
+      rgb(246 181 0 / 20%) calc(100% - var(--hero-depth) * 0.32),
+      transparent calc(100% - var(--hero-depth) * 0.06)
     ),
-    /* slight lift on the side edge */
+    /* the side edge turns away from the light, so it stays darker */
     linear-gradient(
       90deg,
       transparent calc(100% - var(--hero-side-depth)),
-      rgb(226 230 238 / 6%) 100%
+      rgb(8 8 10 / 42%) 100%
     ),
-    /* dark charcoal metal body */
+    /* brushed charcoal body, ramping down the front face to the contact line */
     linear-gradient(
       180deg,
-      #4c4c53 0%,
-      #2b2b30 45%,
-      #1a1a1d calc(100% - var(--hero-depth)),
-      #121214 100%
+      #55565d 0%,
+      #3d3e44 45%,
+      #313238 calc(100% - var(--hero-depth)),
+      #4c4d55 calc(100% - var(--hero-depth) + 1px),
+      #3a3b42 calc(100% - var(--hero-depth) * 0.62),
+      #232429 calc(100% - var(--hero-depth) * 0.26),
+      #0f0f11 100%
     );
   box-shadow:
-    0 26px 44px -16px rgb(9 9 11 / 60%),
-    0 10px 18px -8px rgb(9 9 11 / 45%);
+    0 36px 60px -22px rgb(4 4 6 / 85%),
+    0 16px 28px -14px rgb(4 4 6 / 65%);
   transform: translate(var(--hero-side-depth), var(--hero-depth));
 }
 
@@ -798,13 +815,15 @@ noscript {
     2752px auto;
 }
 
-/* Section right under the hero: fade the plate in under the extruded edge. */
+/*
+ * Section right under the hero. It opens on the same colour as the hero
+ * backdrop, so there is no edge to see, then eases the plate in over a long
+ * ramp. The extra top padding keeps the heading clear of the panel's shadow.
+ */
 .hero-frame + .products {
   position: relative;
   z-index: 1;
-  padding-block-start: calc(
-    clamp(4rem, 8vw, 7rem) + var(--hero-overlap) + var(--hero-depth)
-  );
+  padding-block-start: calc(clamp(4rem, 8vw, 7rem) + var(--hero-depth));
 }
 
 .hero-frame + .products::before {
@@ -813,17 +832,18 @@ noscript {
   z-index: 0;
   inset-block-start: 0;
   inset-inline: 0;
-  height: clamp(5rem, 12vw, 9rem);
-  background:
-    /* narrow dark metallic lip */
-    linear-gradient(180deg, #141416 0 3px, transparent 3px),
-    linear-gradient(
-      180deg,
-      rgb(18 18 21 / 92%),
-      rgb(18 18 21 / 55%) 38%,
-      transparent 100%
-    );
-  box-shadow: inset 0 1px 0 rgb(226 230 238 / 8%);
+  height: clamp(9rem, 20vw, 15rem);
+  background: linear-gradient(
+    180deg,
+    var(--hero-backdrop) 0%,
+    var(--hero-backdrop) 12%,
+    rgb(23 23 27 / 88%) 26%,
+    rgb(23 23 27 / 68%) 42%,
+    rgb(23 23 27 / 44%) 58%,
+    rgb(23 23 27 / 24%) 74%,
+    rgb(23 23 27 / 9%) 88%,
+    transparent 100%
+  );
   pointer-events: none;
 }
 
@@ -2114,10 +2134,9 @@ tbody td a,
 @media (max-width: 900px) {
   :root {
     --hero-radius: 22px;
-    --hero-depth: 11px;
-    --hero-side-depth: 6px;
+    --hero-depth: 22px;
+    --hero-side-depth: 9px;
     --hero-inset: 0.75rem;
-    --hero-overlap: 0.6rem;
   }
 
   html {
@@ -2347,11 +2366,10 @@ tbody td a,
 @media (max-width: 640px) {
   :root {
     --shell-gutter: 1.25rem;
-    --hero-radius: 16px;
-    --hero-depth: 8px;
-    --hero-side-depth: 5px;
+    --hero-radius: 18px;
+    --hero-depth: 15px;
+    --hero-side-depth: 6px;
     --hero-inset: 0.5rem;
-    --hero-overlap: 0.4rem;
   }
 
   .header-main {
