@@ -1,7 +1,7 @@
 (() => {
   "use strict";
 
-  const SESSION_KEY = "bonyan-foulad-daria-preloader-seen-v4";
+  const SESSION_KEY = "bonyan-foulad-daria-preloader-seen-v5";
   const root = document.documentElement;
   let finished = false;
   let watchdog = 0;
