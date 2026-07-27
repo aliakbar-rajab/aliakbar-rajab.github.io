@@ -692,14 +692,17 @@ noscript {
 .about {
   background-color: #d9dde0;
   background-image:
-    linear-gradient(rgb(248 249 250 / 74%), rgb(248 249 250 / 74%)),
-    url("/textures/steel-checker-plate.svg");
+    linear-gradient(rgb(248 249 250 / 66%), rgb(248 249 250 / 66%)),
+    url("/textures/chequered-plate.jpg");
   background-position:
     center,
     center top;
+  background-repeat:
+    no-repeat,
+    repeat-y;
   background-size:
     auto,
-    120px 120px;
+    max(100%, 1600px) auto;
 }
 
 .section-heading {
