@@ -170,10 +170,11 @@ test("rebar prices are sourced, validated, and refreshed on a schedule", async (
 });
 
 test("beam and hash prices are sourced and exposed through the catalog", async () => {
-  const [component, navigation, fetcher, priceData, packageJson] =
+  const [component, navigation, styles, fetcher, priceData, packageJson] =
     await Promise.all([
       read("../app/BeamPrices.tsx"),
       read("../app/IronDemo.tsx"),
+      read("../app/globals.css"),
       read("../scripts/fetch-beam-prices.mjs"),
       read("../app/data/beam-prices.json").then(JSON.parse),
       read("../package.json").then(JSON.parse),
@@ -189,6 +190,11 @@ test("beam and hash prices are sourced and exposed through the catalog", async (
   assert.match(navigation, /کارخانه‌های تیرآهن/);
   assert.match(navigation, /سایزهای تیرآهن/);
   assert.match(navigation, /<BeamPrices/);
+  assert.match(styles, /grid-template-areas:\s*"other types factories sizes"/);
+  assert.match(
+    styles,
+    /\.mega-other-products > div\s*\{[^}]*grid-template-columns:\s*1fr/is,
+  );
   assert.match(fetcher, /__NEXT_DATA__/);
   assert.match(
     fetcher,
