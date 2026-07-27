@@ -189,6 +189,17 @@ noscript {
   gap: 0.75rem;
 }
 
+.brand-header-logo {
+  min-height: 0;
+}
+
+.brand-header-logo img {
+  width: 7rem;
+  height: 7rem;
+  display: block;
+  object-fit: contain;
+}
+
 .brand-mark {
   width: 3.1rem;
   height: 3.1rem;
@@ -2010,6 +2021,11 @@ tbody td a,
     height: 2.65rem;
   }
 
+  .brand-header-logo img {
+    width: 5.5rem;
+    height: 5.5rem;
+  }
+
   .brand-copy span {
     font-size: 0.55rem;
   }
@@ -2219,6 +2235,11 @@ tbody td a,
     overflow: hidden;
     font-size: 0.5rem;
     text-overflow: ellipsis;
+  }
+
+  .brand-header-logo img {
+    width: 5rem;
+    height: 5rem;
   }
 
   .site-search input {

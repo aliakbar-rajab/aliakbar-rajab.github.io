@@ -5,11 +5,17 @@ import test from "node:test";
 const read = (path) => readFile(new URL(path, import.meta.url), "utf8");
 
 test("brand, contact details, RTL, and palette match the approved contract", async () => {
-  const [component, html, css, preloader] = await Promise.all([
+  const [component, html, css, preloader, headerLogo] = await Promise.all([
     read("../app/IronDemo.tsx"),
     read("../index.html"),
     read("../app/globals.css"),
     read("../public/preloader/fb-preloader.js"),
+    readFile(
+      new URL(
+        "../public/brand/bonyan-foulad-daria-logo.png",
+        import.meta.url,
+      ),
+    ),
   ]);
   const combined = `${component}\n${html}\n${preloader}`;
 
@@ -30,6 +36,14 @@ test("brand, contact details, RTL, and palette match the approved contract", asy
   assert.doesNotMatch(combined, /mailto:|[\w.+-]+@[\w.-]+\.[a-z]{2,}/i);
   assert.match(css, /--brand-yellow:\s*#f6b500/i);
   assert.match(css, /--brand-dark:\s*#3b3b3e/i);
+  assert.match(component, /<Brand headerLogo \/>/);
+  assert.match(component, /src="\/brand\/bonyan-foulad-daria-logo\.png"/);
+  assert.match(
+    css,
+    /\.brand-header-logo img\s*\{[^}]*width:\s*7rem[^}]*height:\s*7rem/is,
+  );
+  assert.deepEqual([...headerLogo.subarray(0, 4)], [0x89, 0x50, 0x4e, 0x47]);
+  assert.ok(headerLogo.length > 1_400_000);
 });
 
 test("there is no sales form or simulated lead submission", async () => {

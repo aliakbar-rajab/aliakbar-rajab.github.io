@@ -240,18 +240,35 @@ function useMediaQuery(query: string) {
   );
 }
 
-function Brand() {
+function Brand({ headerLogo = false }: { headerLogo?: boolean }) {
   return (
-    <a className="brand" href="#top" aria-label="بنیان فولاد داریا، صفحه اصلی">
-      <span className="brand-mark" aria-hidden="true">
-        <i />
-        <i />
-        <i />
-      </span>
-      <span className="brand-copy">
-        <strong>بنیان فولاد داریا</strong>
-        <span>BONYAN FOULAD DARIA</span>
-      </span>
+    <a
+      className={`brand${headerLogo ? " brand-header-logo" : ""}`}
+      href="#top"
+      aria-label="بنیان فولاد داریا، صفحه اصلی"
+    >
+      {headerLogo ? (
+        <img
+          src="/brand/bonyan-foulad-daria-logo.png"
+          alt=""
+          width="1254"
+          height="1254"
+          decoding="async"
+          fetchPriority="high"
+        />
+      ) : (
+        <>
+          <span className="brand-mark" aria-hidden="true">
+            <i />
+            <i />
+            <i />
+          </span>
+          <span className="brand-copy">
+            <strong>بنیان فولاد داریا</strong>
+            <span>BONYAN FOULAD DARIA</span>
+          </span>
+        </>
+      )}
     </a>
   );
 }
@@ -583,7 +600,7 @@ export default function IronDemo() {
 
       <header className="site-header">
         <div className="shell header-main">
-          <Brand />
+          <Brand headerLogo />
 
           <form className="site-search" role="search" onSubmit={submitSearch}>
             <label className="sr-only" htmlFor="site-search">
