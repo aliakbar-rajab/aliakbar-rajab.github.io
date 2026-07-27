@@ -955,6 +955,10 @@ tbody td a,
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
+.rebar-kind-tabs.product-kind-tabs {
+  grid-template-columns: repeat(auto-fit, minmax(10.5rem, 1fr));
+}
+
 .rebar-kind-tabs button {
   min-height: 3.75rem;
   display: flex;

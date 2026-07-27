@@ -214,3 +214,61 @@ test("beam and hash prices are sourced and exposed through the catalog", async (
       .factories.length >= 8,
   );
 });
+
+test("all remaining product groups expose complete live price catalogs", async () => {
+  const [component, navigation, fetcher, priceData, packageJson] =
+    await Promise.all([
+      read("../app/ProductPrices.tsx"),
+      read("../app/IronDemo.tsx"),
+      read("../scripts/fetch-product-prices.mjs"),
+      read("../app/data/product-prices.json").then(JSON.parse),
+      read("../package.json").then(JSON.parse),
+    ]);
+
+  assert.deepEqual(
+    priceData.catalogs.map((catalog) => catalog.id),
+    ["sheet", "profile", "pipe", "angle", "channel", "wire"],
+  );
+  assert.deepEqual(
+    Object.fromEntries(
+      priceData.catalogs.map((catalog) => [
+        catalog.id,
+        catalog.categories.length,
+      ]),
+    ),
+    {
+      sheet: 15,
+      profile: 7,
+      pipe: 10,
+      angle: 1,
+      channel: 1,
+      wire: 6,
+    },
+  );
+  const rows = priceData.catalogs.flatMap((catalog) =>
+    catalog.categories.flatMap((category) =>
+      category.factories.flatMap((factory) => factory.rows),
+    ),
+  );
+  assert.ok(rows.length >= 1_500);
+  assert.ok(
+    priceData.catalogs.every((catalog) =>
+      catalog.categories.every((category) =>
+        category.factories.some((factory) => factory.rows.length > 0),
+      ),
+    ),
+  );
+  assert.ok(rows.some((row) => row.specifications?.length));
+  assert.match(component, /PriceCatalog/);
+  assert.match(navigation, /<ProductPrices/);
+  assert.match(navigation, /getProductPriceCatalog/);
+  assert.match(navigation, /انواع \{megaCatalog\.label\}/);
+  assert.match(fetcher, /__NEXT_DATA__/);
+  assert.match(fetcher, /mapWithConcurrency/);
+  assert.match(fetcher, /ورق-سیاه/);
+  assert.match(fetcher, /پروفیل-صنعتی/);
+  assert.match(fetcher, /لوله-مانیسمان/);
+  assert.match(fetcher, /توری-حصاری/);
+  assert.match(fetcher, /existingDataIsUsable/);
+  assert.match(packageJson.scripts["prices:update"], /prices:update:products/);
+});

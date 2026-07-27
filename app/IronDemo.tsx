@@ -10,6 +10,13 @@ import {
 import { filterProductGroups } from "./site-logic.mjs";
 import RebarPrices, { type RebarViewRequest } from "./RebarPrices";
 import BeamPrices, { type BeamViewRequest } from "./BeamPrices";
+import ProductPrices from "./ProductPrices";
+import { localizeCatalogValue } from "./catalog-utils";
+import {
+  getProductPriceCatalog,
+  type ProductCatalogId,
+  type ProductViewRequest,
+} from "./product-price-data";
 
 type ProductRow = {
   product: string;
@@ -18,13 +25,28 @@ type ProductRow = {
 };
 
 type ProductGroup = {
-  id: string;
+  id: ProductGroupId;
   label: string;
   shortLabel: string;
   image: string;
   description: string;
   rows: ProductRow[];
 };
+
+type ProductGroupId = "rebar" | "beam" | ProductCatalogId;
+
+const liveProductCatalogIds: ProductCatalogId[] = [
+  "sheet",
+  "profile",
+  "pipe",
+  "angle",
+  "channel",
+  "wire",
+];
+
+function isProductCatalogId(value: string): value is ProductCatalogId {
+  return liveProductCatalogIds.includes(value as ProductCatalogId);
+}
 
 const phones = [
   { label: "021-88888180", href: "tel:+982188888180" },
@@ -253,7 +275,7 @@ function SectionTitle({
 export default function IronDemo() {
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [productsOpen, setProductsOpen] = useState(false);
-  const [megaProduct, setMegaProduct] = useState<"rebar" | "beam">("rebar");
+  const [megaProduct, setMegaProduct] = useState<ProductGroupId>("rebar");
   const [activeSlide, setActiveSlide] = useState(0);
   const [carouselPaused, setCarouselPaused] = useState(false);
   const [activeGroup, setActiveGroup] = useState(productGroups[0].id);
@@ -266,6 +288,10 @@ export default function IronDemo() {
   const [beamViewRequest, setBeamViewRequest] = useState<BeamViewRequest>({
     requestId: 0,
   });
+  const [productViewRequest, setProductViewRequest] =
+    useState<ProductViewRequest>({
+      requestId: 0,
+    });
 
   const isMobile = useMediaQuery("(max-width: 900px)");
   const isDirectCallDevice = useMediaQuery(
@@ -285,6 +311,14 @@ export default function IronDemo() {
     filteredGroups.find((group) => group.id === activeGroup) ??
     filteredGroups[0] ??
     null;
+  const megaCatalog = isProductCatalogId(megaProduct)
+    ? getProductPriceCatalog(megaProduct)
+    : null;
+  const megaInitialCategory = megaCatalog
+    ? (megaCatalog.categories.find(
+        (category) => category.id === megaCatalog.initialCategoryId,
+      ) ?? megaCatalog.categories[0])
+    : null;
 
   useEffect(() => {
     if (reduceMotion || carouselPaused) return undefined;
@@ -314,11 +348,7 @@ export default function IronDemo() {
     };
   }, [productsOpen]);
 
-  const goToGroup = (groupId: string) => {
-    setCommittedSearch("");
-    setSearchInput("");
-    setSearchMessage("");
-    setActiveGroup(groupId);
+  const resetGroupView = (groupId: ProductGroupId) => {
     if (groupId === "rebar") {
       setRebarViewRequest((current) => ({
         requestId: current.requestId + 1,
@@ -329,7 +359,21 @@ export default function IronDemo() {
         requestId: current.requestId + 1,
         categoryId: "beam",
       }));
+    } else if (isProductCatalogId(groupId)) {
+      const catalog = getProductPriceCatalog(groupId);
+      setProductViewRequest((current) => ({
+        requestId: current.requestId + 1,
+        categoryId: catalog.initialCategoryId,
+      }));
     }
+  };
+
+  const goToGroup = (groupId: ProductGroupId) => {
+    setCommittedSearch("");
+    setSearchInput("");
+    setSearchMessage("");
+    setActiveGroup(groupId);
+    resetGroupView(groupId);
     setProductsOpen(false);
     setMobileNavOpen(false);
     document.getElementById("prices")?.scrollIntoView({
@@ -374,6 +418,26 @@ export default function IronDemo() {
     });
   };
 
+  const goToProductView = (
+    catalogId: ProductCatalogId,
+    view: Omit<ProductViewRequest, "requestId">,
+  ) => {
+    setCommittedSearch("");
+    setSearchInput("");
+    setSearchMessage("");
+    setActiveGroup(catalogId);
+    setProductViewRequest((current) => ({
+      ...view,
+      requestId: current.requestId + 1,
+    }));
+    setProductsOpen(false);
+    setMobileNavOpen(false);
+    document.getElementById("prices")?.scrollIntoView({
+      behavior: reduceMotion ? "auto" : "smooth",
+      block: "start",
+    });
+  };
+
   const submitSearch = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const query = searchInput.trim();
@@ -381,9 +445,12 @@ export default function IronDemo() {
     setCommittedSearch(query);
     if (!query) {
       setActiveGroup(productGroups[0].id);
+      resetGroupView(productGroups[0].id);
       setSearchMessage("همه محصولات نمایش داده می‌شوند.");
     } else if (results.length > 0) {
-      setActiveGroup(results[0].id);
+      const resultGroupId = results[0].id as ProductGroupId;
+      setActiveGroup(resultGroupId);
+      resetGroupView(resultGroupId);
       const count = results.reduce((sum, group) => sum + group.rows.length, 0);
       setSearchMessage(`${count.toLocaleString("fa-IR")} نتیجه برای «${query}» پیدا شد.`);
     } else {
@@ -412,6 +479,7 @@ export default function IronDemo() {
     setCommittedSearch("");
     setSearchInput("");
     setActiveGroup(group.id);
+    resetGroupView(group.id);
     tabRefs.current[target]?.focus();
   };
 
@@ -494,7 +562,7 @@ export default function IronDemo() {
                 onClick={() => {
                   const nextOpen = !productsOpen;
                   if (nextOpen) {
-                    setMegaProduct(activeGroup === "beam" ? "beam" : "rebar");
+                    setMegaProduct(activeGroup);
                   }
                   setProductsOpen(nextOpen);
                 }}
@@ -566,7 +634,7 @@ export default function IronDemo() {
                         </div>
                       </section>
                     </>
-                  ) : (
+                  ) : megaProduct === "beam" ? (
                     <>
                       <section className="mega-rebar-types">
                         <h2>انواع تیرآهن</h2>
@@ -623,35 +691,84 @@ export default function IronDemo() {
                         </div>
                       </section>
                     </>
-                  )}
+                  ) : megaCatalog && megaInitialCategory ? (
+                    <>
+                      <section className="mega-rebar-types">
+                        <h2>انواع {megaCatalog.label}</h2>
+                        {megaCatalog.categories.map((category) => (
+                          <button
+                            type="button"
+                            key={category.id}
+                            onClick={() =>
+                              goToProductView(megaProduct, {
+                                categoryId: category.id,
+                              })
+                            }
+                          >
+                            قیمت {category.label}
+                          </button>
+                        ))}
+                      </section>
+
+                      <section className="mega-rebar-factories">
+                        <h2>
+                          {megaInitialCategory.groupingLabel}‌های{" "}
+                          {megaCatalog.label}
+                        </h2>
+                        <div>
+                          {megaInitialCategory.filters.factories
+                            .slice(0, 16)
+                            .map((factory) => (
+                              <button
+                                type="button"
+                                key={factory}
+                                onClick={() =>
+                                  goToProductView(megaProduct, {
+                                    categoryId: megaCatalog.initialCategoryId,
+                                    factory,
+                                  })
+                                }
+                              >
+                                {megaCatalog.label} {factory}
+                              </button>
+                            ))}
+                        </div>
+                      </section>
+
+                      <section className="mega-rebar-sizes">
+                        <h2>سایزهای {megaCatalog.label}</h2>
+                        <div>
+                          {megaInitialCategory.filters.sizes
+                            .slice(0, 16)
+                            .map((size) => (
+                              <button
+                                type="button"
+                                key={size}
+                                onClick={() =>
+                                  goToProductView(megaProduct, {
+                                    categoryId: megaCatalog.initialCategoryId,
+                                    size,
+                                  })
+                                }
+                              >
+                                {megaCatalog.label}{" "}
+                                {localizeCatalogValue(size)}
+                              </button>
+                            ))}
+                        </div>
+                      </section>
+                    </>
+                  ) : null}
 
                   <section className="mega-other-products">
-                    <h2>سایر محصولات</h2>
+                    <h2>گروه محصولات</h2>
                     <div>
-                      <button
-                        type="button"
-                        aria-pressed={megaProduct === "rebar"}
-                        onClick={() => setMegaProduct("rebar")}
-                      >
-                        قیمت میلگرد
-                      </button>
-                      <button
-                        type="button"
-                        aria-pressed={megaProduct === "beam"}
-                        onClick={() => setMegaProduct("beam")}
-                      >
-                        قیمت تیرآهن
-                      </button>
-                      {productGroups
-                        .filter(
-                          (group) =>
-                            group.id !== "rebar" && group.id !== "beam",
-                        )
-                        .map((group) => (
+                      {productGroups.map((group) => (
                           <button
                             type="button"
                             key={group.id}
-                            onClick={() => goToGroup(group.id)}
+                            aria-pressed={megaProduct === group.id}
+                            onClick={() => setMegaProduct(group.id)}
                           >
                             قیمت {group.label}
                           </button>
@@ -799,7 +916,7 @@ export default function IronDemo() {
             <SectionTitle
               eyebrow="قیمت روز بازار"
               title="قیمت روز آهن و فولاد"
-              description="قیمت میلگرد از مرجع بازار بروزرسانی می‌شود؛ قیمت قطعی، موجودی و زمان تحویل را با واحد فروش تأیید کنید."
+              description="قیمت همه محصولات از مرجع بازار بروزرسانی می‌شود؛ قیمت قطعی، موجودی و زمان تحویل را با واحد فروش تأیید کنید."
             />
 
             <p className="search-status" role="status" aria-live="polite">
@@ -812,6 +929,7 @@ export default function IronDemo() {
                     setSearchInput("");
                     setSearchMessage("همه محصولات نمایش داده می‌شوند.");
                     setActiveGroup(productGroups[0].id);
+                    resetGroupView(productGroups[0].id);
                   }}
                 >
                   پاک‌کردن جست‌وجو
@@ -836,10 +954,7 @@ export default function IronDemo() {
                     }}
                     onKeyDown={(event) => moveTabFocus(event, index)}
                     onClick={() => {
-                      setCommittedSearch("");
-                      setSearchInput("");
-                      setSearchMessage("");
-                      setActiveGroup(group.id);
+                      goToGroup(group.id);
                     }}
                   >
                     {group.shortLabel}
@@ -859,6 +974,13 @@ export default function IronDemo() {
                 key={beamViewRequest.requestId}
                 phoneHref={contactHref}
                 requestedView={beamViewRequest}
+              />
+            ) : visibleGroup && isProductCatalogId(visibleGroup.id) ? (
+              <ProductPrices
+                key={`${visibleGroup.id}-${productViewRequest.requestId}`}
+                catalogId={visibleGroup.id}
+                phoneHref={contactHref}
+                requestedView={productViewRequest}
               />
             ) : visibleGroup ? (
               <div

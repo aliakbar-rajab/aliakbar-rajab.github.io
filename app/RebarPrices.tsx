@@ -1,10 +1,17 @@
 import { Fragment, useId, useMemo, useState } from "react";
 import importedPriceData from "./data/rebar-prices.json";
+import { localizeCatalogValue } from "./catalog-utils";
 
-type CatalogRow = {
+export type CatalogSpecification = {
+  label: string;
+  value: string;
+};
+
+export type CatalogRow = {
   id: number;
   title: string;
   size: string;
+  specification?: string;
   standard: string;
   grade: string;
   branchLength: string;
@@ -18,16 +25,17 @@ type CatalogRow = {
   status: string;
   updatedAt: number;
   updatedDate: string;
+  specifications?: CatalogSpecification[];
 };
 
-type CatalogFactory = {
+export type CatalogFactory = {
   name: string;
   updatedAt: number;
   updatedDate: string;
   rows: CatalogRow[];
 };
 
-type CatalogCategory = {
+export type CatalogCategory = {
   id: string;
   label: string;
   groupingLabel: string;
@@ -130,6 +138,50 @@ function TaxSwitch({
       <span>ارزش افزوده</span>
     </button>
   );
+}
+
+function getRowDetails(
+  row: CatalogRow,
+  factoryName: string,
+  groupingLabel: string,
+) {
+  if (row.specifications?.length) {
+    return [
+      { label: "نام محصول", value: row.title },
+      ...row.specifications,
+      { label: "محل تحویل", value: row.delivery || "—" },
+      { label: "واحد", value: row.unit || "—" },
+      {
+        label: groupingLabel,
+        value: row.factory || factoryName || "—",
+      },
+      {
+        label: "آخرین بروزرسانی",
+        value: row.updatedDate || "—",
+      },
+    ];
+  }
+
+  return [
+    { label: "نام محصول", value: row.title },
+    { label: "حالت", value: row.form || "—" },
+    { label: "وزن تقریبی", value: row.approximateWeight || "—" },
+    {
+      label: "طول شاخه",
+      value: row.branchLength
+        ? row.branchLength.includes("متر")
+          ? row.branchLength
+          : `${row.branchLength} متر`
+        : "—",
+    },
+    { label: "گرید", value: row.grade || "—" },
+    { label: "واحد", value: row.unit || "—" },
+    {
+      label: groupingLabel,
+      value: row.factory || factoryName || "—",
+    },
+    { label: "آخرین بروزرسانی", value: row.updatedDate || "—" },
+  ];
 }
 
 export function PriceCatalog({
@@ -377,10 +429,15 @@ export function PriceCatalog({
                                 </button>
                               </td>
                               <td data-label="سایز">
-                                {formatNumber(Number(row.size), 1)}
+                                {localizeCatalogValue(row.size)}
                               </td>
                               <td data-label={category.specificationLabel}>
-                                {row.standard || row.grade || "—"}
+                                {localizeCatalogValue(
+                                  row.specification ||
+                                    row.standard ||
+                                    row.grade ||
+                                    "",
+                                )}
                               </td>
                               <td data-label="محل تحویل">
                                 {row.delivery || "—"}
@@ -423,44 +480,20 @@ export function PriceCatalog({
                                 colSpan={7}
                               >
                                 <dl>
-                                  <div>
-                                    <dt>نام محصول</dt>
-                                    <dd>{row.title}</dd>
-                                  </div>
-                                  <div>
-                                    <dt>حالت</dt>
-                                    <dd>{row.form || "—"}</dd>
-                                  </div>
-                                  <div>
-                                    <dt>وزن تقریبی</dt>
-                                    <dd>{row.approximateWeight || "—"}</dd>
-                                  </div>
-                                  <div>
-                                    <dt>طول شاخه</dt>
-                                    <dd>
-                                      {row.branchLength
-                                        ? row.branchLength.includes("متر")
-                                          ? row.branchLength
-                                          : `${row.branchLength} متر`
-                                        : "—"}
-                                    </dd>
-                                  </div>
-                                  <div>
-                                    <dt>گرید</dt>
-                                    <dd>{row.grade || "—"}</dd>
-                                  </div>
-                                  <div>
-                                    <dt>واحد</dt>
-                                    <dd>{row.unit}</dd>
-                                  </div>
-                                  <div>
-                                    <dt>{category.groupingLabel}</dt>
-                                    <dd>{row.factory || factory.name}</dd>
-                                  </div>
-                                  <div>
-                                    <dt>آخرین بروزرسانی</dt>
-                                    <dd>{row.updatedDate || "—"}</dd>
-                                  </div>
+                                  {getRowDetails(
+                                    row,
+                                    factory.name,
+                                    category.groupingLabel,
+                                  ).map((detail, index) => (
+                                    <div
+                                      key={`${row.id}-${detail.label}-${index}`}
+                                    >
+                                      <dt>{detail.label}</dt>
+                                      <dd>
+                                        {localizeCatalogValue(detail.value)}
+                                      </dd>
+                                    </div>
+                                  ))}
                                 </dl>
                               </td>
                               </tr>
@@ -546,7 +579,7 @@ export function PriceCatalog({
                 <option value="">همه سایزها</option>
                 {category.filters.sizes.map((size) => (
                   <option value={size} key={size}>
-                    سایز {formatNumber(Number(size), 1)}
+                    سایز {localizeCatalogValue(size)}
                   </option>
                 ))}
               </select>

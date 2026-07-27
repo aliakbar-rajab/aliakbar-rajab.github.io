@@ -38,4 +38,8 @@ test("built JavaScript has no external image or fake form dependency", async () 
   assert.match(javascript, /BONYAN FOULAD DARIA/);
   assert.match(javascript, /قیمت تیرآهن هاش/);
   assert.match(javascript, /کارخانه‌های تیرآهن/);
+  assert.match(javascript, /ورق ضد سایش/);
+  assert.match(javascript, /پروفیل صنعتی/);
+  assert.match(javascript, /لوله مانیسمان/);
+  assert.match(javascript, /توری حصاری/);
 });
