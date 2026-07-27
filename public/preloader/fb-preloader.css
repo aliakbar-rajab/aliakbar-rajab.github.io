@@ -83,6 +83,10 @@
   font-size: 0.75em;
 }
 
+.fb-preloader__brand strong .fb-preloader__accent {
+  font-size: 0.5em;
+}
+
 .fb-preloader__skip {
   position: absolute;
   z-index: 2;

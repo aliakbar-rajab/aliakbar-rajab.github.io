@@ -72,6 +72,10 @@ test("preloader is session-scoped and fail-open", async () => {
     css,
     /\.fb-preloader__accent\s*\{[^}]*color:\s*#f6b500[^}]*font-size:\s*0\.75em/is,
   );
+  assert.match(
+    css,
+    /\.fb-preloader__brand strong \.fb-preloader__accent\s*\{[^}]*font-size:\s*0\.5em/is,
+  );
   assert.match(script, /<span>بنیان فولاد<\/span>/);
   assert.match(script, /class="fb-preloader__accent">داریا<\/span>/);
   assert.match(script, /<span>BONYAN FOULAD<\/span>/);
