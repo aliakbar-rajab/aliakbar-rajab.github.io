@@ -187,6 +187,43 @@ test("known source ambiguities are represented honestly", async () => {
   );
 });
 
+test("F17: product groups carry no placeholder search rows", async () => {
+  const { productGroups } = await import("../app/IronDemo.tsx");
+
+  assert.ok(productGroups.length > 0, "there should be product groups");
+  for (const group of productGroups) {
+    assert.deepEqual(
+      group.rows,
+      [],
+      `${group.id} must not carry hardcoded rows: search always runs against the live catalogs, so these only ever surfaced when the live load was pending or failed`,
+    );
+  }
+});
+
+test("F17: every searchable row is built from live catalog data", async () => {
+  const { productGroups } = await import("../app/IronDemo.tsx");
+  const [rebar, beam, products] = await Promise.all([
+    readJson("../app/data/rebar-prices.json"),
+    readJson("../app/data/beam-prices.json"),
+    readJson("../app/data/product-prices.json"),
+  ]);
+
+  const groups = buildCatalogSearchGroups(productGroups, {
+    rebar,
+    beam,
+    products,
+  });
+  const rows = groups.flatMap((group) => group.rows);
+
+  assert.ok(rows.length > 0, "the live builder must supply the rows");
+  // categoryId and searchText only exist on live-derived rows; a placeholder
+  // leaking through would have neither and would be unnavigable.
+  for (const row of rows) {
+    assert.ok(row.categoryId, `row "${row.product}" has no categoryId`);
+    assert.ok(row.searchText, `row "${row.product}" has no searchText`);
+  }
+});
+
 test("live catalog search indexes real rows and navigation metadata", async () => {
   const [rebar, beam, products] = await Promise.all([
     readJson("../app/data/rebar-prices.json"),

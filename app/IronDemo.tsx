@@ -67,7 +67,15 @@ const phones = [
 const address =
   "آجودانیه پورابتهاج نبش لشکری ساختمان سرو واحد ۳۰۳";
 
-const productGroups: ProductGroup[] = [
+// rows is filled in by buildCatalogSearchGroups from the live catalogs. It is
+// deliberately empty here: search only ever runs once those have loaded, so any
+// placeholder listed at this level would be unreachable.
+//
+// Exported so the empty-rows invariant can be asserted directly in tests.
+// allowConstantExport does not cover array initialisers, and moving this to its
+// own module would drag the ProductGroup/ProductGroupId types with it.
+// eslint-disable-next-line react-refresh/only-export-components
+export const productGroups: ProductGroup[] = [
   {
     id: "rebar",
     label: "میلگرد",
@@ -75,11 +83,7 @@ const productGroups: ProductGroup[] = [
     image: "/categories/01-rebar.jpg",
     heroImage: "/categories/hero-rebar-1680.jpg",
     description: "میلگرد آجدار و ساده برای پروژه‌های ساختمانی و صنعتی",
-    rows: [
-      { product: "میلگرد آجدار", origin: "کارخانه‌های معتبر", unit: "کیلوگرم" },
-      { product: "میلگرد ساده", origin: "کارخانه‌های معتبر", unit: "کیلوگرم" },
-      { product: "کلاف میلگرد", origin: "کارخانه‌های معتبر", unit: "کیلوگرم" },
-    ],
+    rows: [],
   },
   {
     id: "beam",
@@ -88,11 +92,7 @@ const productGroups: ProductGroup[] = [
     image: "/categories/02-ibeam.jpg",
     heroImage: "/categories/hero-beam-1680.jpg",
     description: "تیرآهن IPE، هاش و مقاطع سازه‌ای",
-    rows: [
-      { product: "تیرآهن IPE", origin: "کارخانه‌های معتبر", unit: "شاخه" },
-      { product: "تیرآهن هاش سبک", origin: "کارخانه‌های معتبر", unit: "شاخه" },
-      { product: "تیرآهن هاش سنگین", origin: "کارخانه‌های معتبر", unit: "شاخه" },
-    ],
+    rows: [],
   },
   {
     id: "sheet",
@@ -101,11 +101,7 @@ const productGroups: ProductGroup[] = [
     image: "/categories/03-sheet-coil.jpg",
     heroImage: "/categories/hero-sheet-1680.jpg",
     description: "ورق سیاه، گالوانیزه، روغنی و رنگی",
-    rows: [
-      { product: "ورق سیاه", origin: "کارخانه‌های معتبر", unit: "کیلوگرم" },
-      { product: "ورق گالوانیزه", origin: "کارخانه‌های معتبر", unit: "کیلوگرم" },
-      { product: "ورق روغنی", origin: "کارخانه‌های معتبر", unit: "کیلوگرم" },
-    ],
+    rows: [],
   },
   {
     id: "profile",
@@ -113,11 +109,7 @@ const productGroups: ProductGroup[] = [
     shortLabel: "پروفیل",
     image: "/categories/04-profile.jpg",
     description: "پروفیل ساختمانی و صنعتی در ابعاد گوناگون",
-    rows: [
-      { product: "قوطی ساختمانی", origin: "کارخانه‌های معتبر", unit: "شاخه" },
-      { product: "پروفیل صنعتی", origin: "کارخانه‌های معتبر", unit: "شاخه" },
-      { product: "پروفیل در و پنجره", origin: "کارخانه‌های معتبر", unit: "شاخه" },
-    ],
+    rows: [],
   },
   {
     id: "pipe",
@@ -125,11 +117,7 @@ const productGroups: ProductGroup[] = [
     shortLabel: "لوله",
     image: "/categories/05-pipe.jpg",
     description: "لوله صنعتی، گازی و داربستی",
-    rows: [
-      { product: "لوله صنعتی", origin: "کارخانه‌های معتبر", unit: "شاخه" },
-      { product: "لوله گازی", origin: "کارخانه‌های معتبر", unit: "شاخه" },
-      { product: "لوله داربستی", origin: "کارخانه‌های معتبر", unit: "شاخه" },
-    ],
+    rows: [],
   },
   {
     id: "angle",
@@ -137,11 +125,7 @@ const productGroups: ProductGroup[] = [
     shortLabel: "نبشی",
     image: "/categories/06-angle.jpg",
     description: "نبشی بال مساوی و بال نامساوی",
-    rows: [
-      { product: "نبشی بال مساوی", origin: "کارخانه‌های معتبر", unit: "شاخه" },
-      { product: "نبشی بال نامساوی", origin: "کارخانه‌های معتبر", unit: "شاخه" },
-      { product: "نبشی لقمه", origin: "کارخانه‌های معتبر", unit: "کیلوگرم" },
-    ],
+    rows: [],
   },
   {
     id: "channel",
@@ -149,11 +133,7 @@ const productGroups: ProductGroup[] = [
     shortLabel: "ناودانی",
     image: "/categories/07-channel.jpg",
     description: "ناودانی سبک و سنگین برای مصارف سازه‌ای",
-    rows: [
-      { product: "ناودانی سبک", origin: "کارخانه‌های معتبر", unit: "شاخه" },
-      { product: "ناودانی سنگین", origin: "کارخانه‌های معتبر", unit: "شاخه" },
-      { product: "ناودانی UPE", origin: "کارخانه‌های معتبر", unit: "شاخه" },
-    ],
+    rows: [],
   },
   {
     id: "wire",
@@ -161,11 +141,7 @@ const productGroups: ProductGroup[] = [
     shortLabel: "مفتول",
     image: "/categories/08-wire.jpg",
     description: "مفتول سیاه، گالوانیزه و محصولات سیمی",
-    rows: [
-      { product: "مفتول سیاه", origin: "کارخانه‌های معتبر", unit: "کیلوگرم" },
-      { product: "مفتول گالوانیزه", origin: "کارخانه‌های معتبر", unit: "کیلوگرم" },
-      { product: "توری و مش", origin: "کارخانه‌های معتبر", unit: "مترمربع" },
-    ],
+    rows: [],
   },
 ];
 
