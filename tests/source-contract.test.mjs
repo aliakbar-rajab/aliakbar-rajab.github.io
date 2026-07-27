@@ -140,6 +140,26 @@ test("homepage hero uses sharp landscape images", async () => {
   assert.match(component, /height="941"/);
 });
 
+test("homepage uses steel tread backgrounds and rotates banners every five seconds", async () => {
+  const [component, css, texture] = await Promise.all([
+    read("../app/IronDemo.tsx"),
+    read("../app/globals.css"),
+    read("../public/textures/steel-checker-plate.svg"),
+  ]);
+
+  assert.match(component, /const HERO_SLIDE_INTERVAL_MS = 5_000/);
+  assert.match(
+    component,
+    /window\.setInterval\(\(\) => \{[\s\S]*?\}, HERO_SLIDE_INTERVAL_MS\)/,
+  );
+  assert.match(
+    css,
+    /\.products,\s*\.about\s*\{[^}]*url\("\/textures\/steel-checker-plate\.svg"\)/is,
+  );
+  assert.match(texture, /<svg[^>]*viewBox="0 0 120 120"/);
+  assert.match(texture, /id="tread"/);
+});
+
 test("rebar prices are sourced, validated, and refreshed on a schedule", async () => {
   const [component, navigation, fetcher, workflow, priceData] = await Promise.all([
     read("../app/RebarPrices.tsx"),

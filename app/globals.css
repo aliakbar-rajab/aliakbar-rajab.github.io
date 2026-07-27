@@ -688,6 +688,20 @@ noscript {
   padding-block: clamp(4rem, 8vw, 7rem);
 }
 
+.products,
+.about {
+  background-color: #d9dde0;
+  background-image:
+    linear-gradient(rgb(248 249 250 / 74%), rgb(248 249 250 / 74%)),
+    url("/textures/steel-checker-plate.svg");
+  background-position:
+    center,
+    center top;
+  background-size:
+    auto,
+    120px 120px;
+}
+
 .section-heading {
   max-width: 740px;
   margin-bottom: 2rem;
