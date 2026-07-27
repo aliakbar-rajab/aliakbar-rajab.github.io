@@ -1789,6 +1789,10 @@ tbody td a,
   color: #e8e8ea;
 }
 
+#phone-numbers {
+  scroll-margin-top: 8rem;
+}
+
 .footer-grid {
   display: grid;
   grid-template-columns: 1.45fr 0.75fr 0.9fr 1.25fr;

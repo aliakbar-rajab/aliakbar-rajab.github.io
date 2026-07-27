@@ -38,6 +38,15 @@ test("there is no sales form or simulated lead submission", async () => {
   assert.doesNotMatch(component, /<form className="quote-form"|submitQuote|fetch\(/);
   assert.doesNotMatch(workflow, /LEAD_ENDPOINT/);
   assert.match(component, /tel:\+982188888180/);
+  assert.match(
+    component,
+    /\(max-width: 900px\) and \(hover: none\) and \(pointer: coarse\)/,
+  );
+  assert.match(
+    component,
+    /const contactHref = isDirectCallDevice \? phones\[0\]\.href : "#phone-numbers"/,
+  );
+  assert.match(component, /id="phone-numbers"/);
 });
 
 test("preloader is session-scoped and fail-open", async () => {

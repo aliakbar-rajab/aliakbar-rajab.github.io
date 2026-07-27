@@ -242,7 +242,11 @@ export default function IronDemo() {
   });
 
   const isMobile = useMediaQuery("(max-width: 900px)");
+  const isDirectCallDevice = useMediaQuery(
+    "(max-width: 900px) and (hover: none) and (pointer: coarse)",
+  );
   const reduceMotion = useMediaQuery("(prefers-reduced-motion: reduce)");
+  const contactHref = isDirectCallDevice ? phones[0].href : "#phone-numbers";
   const productMenuRef = useRef<HTMLDivElement>(null);
   const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
 
@@ -404,7 +408,7 @@ export default function IronDemo() {
             </button>
           </form>
 
-          <a className="header-phone" href={phones[0].href}>
+          <a className="header-phone" href={contactHref}>
             <span aria-hidden="true">☎</span>
             <span>
               <small>تماس با واحد فروش</small>
@@ -527,10 +531,10 @@ export default function IronDemo() {
             <a href="#about" onClick={() => setMobileNavOpen(false)}>
               درباره ما
             </a>
-            <a href="#contact" onClick={() => setMobileNavOpen(false)}>
+            <a href={contactHref} onClick={() => setMobileNavOpen(false)}>
               تماس با ما
             </a>
-            <a className="nav-quote" href={phones[0].href}>
+            <a className="nav-quote" href={contactHref}>
               تماس برای استعلام
             </a>
           </nav>
@@ -565,7 +569,7 @@ export default function IronDemo() {
             <h1>بنیان فولاد داریا؛ همراه مطمئن خرید آهن و فولاد</h1>
             <p>{slide.description}</p>
             <div className="hero-actions">
-              <a href={phones[0].href}>
+              <a href={contactHref}>
                 استعلام {slide.label}
               </a>
               <a href="#products">مشاهده محصولات</a>
@@ -711,7 +715,7 @@ export default function IronDemo() {
             {visibleGroup?.id === "rebar" ? (
               <RebarPrices
                 key={rebarViewRequest.requestId}
-                phoneHref={phones[0].href}
+                phoneHref={contactHref}
                 requestedView={rebarViewRequest}
               />
             ) : visibleGroup ? (
@@ -748,7 +752,7 @@ export default function IronDemo() {
                             <span className="price-status">استعلام روز</span>
                           </td>
                           <td data-label="اقدام">
-                            <a href={phones[0].href}>تماس برای قیمت</a>
+                            <a href={contactHref}>تماس برای قیمت</a>
                           </td>
                         </tr>
                       ))}
@@ -802,7 +806,7 @@ export default function IronDemo() {
               />
               <div>
                 <strong>برای انتخاب دقیق‌تر نیاز به راهنمایی دارید؟</strong>
-                <a href={phones[0].href}>تماس با واحد فروش</a>
+                <a href={contactHref}>تماس با واحد فروش</a>
               </div>
             </div>
           </div>
@@ -818,7 +822,7 @@ export default function IronDemo() {
                 بتواند استعلام دقیق‌تری ارائه کند.
               </p>
             </div>
-            <a href={phones[0].href}>تماس با واحد فروش</a>
+            <a href={contactHref}>تماس با واحد فروش</a>
           </div>
         </section>
       </main>
@@ -837,7 +841,7 @@ export default function IronDemo() {
             <a href="#prices">راهنمای استعلام</a>
             <a href="#about">درباره ما</a>
           </div>
-          <div>
+          <div id="phone-numbers">
             <h2>شماره‌های تماس</h2>
             {phones.map((phone) => (
               <a href={phone.href} key={phone.href} dir="ltr">
@@ -859,11 +863,11 @@ export default function IronDemo() {
       </footer>
 
       <div className="mobile-actions" aria-label="اقدام‌های سریع">
-        <a href={phones[0].href}>
+        <a href={contactHref}>
           <span aria-hidden="true">☎</span>
           تماس
         </a>
-        <a href={phones[0].href}>استعلام خرید</a>
+        <a href={contactHref}>استعلام خرید</a>
       </div>
     </div>
   );
