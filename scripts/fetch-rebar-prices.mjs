@@ -1,7 +1,10 @@
 import { mkdir, rename, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { validateCatalogPriceData } from "../app/catalog-validation.mjs";
+import {
+  deriveSummaryFromRows,
+  validateCatalogPriceData,
+} from "../app/catalog-validation.mjs";
 
 const projectRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const outputPath = resolve(projectRoot, "app", "data", "rebar-prices.json");
@@ -48,12 +51,6 @@ function metaValue(item, key) {
   }
   const meta = item.metas?.find((entry) => entry.title === key);
   return meta?.value ? String(meta.value) : "";
-}
-
-function normaliseSummaryPrice(value) {
-  const numericValue = Number(value);
-  if (!Number.isFinite(numericValue)) return 0;
-  return Math.floor(numericValue / 1_000) * 100;
 }
 
 function formatPersianDate(unixTimestamp) {
@@ -116,13 +113,10 @@ function parseNextData(html, source) {
     };
   });
 
-  const itemCount = factories.reduce(
-    (total, factory) => total + factory.rows.length,
-    0,
-  );
-  if (itemCount < source.minimumItems) {
+  const rows = factories.flatMap((factory) => factory.rows);
+  if (rows.length < source.minimumItems) {
     throw new Error(
-      `تعداد ردیف‌های ${source.label} کمتر از حد انتظار است (${itemCount}).`,
+      `تعداد ردیف‌های ${source.label} کمتر از حد انتظار است (${rows.length}).`,
     );
   }
 
@@ -139,9 +133,10 @@ function parseNextData(html, source) {
     sourceUrl: source.url,
     summary: {
       date: String(compare.date ?? ""),
-      min: normaliseSummaryPrice(compare.min_price),
-      max: normaliseSummaryPrice(compare.max_price),
-      average: normaliseSummaryPrice(compare.avg_price),
+      // Derived from the rows, never from compare.min_price/max_price/avg_price:
+      // the upstream fields are rial and rounding them to hundreds of toman
+      // produced prices that appear in no row of the table.
+      ...deriveSummaryFromRows(rows),
       percent: Number(compare.percent) || 0,
       status: String(compare.status ?? "same"),
     },

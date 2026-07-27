@@ -8,6 +8,25 @@ function assert(condition, message) {
   if (!condition) throw new Error(`داده قیمت نامعتبر است: ${message}`);
 }
 
+/**
+ * The single definition of what a category summary means: it describes the
+ * priced rows of that category and nothing else. Both the fetch scripts and
+ * the validator use this, so a summary can never drift from its rows.
+ */
+export function deriveSummaryFromRows(rows) {
+  const prices = rows
+    .map((row) => Number(row.price))
+    .filter((price) => Number.isFinite(price) && price > 0);
+  if (!prices.length) return { min: 0, max: 0, average: 0 };
+  return {
+    min: prices.reduce((low, price) => (price < low ? price : low), prices[0]),
+    max: prices.reduce((high, price) => (price > high ? price : high), prices[0]),
+    average: Math.round(
+      prices.reduce((total, price) => total + price, 0) / prices.length,
+    ),
+  };
+}
+
 function validateSummary(summary, location, rows) {
   assert(isRecord(summary), `${location}.summary وجود ندارد`);
   for (const field of ["min", "max", "average", "percent"]) {
@@ -38,6 +57,23 @@ function validateSummary(summary, location, rows) {
   assert(
     summary.average >= summary.min && summary.average <= summary.max,
     `${location}.summary.average خارج از بازه است`,
+  );
+
+  // The summary must agree with the rows it summarises. Without this, a scraper
+  // that rounds or rescales the numbers publishes prices that appear nowhere in
+  // the table, and every check above still passes.
+  const expected = deriveSummaryFromRows(pricedRows);
+  assert(
+    summary.min === expected.min,
+    `${location}.summary.min با ارزان‌ترین ردیف (${expected.min}) برابر نیست: ${summary.min}`,
+  );
+  assert(
+    summary.max === expected.max,
+    `${location}.summary.max با گران‌ترین ردیف (${expected.max}) برابر نیست: ${summary.max}`,
+  );
+  assert(
+    Math.abs(summary.average - expected.average) <= 1,
+    `${location}.summary.average با میانگین ردیف‌ها (${expected.average}) همخوان نیست: ${summary.average}`,
   );
 }
 

@@ -1,7 +1,10 @@
 import { mkdir, rename, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { validateProductPricePayload } from "../app/catalog-validation.mjs";
+import {
+  deriveSummaryFromRows,
+  validateProductPricePayload,
+} from "../app/catalog-validation.mjs";
 
 const projectRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const outputPath = resolve(projectRoot, "app", "data", "product-prices.json");
@@ -164,33 +167,11 @@ function metaValue(item, key) {
     : "";
 }
 
-function normaliseSummaryPrice(value) {
-  const numericValue = Number(value);
-  if (!Number.isFinite(numericValue)) return 0;
-  return Math.floor(numericValue / 1_000) * 100;
-}
-
 function formatPersianDate(unixTimestamp) {
   if (!unixTimestamp) return "";
   return persianDateFormatter
     .format(new Date(Number(unixTimestamp) * 1_000))
     .replace(/\u200f/g, "");
-}
-
-function deriveSummary(rows) {
-  const prices = rows
-    .map((row) => row.price)
-    .filter((price) => Number.isFinite(price) && price > 0);
-  if (!prices.length) {
-    return { min: 0, max: 0, average: 0 };
-  }
-  return {
-    min: Math.min(...prices),
-    max: Math.max(...prices),
-    average: Math.round(
-      prices.reduce((total, price) => total + price, 0) / prices.length,
-    ),
-  };
 }
 
 function compareSizeValues(first, second) {
@@ -264,18 +245,10 @@ function parseNextData(html, currentSource) {
   }
 
   const compare = shopData.price_compare;
-  const derivedSummary = deriveSummary(rows);
-  const sourceSummary = {
-    min: normaliseSummaryPrice(compare.min_price),
-    max: normaliseSummaryPrice(compare.max_price),
-    average: normaliseSummaryPrice(compare.avg_price),
-  };
-  const summary =
-    sourceSummary.min > 0 &&
-    sourceSummary.max > 0 &&
-    sourceSummary.average > 0
-      ? sourceSummary
-      : derivedSummary;
+  // Derived from the rows, never from compare.min_price/max_price/avg_price:
+  // the upstream fields are rial and rounding them to hundreds of toman
+  // produced prices that appear in no row of the table.
+  const summary = deriveSummaryFromRows(rows);
 
   return {
     id: currentSource.id,
