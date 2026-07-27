@@ -163,6 +163,14 @@ test("homepage uses the supplied steel tread photo and rotates banners every fiv
     css,
     /\.products,\s*\.about\s*\{[^}]*url\("\/textures\/chequered-plate\.jpg"\)/is,
   );
+  assert.match(
+    css,
+    /\.products,\s*\.about\s*\{[^}]*background-color:\s*#3b3b3e/is,
+  );
+  assert.match(
+    css,
+    /\.products \.section-heading h2,[\s\S]*?color:\s*var\(--white\)/,
+  );
   assert.equal(texture[0], 0xff);
   assert.equal(texture[1], 0xd8);
   assert.ok(texture.length > 100_000);
