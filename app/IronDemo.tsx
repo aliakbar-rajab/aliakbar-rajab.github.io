@@ -146,6 +146,7 @@ export const productGroups: ProductGroup[] = [
 ];
 
 const heroSlides = productGroups.slice(0, 3);
+const HERO_SLIDE_INTERVAL_MS = 5_000;
 
 const loadCatalogSearchGroups = createRetryableLoader<ProductGroup[]>(() =>
   Promise.all([
@@ -334,7 +335,7 @@ export default function IronDemo() {
     if (reduceMotion || carouselPaused) return undefined;
     const timer = window.setInterval(() => {
       setActiveSlide((current) => (current + 1) % heroSlides.length);
-    }, 6500);
+    }, HERO_SLIDE_INTERVAL_MS);
     return () => window.clearInterval(timer);
   }, [carouselPaused, reduceMotion]);
 
