@@ -32,7 +32,7 @@ dom.window.matchMedia = (query) => ({
   dispatchEvent: () => false,
 });
 
-const { act, cleanup, fireEvent, render, screen, within } = await import(
+const { act, cleanup, fireEvent, render, screen, waitFor, within } = await import(
   "@testing-library/react"
 );
 const userEvent = (await import("@testing-library/user-event")).default;
@@ -225,8 +225,9 @@ test("F2: a search that is still loading does not report 'no products found'", a
   );
 
   // Once the live catalogs land, the real result must be reported.
-  await settle();
-  assert.match(document.body.textContent, /نتیجه برای «نیشابور» پیدا شد/);
+  await waitFor(() => {
+    assert.match(document.body.textContent, /نتیجه برای «نیشابور» پیدا شد/);
+  });
   assert.doesNotMatch(document.body.textContent, /محصولی پیدا نشد/);
 });
 
