@@ -1,0 +1,572 @@
+import { Fragment, useId, useMemo, useState } from "react";
+import importedPriceData from "./data/rebar-prices.json";
+
+type RebarRow = {
+  id: number;
+  title: string;
+  size: string;
+  standard: string;
+  form: string;
+  approximateWeight: string;
+  delivery: string;
+  unit: string;
+  factory: string;
+  price: number | null;
+  percent: number;
+  status: string;
+  updatedAt: number;
+  updatedDate: string;
+};
+
+type RebarFactory = {
+  name: string;
+  updatedAt: number;
+  updatedDate: string;
+  rows: RebarRow[];
+};
+
+type RebarCategory = {
+  id: "ribbed" | "simple";
+  label: string;
+  sourceTitle: string;
+  sourceUrl: string;
+  summary: {
+    date: string;
+    min: number;
+    max: number;
+    average: number;
+    percent: number;
+    status: string;
+  };
+  filters: {
+    sizes: string[];
+    factories: string[];
+  };
+  factories: RebarFactory[];
+};
+
+type RebarPriceData = {
+  fetchedAt: string;
+  sourceName: string;
+  sourceHome: string;
+  taxRate: number;
+  categories: RebarCategory[];
+};
+
+const priceData = importedPriceData as RebarPriceData;
+const initialCategory =
+  priceData.categories.find((category) => category.id === "ribbed") ??
+  priceData.categories[0];
+
+function formatNumber(value: number, maximumFractionDigits = 0) {
+  return value.toLocaleString("fa-IR", { maximumFractionDigits });
+}
+
+function displayPrice(
+  price: number | null,
+  taxIncluded: boolean,
+  taxRate: number,
+) {
+  if (!price) return "تماس بگیرید";
+  const adjustedPrice = taxIncluded
+    ? Math.round((price * (1 + taxRate)) / 100) * 100
+    : price;
+  return formatNumber(adjustedPrice);
+}
+
+function StatIcon({ type }: { type: "max" | "min" | "change" | "average" }) {
+  const icons = {
+    max: "↗",
+    min: "↘",
+    change: "▥",
+    average: "▥",
+  };
+  return (
+    <span className={`rebar-stat-icon is-${type}`} aria-hidden="true">
+      {icons[type]}
+    </span>
+  );
+}
+
+function TaxSwitch({
+  checked,
+  onChange,
+}: {
+  checked: boolean;
+  onChange: () => void;
+}) {
+  return (
+    <button
+      className="tax-switch"
+      type="button"
+      role="switch"
+      aria-checked={checked}
+      onClick={onChange}
+    >
+      <span className="tax-switch-track" aria-hidden="true">
+        <i />
+      </span>
+      <span>ارزش افزوده</span>
+    </button>
+  );
+}
+
+export default function RebarPrices({ phoneHref }: { phoneHref: string }) {
+  const factorySelectId = useId();
+  const sizeSelectId = useId();
+  const [categoryId, setCategoryId] = useState(initialCategory.id);
+  const [factoryFilter, setFactoryFilter] = useState("");
+  const [sizeFilter, setSizeFilter] = useState("");
+  const [taxIncluded, setTaxIncluded] = useState(false);
+  const [calculatorOpen, setCalculatorOpen] = useState(false);
+  const [diameter, setDiameter] = useState("16");
+  const [length, setLength] = useState("12");
+  const [quantity, setQuantity] = useState("1");
+  const [expandedRows, setExpandedRows] = useState<Set<number>>(
+    () => new Set(),
+  );
+  const [showAllFactories, setShowAllFactories] = useState(false);
+
+  const category =
+    priceData.categories.find((item) => item.id === categoryId) ??
+    initialCategory;
+
+  const filteredFactories = useMemo(
+    () =>
+      category.factories
+        .filter((factory) => !factoryFilter || factory.name === factoryFilter)
+        .map((factory) => ({
+          ...factory,
+          rows: factory.rows.filter(
+            (row) => !sizeFilter || row.size === sizeFilter,
+          ),
+        }))
+        .filter((factory) => factory.rows.length > 0),
+    [category, factoryFilter, sizeFilter],
+  );
+
+  const visibleFactories = showAllFactories
+    ? filteredFactories
+    : filteredFactories.slice(0, 6);
+  const remainingFactories = Math.max(
+    filteredFactories.length - visibleFactories.length,
+    0,
+  );
+  const activeFilterCount = Number(Boolean(factoryFilter)) + Number(Boolean(sizeFilter));
+
+  const calculatorWeight = useMemo(() => {
+    const parsedDiameter = Number(diameter);
+    const parsedLength = Number(length);
+    const parsedQuantity = Number(quantity);
+    if (
+      !Number.isFinite(parsedDiameter) ||
+      !Number.isFinite(parsedLength) ||
+      !Number.isFinite(parsedQuantity) ||
+      parsedDiameter <= 0 ||
+      parsedLength <= 0 ||
+      parsedQuantity <= 0
+    ) {
+      return null;
+    }
+    return ((parsedDiameter ** 2) / 162) * parsedLength * parsedQuantity;
+  }, [diameter, length, quantity]);
+
+  const fetchedDate = new Intl.DateTimeFormat("fa-IR-u-ca-persian", {
+    dateStyle: "short",
+    timeStyle: "short",
+    timeZone: "Asia/Tehran",
+  }).format(new Date(priceData.fetchedAt));
+
+  const changeCategory = (id: RebarCategory["id"]) => {
+    setCategoryId(id);
+    setFactoryFilter("");
+    setSizeFilter("");
+    setExpandedRows(new Set());
+    setShowAllFactories(false);
+  };
+
+  const clearFilters = () => {
+    setFactoryFilter("");
+    setSizeFilter("");
+    setShowAllFactories(false);
+  };
+
+  const toggleRow = (rowId: number) => {
+    setExpandedRows((current) => {
+      const next = new Set(current);
+      if (next.has(rowId)) next.delete(rowId);
+      else next.add(rowId);
+      return next;
+    });
+  };
+
+  const summaryPrice = (price: number) =>
+    displayPrice(price, taxIncluded, priceData.taxRate);
+
+  return (
+    <div className="rebar-prices">
+      <div className="rebar-kind-tabs" role="tablist" aria-label="نوع میلگرد">
+        {priceData.categories.map((item) => (
+          <button
+            type="button"
+            role="tab"
+            aria-selected={item.id === category.id}
+            key={item.id}
+            onClick={() => changeCategory(item.id)}
+          >
+            <span aria-hidden="true">{item.id === "ribbed" ? "╱╱" : "━"}</span>
+            قیمت {item.label}
+          </button>
+        ))}
+      </div>
+
+      <div className="rebar-layout">
+        <div className="rebar-main">
+          <section className="rebar-summary" aria-labelledby="rebar-price-title">
+            <h3 id="rebar-price-title">قیمت {category.label}</h3>
+            <p>
+              قیمت {category.label} امروز {category.summary.date} در بازه‌ای بین{" "}
+              <b>{summaryPrice(category.summary.min)}</b> تا{" "}
+              <b>{summaryPrice(category.summary.max)}</b> تومان
+              {taxIncluded
+                ? " (با احتساب ارزش افزوده) "
+                : " (بدون احتساب ارزش افزوده) "}
+              قرار دارد.
+            </p>
+            <div className="rebar-stats">
+              <article className="is-max">
+                <StatIcon type="max" />
+                <span>بیشترین قیمت</span>
+                <strong>{summaryPrice(category.summary.max)}</strong>
+                <small>تومان</small>
+              </article>
+              <article className="is-min">
+                <StatIcon type="min" />
+                <span>کمترین قیمت</span>
+                <strong>{summaryPrice(category.summary.min)}</strong>
+                <small>تومان</small>
+              </article>
+              <article className="is-change">
+                <StatIcon type="change" />
+                <span>میزان نوسان روزانه</span>
+                <strong>{formatNumber(Math.abs(category.summary.percent))}٪</strong>
+                <small>نسبت به روز قبل</small>
+              </article>
+              <article className="is-average">
+                <StatIcon type="average" />
+                <span>میانگین قیمت بازار</span>
+                <strong>{summaryPrice(category.summary.average)}</strong>
+                <small>تومان</small>
+              </article>
+            </div>
+          </section>
+
+          <p className="rebar-result-status" role="status" aria-live="polite">
+            {filteredFactories.length
+              ? `${formatNumber(
+                  filteredFactories.reduce(
+                    (total, factory) => total + factory.rows.length,
+                    0,
+                  ),
+                )} ردیف قیمت از ${formatNumber(
+                  filteredFactories.length,
+                )} کارخانه`
+              : "برای این فیلتر قیمتی پیدا نشد."}
+          </p>
+
+          <div className="factory-price-list">
+            {visibleFactories.map((factory) => (
+              <section className="factory-price-card" key={factory.name}>
+                <header>
+                  <TaxSwitch
+                    checked={taxIncluded}
+                    onChange={() => setTaxIncluded((current) => !current)}
+                  />
+                  <h4>قیمت {category.label} {factory.name}</h4>
+                  <p>
+                    <span aria-hidden="true">▣</span> آخرین بروزرسانی:{" "}
+                    <b>{factory.updatedDate || "—"}</b>
+                  </p>
+                </header>
+
+                <div className="table-scroll">
+                  <table className="rebar-price-table">
+                    <caption className="sr-only">
+                      قیمت {category.label} کارخانه {factory.name}
+                    </caption>
+                    <thead>
+                      <tr>
+                        <th scope="col" aria-label="جزئیات" />
+                        <th scope="col">سایز</th>
+                        <th scope="col">استاندارد</th>
+                        <th scope="col">محل تحویل</th>
+                        <th scope="col">قیمت</th>
+                        <th scope="col">نوسان</th>
+                        <th scope="col">نمودار</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {factory.rows.map((row) => {
+                        const expanded = expandedRows.has(row.id);
+                        return (
+                          <Fragment key={row.id}>
+                            <tr className="rebar-row-group">
+                              <td data-label="جزئیات" className="row-expand-cell">
+                                <button
+                                  type="button"
+                                  aria-expanded={expanded}
+                                  aria-controls={`row-detail-${row.id}`}
+                                  aria-label={`جزئیات ${row.title}`}
+                                  onClick={() => toggleRow(row.id)}
+                                >
+                                  {expanded ? "⌃" : "⌄"}
+                                </button>
+                              </td>
+                              <td data-label="سایز">
+                                {formatNumber(Number(row.size), 1)}
+                              </td>
+                              <td data-label="استاندارد">
+                                {row.standard || "—"}
+                              </td>
+                              <td data-label="محل تحویل">
+                                {row.delivery || "—"}
+                              </td>
+                              <td
+                                data-label="قیمت"
+                                className={
+                                  row.price ? "row-price" : "row-price is-call"
+                                }
+                              >
+                                {displayPrice(
+                                  row.price,
+                                  taxIncluded,
+                                  priceData.taxRate,
+                                )}
+                                {row.price ? <small> تومان</small> : null}
+                              </td>
+                              <td
+                                data-label="نوسان"
+                                className={`row-change is-${row.status}`}
+                              >
+                                {formatNumber(Math.abs(row.percent))}٪
+                              </td>
+                              <td data-label="نمودار">
+                                <span
+                                  className="chart-glyph"
+                                  aria-label="روند قیمت"
+                                >
+                                  ↗
+                                </span>
+                              </td>
+                            </tr>
+                            {expanded ? (
+                              <tr className="rebar-detail-row">
+                              <td
+                                className="rebar-row-detail"
+                                id={`row-detail-${row.id}`}
+                                colSpan={7}
+                              >
+                                <dl>
+                                  <div>
+                                    <dt>نام محصول</dt>
+                                    <dd>{row.title}</dd>
+                                  </div>
+                                  <div>
+                                    <dt>حالت</dt>
+                                    <dd>{row.form || "—"}</dd>
+                                  </div>
+                                  <div>
+                                    <dt>وزن تقریبی</dt>
+                                    <dd>{row.approximateWeight || "—"}</dd>
+                                  </div>
+                                  <div>
+                                    <dt>واحد</dt>
+                                    <dd>{row.unit}</dd>
+                                  </div>
+                                  <div>
+                                    <dt>کارخانه</dt>
+                                    <dd>{row.factory}</dd>
+                                  </div>
+                                  <div>
+                                    <dt>آخرین بروزرسانی</dt>
+                                    <dd>{row.updatedDate || "—"}</dd>
+                                  </div>
+                                </dl>
+                              </td>
+                              </tr>
+                            ) : null}
+                          </Fragment>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </section>
+            ))}
+          </div>
+
+          {remainingFactories > 0 ? (
+            <button
+              className="show-more-factories"
+              type="button"
+              onClick={() => setShowAllFactories(true)}
+            >
+              نمایش {formatNumber(remainingFactories)} کارخانه دیگر
+              <span aria-hidden="true">↓</span>
+            </button>
+          ) : null}
+          {showAllFactories && filteredFactories.length > 6 ? (
+            <button
+              className="show-more-factories"
+              type="button"
+              onClick={() => setShowAllFactories(false)}
+            >
+              نمایش کمتر <span aria-hidden="true">↑</span>
+            </button>
+          ) : null}
+
+          {!filteredFactories.length ? (
+            <div className="rebar-empty">
+              <strong>قیمتی با این مشخصات پیدا نشد.</strong>
+              <button type="button" onClick={clearFilters}>
+                حذف فیلترها
+              </button>
+            </div>
+          ) : null}
+        </div>
+
+        <aside className="rebar-sidebar" aria-label="فیلترهای قیمت میلگرد">
+          <section className="filter-card">
+            <header>
+              <span aria-hidden="true">⌁</span>
+              <h3>فیلترها</h3>
+              {activeFilterCount ? <b>{formatNumber(activeFilterCount)}</b> : null}
+            </header>
+            <div className="filter-fields">
+              <label htmlFor={factorySelectId}>کارخانه</label>
+              <select
+                id={factorySelectId}
+                value={factoryFilter}
+                onChange={(event) => {
+                  setFactoryFilter(event.target.value);
+                  setShowAllFactories(false);
+                }}
+              >
+                <option value="">همه کارخانه‌ها</option>
+                {category.filters.factories.map((factory) => (
+                  <option value={factory} key={factory}>
+                    {factory}
+                  </option>
+                ))}
+              </select>
+
+              <label htmlFor={sizeSelectId}>سایز</label>
+              <select
+                id={sizeSelectId}
+                value={sizeFilter}
+                onChange={(event) => {
+                  setSizeFilter(event.target.value);
+                  setShowAllFactories(false);
+                }}
+              >
+                <option value="">همه سایزها</option>
+                {category.filters.sizes.map((size) => (
+                  <option value={size} key={size}>
+                    سایز {formatNumber(Number(size), 1)}
+                  </option>
+                ))}
+              </select>
+
+              <button
+                className="clear-rebar-filters"
+                type="button"
+                onClick={clearFilters}
+                disabled={!activeFilterCount}
+              >
+                حذف تمامی فیلترها
+              </button>
+            </div>
+          </section>
+
+          <section className="calculator-card">
+            <button
+              type="button"
+              aria-expanded={calculatorOpen}
+              aria-controls="rebar-weight-calculator"
+              onClick={() => setCalculatorOpen((current) => !current)}
+            >
+              <span aria-hidden="true">⚖</span>
+              <span>
+                <strong>محاسبه وزن میلگرد</strong>
+                <small>بر اساس فرمول وزن استاندارد</small>
+              </span>
+              <b aria-hidden="true">{calculatorOpen ? "−" : "+"}</b>
+            </button>
+            {calculatorOpen ? (
+              <div id="rebar-weight-calculator" className="calculator-fields">
+                <label>
+                  قطر (میلی‌متر)
+                  <input
+                    type="number"
+                    min="1"
+                    step="0.1"
+                    value={diameter}
+                    onChange={(event) => setDiameter(event.target.value)}
+                  />
+                </label>
+                <label>
+                  طول هر شاخه (متر)
+                  <input
+                    type="number"
+                    min="0.1"
+                    step="0.1"
+                    value={length}
+                    onChange={(event) => setLength(event.target.value)}
+                  />
+                </label>
+                <label>
+                  تعداد شاخه
+                  <input
+                    type="number"
+                    min="1"
+                    step="1"
+                    value={quantity}
+                    onChange={(event) => setQuantity(event.target.value)}
+                  />
+                </label>
+                <p>
+                  وزن تقریبی:
+                  <strong>
+                    {calculatorWeight === null
+                      ? " — "
+                      : ` ${formatNumber(calculatorWeight, 2)} `}
+                    کیلوگرم
+                  </strong>
+                </p>
+              </div>
+            ) : null}
+          </section>
+
+          <section className="price-source-card">
+            <span>آخرین دریافت داده</span>
+            <strong>{fetchedDate}</strong>
+            <p>
+              قیمت‌ها به‌صورت خودکار از مرجع عمومی بازار دریافت شده‌اند و پیش
+              از خرید باید با واحد فروش تأیید شوند.
+            </p>
+            <a href={category.sourceUrl} target="_blank" rel="noreferrer">
+              منبع: {priceData.sourceName} ↗
+            </a>
+          </section>
+
+          <section className="rebar-contact-card">
+            <span aria-hidden="true">☎</span>
+            <strong>قیمت قطعی و موجودی</strong>
+            <p>برای تأیید قیمت، تناژ و زمان تحویل با واحد فروش تماس بگیرید.</p>
+            <a href={phoneHref}>تماس با واحد فروش</a>
+          </section>
+        </aside>
+      </div>
+    </div>
+  );
+}

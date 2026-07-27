@@ -8,6 +8,7 @@ import {
   useSyncExternalStore,
 } from "react";
 import { filterProductGroups } from "./site-logic.mjs";
+import RebarPrices from "./RebarPrices";
 
 type ProductRow = {
   product: string;
@@ -519,9 +520,9 @@ export default function IronDemo() {
         <section className="prices section" id="prices">
           <div className="shell">
             <SectionTitle
-              eyebrow="راهنمای استعلام"
-              title="محصولات قابل تأمین"
-              description="قیمت آهن به‌صورت لحظه‌ای تغییر می‌کند؛ برای قیمت قطعی، موجودی و زمان تحویل با واحد فروش تماس بگیرید."
+              eyebrow="قیمت روز بازار"
+              title="قیمت روز آهن و فولاد"
+              description="قیمت میلگرد از مرجع بازار بروزرسانی می‌شود؛ قیمت قطعی، موجودی و زمان تحویل را با واحد فروش تأیید کنید."
             />
 
             <p className="search-status" role="status" aria-live="polite">
@@ -570,7 +571,9 @@ export default function IronDemo() {
               })}
             </div>
 
-            {visibleGroup ? (
+            {visibleGroup?.id === "rebar" ? (
+              <RebarPrices phoneHref={phones[0].href} />
+            ) : visibleGroup ? (
               <div
                 className="product-panel"
                 role="tabpanel"

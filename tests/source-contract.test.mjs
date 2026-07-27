@@ -105,3 +105,31 @@ test("source exposes one H1 and complete social metadata", async () => {
   assert.match(robots, /Sitemap: https:\/\/aliakbar-rajab\.github\.io\/sitemap\.xml/);
   assert.match(sitemap, /<loc>https:\/\/aliakbar-rajab\.github\.io\/<\/loc>/);
 });
+
+test("rebar prices are sourced, validated, and refreshed on a schedule", async () => {
+  const [component, fetcher, workflow, priceData] = await Promise.all([
+    read("../app/RebarPrices.tsx"),
+    read("../scripts/fetch-rebar-prices.mjs"),
+    read("../.github/workflows/pages.yml"),
+    read("../app/data/rebar-prices.json").then(JSON.parse),
+  ]);
+
+  assert.deepEqual(
+    priceData.categories.map((category) => category.label).sort(),
+    ["میلگرد آجدار", "میلگرد ساده"].sort(),
+  );
+  assert.match(component, /rebar-kind-tabs/);
+  assert.match(component, /ارزش افزوده/);
+  assert.match(component, /محاسبه وزن میلگرد/);
+  assert.match(fetcher, /__NEXT_DATA__/);
+  assert.match(fetcher, /www\.fooladiranian\.com\/productlist/);
+  assert.match(fetcher, /existingDataIsUsable/);
+  assert.match(workflow, /schedule:/);
+  assert.match(workflow, /17 \*\/4 \* \* \*/);
+  assert.equal(priceData.categories.length, 2);
+  assert.ok(
+    priceData.categories.every((category) =>
+      category.factories.some((factory) => factory.rows.length > 0),
+    ),
+  );
+});
