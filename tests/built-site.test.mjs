@@ -13,6 +13,7 @@ test("production output contains required GitHub Pages files", async () => {
       "robots.txt",
       "sitemap.xml",
       "manifest.webmanifest",
+      "fonts/b-titr-bold.woff",
       "preloader/fb-preloader.js",
       "preloader/assets/tr2.mp4",
     ].map((path) => access(new URL(`../dist/${path}`, import.meta.url))),

@@ -1,3 +1,11 @@
+@font-face {
+  font-family: "B Titr";
+  src: url("/fonts/b-titr-bold.woff") format("woff");
+  font-style: normal;
+  font-weight: 700;
+  font-display: block;
+}
+
 /* The page is visible by default. This layer may only cover it temporarily. */
 #fb-preloader {
   position: fixed;
@@ -50,8 +58,10 @@
 
 .fb-preloader__brand strong {
   color: #f6b500;
-  font-family: Tahoma, sans-serif;
+  font-family: "B Titr", Tahoma, sans-serif;
   font-size: clamp(2rem, 7vw, 5rem);
+  font-weight: 700;
+  line-height: 1.25;
 }
 
 .fb-preloader__brand span {
@@ -70,7 +80,7 @@
   border-radius: 999px;
   background: rgb(32 32 36 / 72%);
   color: #fff;
-  font: 700 0.9rem Tahoma, sans-serif;
+  font: 700 1rem / 1.5 "B Titr", Tahoma, sans-serif;
   cursor: pointer;
 }
 

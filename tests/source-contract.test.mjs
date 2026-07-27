@@ -55,6 +55,10 @@ test("preloader is session-scoped and fail-open", async () => {
   assert.match(script, /window\.setTimeout\(finish,\s*8000\)/);
   assert.match(script, /video\?\.addEventListener\("error", finish/);
   assert.equal((script.match(/tr2\.mp4/g) ?? []).length, 1);
+  assert.match(html, /href="\/fonts\/b-titr-bold\.woff"/);
+  assert.match(css, /font-family:\s*"B Titr"/);
+  assert.match(css, /url\("\/fonts\/b-titr-bold\.woff"\)/);
+  assert.match(css, /\.fb-preloader__brand span\s*\{[^}]*Arial/is);
 });
 
 test("core palette combinations meet WCAG AA contrast", () => {
