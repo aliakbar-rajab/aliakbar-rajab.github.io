@@ -57,16 +57,30 @@
 }
 
 .fb-preloader__brand strong {
-  color: #f6b500;
+  display: inline-flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 0.18em;
+  color: #fff;
   font-family: "B Titr", Tahoma, sans-serif;
   font-size: clamp(2rem, 7vw, 5rem);
   font-weight: 700;
   line-height: 1.25;
 }
 
-.fb-preloader__brand span {
+.fb-preloader__latin {
+  display: inline-flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 0.22em;
+  color: #fff;
   font: 700 clamp(0.75rem, 2vw, 1.15rem) / 1.4 Arial, sans-serif;
   letter-spacing: 0.22em;
+}
+
+.fb-preloader__accent {
+  color: #f6b500;
+  font-size: 0.86em;
 }
 
 .fb-preloader__skip {

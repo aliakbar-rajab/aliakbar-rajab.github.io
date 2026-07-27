@@ -1,7 +1,7 @@
 (() => {
   "use strict";
 
-  const SESSION_KEY = "bonyan-foulad-daria-preloader-seen-v3";
+  const SESSION_KEY = "bonyan-foulad-daria-preloader-seen-v4";
   const root = document.documentElement;
   let finished = false;
   let watchdog = 0;
@@ -84,8 +84,14 @@
         </video>
         <div class="fb-preloader__shade"></div>
         <div class="fb-preloader__brand" aria-hidden="true">
-          <strong>بنیان فولاد داریا</strong>
-          <span>BONYAN FOULAD DARIA</span>
+          <strong>
+            <span>بنیان فولاد</span>
+            <span class="fb-preloader__accent">داریا</span>
+          </strong>
+          <span class="fb-preloader__latin" dir="ltr">
+            <span>BONYAN FOULAD</span>
+            <span class="fb-preloader__accent">DARIA</span>
+          </span>
         </div>
         <button class="fb-preloader__skip" type="button">ورود به سایت</button>
       `;

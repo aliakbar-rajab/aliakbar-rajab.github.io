@@ -58,7 +58,15 @@ test("preloader is session-scoped and fail-open", async () => {
   assert.match(html, /href="\/fonts\/b-titr-bold\.woff"/);
   assert.match(css, /font-family:\s*"B Titr"/);
   assert.match(css, /url\("\/fonts\/b-titr-bold\.woff"\)/);
-  assert.match(css, /\.fb-preloader__brand span\s*\{[^}]*Arial/is);
+  assert.match(css, /\.fb-preloader__latin\s*\{[^}]*color:\s*#fff[^}]*Arial/is);
+  assert.match(
+    css,
+    /\.fb-preloader__accent\s*\{[^}]*color:\s*#f6b500[^}]*font-size:\s*0\.86em/is,
+  );
+  assert.match(script, /<span>بنیان فولاد<\/span>/);
+  assert.match(script, /class="fb-preloader__accent">داریا<\/span>/);
+  assert.match(script, /<span>BONYAN FOULAD<\/span>/);
+  assert.match(script, /class="fb-preloader__accent">DARIA<\/span>/);
 });
 
 test("core palette combinations meet WCAG AA contrast", () => {
