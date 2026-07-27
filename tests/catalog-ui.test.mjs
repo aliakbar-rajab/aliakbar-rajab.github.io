@@ -150,6 +150,54 @@ test("trend direction is textual and no fake chart is exposed", () => {
   assert.equal(within(table).queryByLabelText("روند قیمت"), null);
 });
 
+test("F4: a sub-one-percent move keeps its magnitude instead of showing zero", () => {
+  const smallMove = row(3, "up", 0.14);
+  render(
+    React.createElement(PriceCatalog, {
+      priceData: {
+        ...priceData,
+        categories: [category("only", "آزمون", smallMove)],
+      },
+      config: {
+        ...config,
+        initialCategoryId: "only",
+        categoryIcons: { only: "۱" },
+      },
+      phoneHref: "tel:+982100000000",
+    }),
+  );
+
+  // Row-level نوسان cell: an upward arrow next to "۰٪" is self-contradictory.
+  const changeCell = screen.getByRole("table").querySelector(".row-change");
+  assert.match(changeCell.textContent, /افزایش ۰٫۱۴٪/);
+
+  // Category-level stat card reads the same percent and must agree.
+  assert.match(
+    screen.getByText(/میزان نوسان روزانه/).closest("article").textContent,
+    /افزایش ۰٫۱۴٪/,
+  );
+});
+
+test("F4: a whole-number move is not padded with decimals", () => {
+  render(
+    React.createElement(PriceCatalog, {
+      priceData: {
+        ...priceData,
+        categories: [category("only", "آزمون", row(4, "down", -3))],
+      },
+      config: {
+        ...config,
+        initialCategoryId: "only",
+        categoryIcons: { only: "۱" },
+      },
+      phoneHref: "tel:+982100000000",
+    }),
+  );
+
+  const changeCell = screen.getByRole("table").querySelector(".row-change");
+  assert.match(changeCell.textContent, /کاهش ۳٪/);
+});
+
 test("F2: a search that is still loading does not report 'no products found'", async () => {
   render(React.createElement(IronDemo));
   await settle();

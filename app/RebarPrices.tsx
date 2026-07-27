@@ -100,6 +100,9 @@ export type PriceCatalogConfig = {
   showWeightCalculator?: boolean;
 };
 
+// Percent change is passed maximumFractionDigits: 2, matching the precision the
+// source publishes. At 0 any move under half a percent renders as "۰٪" next to
+// an up/down arrow, which reads as no change at all.
 function formatNumber(value: number, maximumFractionDigits = 0) {
   return value.toLocaleString("fa-IR", { maximumFractionDigits });
 }
@@ -418,7 +421,7 @@ export function PriceCatalog({
                       category.summary.percent,
                     ).direction
                   }{" "}
-                  {formatNumber(Math.abs(category.summary.percent))}٪
+                  {formatNumber(Math.abs(category.summary.percent), 2)}٪
                 </strong>
                 <small>نسبت به روز قبل</small>
               </article>
@@ -535,7 +538,7 @@ export function PriceCatalog({
                                 <span aria-hidden="true">{trend.symbol}</span>{" "}
                                 {trend.direction}{" "}
                                 {trend.amount
-                                  ? `${formatNumber(trend.amount)}٪`
+                                  ? `${formatNumber(trend.amount, 2)}٪`
                                   : ""}
                               </td>
                             </tr>
