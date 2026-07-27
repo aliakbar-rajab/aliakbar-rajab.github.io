@@ -40,7 +40,11 @@ test("brand, contact details, RTL, and palette match the approved contract", asy
   assert.match(component, /src="\/brand\/bonyan-foulad-daria-logo\.png"/);
   assert.match(
     css,
-    /\.brand-header-logo img\s*\{[^}]*width:\s*7rem[^}]*height:\s*7rem/is,
+    /\.header-main\s*\{[^}]*min-height:\s*8\.4rem/is,
+  );
+  assert.match(
+    css,
+    /\.brand-header-logo img\s*\{[^}]*width:\s*10\.5rem[^}]*height:\s*10\.5rem/is,
   );
   assert.deepEqual([...headerLogo.subarray(0, 4)], [0x89, 0x50, 0x4e, 0x47]);
   assert.ok(headerLogo.length > 1_400_000);
@@ -156,12 +160,20 @@ test("source exposes one H1 and complete social metadata", async () => {
 });
 
 test("homepage hero uses sharp landscape images", async () => {
-  const component = await read("../app/IronDemo.tsx");
+  const [component, css] = await Promise.all([
+    read("../app/IronDemo.tsx"),
+    read("../app/globals.css"),
+  ]);
   assert.match(component, /hero-rebar-1680\.jpg/);
   assert.match(component, /hero-beam-1680\.jpg/);
   assert.match(component, /hero-sheet-1680\.jpg/);
   assert.match(component, /width="1672"/);
   assert.match(component, /height="941"/);
+  assert.match(
+    component,
+    /<h1>\s*<span>بنیان فولاد داریا؛<\/span>\s*<span>همراه مطمئن خرید آهن و فولاد<\/span>\s*<\/h1>/,
+  );
+  assert.match(css, /\.hero h1 span\s*\{[^}]*display:\s*block/is);
 });
 
 test("about section does not render the square-profile photo", async () => {

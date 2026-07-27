@@ -175,7 +175,7 @@ noscript {
 }
 
 .header-main {
-  min-height: 5.6rem;
+  min-height: 8.4rem;
   display: grid;
   grid-template-columns: auto minmax(16rem, 1fr) auto;
   align-items: center;
@@ -194,8 +194,8 @@ noscript {
 }
 
 .brand-header-logo img {
-  width: 7rem;
-  height: 7rem;
+  width: 10.5rem;
+  height: 10.5rem;
   display: block;
   object-fit: contain;
 }
@@ -587,11 +587,15 @@ noscript {
 }
 
 .hero h1 {
-  max-width: 760px;
+  max-width: 1000px;
   margin: 0;
   font-size: clamp(2.2rem, 5vw, 4.6rem);
   line-height: 1.25;
   text-wrap: balance;
+}
+
+.hero h1 span {
+  display: block;
 }
 
 .hero-content > p:not(.hero-kicker) {
@@ -2022,8 +2026,8 @@ tbody td a,
   }
 
   .brand-header-logo img {
-    width: 5.5rem;
-    height: 5.5rem;
+    width: 8.25rem;
+    height: 8.25rem;
   }
 
   .brand-copy span {
@@ -2238,8 +2242,8 @@ tbody td a,
   }
 
   .brand-header-logo img {
-    width: 5rem;
-    height: 5rem;
+    width: 7.5rem;
+    height: 7.5rem;
   }
 
   .site-search input {

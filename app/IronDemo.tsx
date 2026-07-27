@@ -931,7 +931,10 @@ export default function IronDemo() {
           <div className="hero-overlay" />
           <div className="shell hero-content">
             <p className="hero-kicker">تأمین و استعلام مقاطع فولادی</p>
-            <h1>بنیان فولاد داریا؛ همراه مطمئن خرید آهن و فولاد</h1>
+            <h1>
+              <span>بنیان فولاد داریا؛</span>
+              <span>همراه مطمئن خرید آهن و فولاد</span>
+            </h1>
             <p>{slide.description}</p>
             <div className="hero-actions">
               <a href={contactHref}>
