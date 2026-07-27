@@ -7,6 +7,7 @@ import {
   getTrendPresentation,
 } from "../app/catalog-behavior.mjs";
 import { buildCatalogSearchGroups } from "../app/catalog-search.mjs";
+import { createRetryableLoader } from "../app/catalog-cache.ts";
 import {
   deriveSummaryFromRows,
   validateCatalogPriceData,
@@ -83,6 +84,54 @@ test("F1: validation rejects a summary that drifts from its rows", async () => {
   // Guard the guard: the unmodified payload must still pass, otherwise the
   // rejections above prove nothing.
   assert.equal(validateCatalogPriceData(rebar), rebar);
+});
+
+test("F3: a failed load is not cached, so the next attempt retries", async () => {
+  let attempts = 0;
+  const load = createRetryableLoader(async () => {
+    attempts += 1;
+    if (attempts === 1) throw new Error("network down");
+    return { attempt: attempts };
+  });
+
+  await assert.rejects(load(), /network down/);
+  assert.equal(attempts, 1);
+
+  // This is the whole point: the retry the UI invites must re-run the loader.
+  assert.deepEqual(await load(), { attempt: 2 });
+  assert.equal(attempts, 2);
+});
+
+test("F3: a successful load is shared, never repeated", async () => {
+  let attempts = 0;
+  const load = createRetryableLoader(async () => {
+    attempts += 1;
+    return { attempt: attempts };
+  });
+
+  const [first, second] = await Promise.all([load(), load()]);
+  const third = await load();
+
+  assert.equal(attempts, 1, "concurrent and later callers share one attempt");
+  assert.equal(first, second);
+  assert.equal(first, third);
+});
+
+test("F3: concurrent callers of a failing load share a single attempt", async () => {
+  let attempts = 0;
+  const load = createRetryableLoader(async () => {
+    attempts += 1;
+    throw new Error("boom");
+  });
+
+  await Promise.all([
+    assert.rejects(load(), /boom/),
+    assert.rejects(load(), /boom/),
+  ]);
+  assert.equal(attempts, 1, "one in-flight failure is shared, not duplicated");
+
+  await assert.rejects(load(), /boom/);
+  assert.equal(attempts, 2, "a call after the failure starts a fresh attempt");
 });
 
 test("known source ambiguities are represented honestly", async () => {

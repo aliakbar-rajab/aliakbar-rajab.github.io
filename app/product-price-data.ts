@@ -1,3 +1,4 @@
+import { createRetryableLoader } from "./catalog-cache";
 import { validateProductPricePayload } from "./catalog-validation.mjs";
 import type {
   CatalogCategory,
@@ -26,14 +27,12 @@ export type ProductPricePayload = Omit<CatalogPriceData, "categories"> & {
   catalogs: ProductPriceCatalog[];
 };
 
-let productPricePromise: Promise<ProductPricePayload> | undefined;
-
-export function loadProductPricePayload() {
-  productPricePromise ??= import("./data/product-prices.json").then((module) =>
-    validateProductPricePayload(module.default),
-  ) as Promise<ProductPricePayload>;
-  return productPricePromise;
-}
+export const loadProductPricePayload = createRetryableLoader(
+  () =>
+    import("./data/product-prices.json").then((module) =>
+      validateProductPricePayload(module.default),
+    ) as Promise<ProductPricePayload>,
+);
 
 export async function loadProductPriceCatalog(catalogId: ProductCatalogId) {
   const payload = await loadProductPricePayload();

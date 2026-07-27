@@ -9,6 +9,7 @@ import {
 } from "react";
 import { filterProductGroups } from "./site-logic.mjs";
 import { buildCatalogSearchGroups } from "./catalog-search.mjs";
+import { createRetryableLoader } from "./catalog-cache";
 import { loadBeamPriceData, loadRebarPriceData } from "./catalog-data";
 import RebarPrices, { type RebarViewRequest } from "./RebarPrices";
 import BeamPrices, { type BeamViewRequest } from "./BeamPrices";
@@ -170,18 +171,15 @@ const productGroups: ProductGroup[] = [
 
 const heroSlides = productGroups.slice(0, 3);
 
-let searchGroupsPromise: Promise<ProductGroup[]> | undefined;
-
-function loadCatalogSearchGroups() {
-  searchGroupsPromise ??= Promise.all([
+const loadCatalogSearchGroups = createRetryableLoader<ProductGroup[]>(() =>
+  Promise.all([
     loadRebarPriceData(),
     loadBeamPriceData(),
     loadProductPricePayload(),
   ]).then(([rebar, beam, products]) =>
     buildCatalogSearchGroups(productGroups, { rebar, beam, products }),
-  );
-  return searchGroupsPromise;
-}
+  ),
+);
 
 const rebarTypeLinks: Array<{
   id: NonNullable<RebarViewRequest["categoryId"]>;
