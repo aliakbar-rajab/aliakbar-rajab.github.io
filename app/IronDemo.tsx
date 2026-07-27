@@ -59,9 +59,11 @@ function isProductCatalogId(value: string): value is ProductCatalogId {
 }
 
 const phones = [
-  { label: "021-88888180", href: "tel:+982188888180" },
   { label: "021-88888280", href: "tel:+982188888280" },
+  { label: "021-88888780", href: "tel:+982188888780" },
   { label: "021-88888122", href: "tel:+982188888122" },
+  { label: "021-88889005", href: "tel:+982188889005" },
+  { label: "021-88889006", href: "tel:+982188889006" },
 ];
 
 const address =
