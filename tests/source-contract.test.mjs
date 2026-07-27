@@ -147,11 +147,13 @@ test("homepage hero uses sharp landscape images", async () => {
   assert.match(component, /height="941"/);
 });
 
-test("homepage uses the supplied steel tread photo and rotates banners every second", async () => {
+test("homepage uses the supplied dense steel tread photo at native scale and rotates banners every second", async () => {
   const [component, css, texture] = await Promise.all([
     read("../app/IronDemo.tsx"),
     read("../app/globals.css"),
-    readFile(new URL("../public/textures/chequered-plate.jpg", import.meta.url)),
+    readFile(
+      new URL("../public/textures/dark-chequered-plate.png", import.meta.url),
+    ),
   ]);
 
   assert.match(component, /const HERO_SLIDE_INTERVAL_MS = 1_000/);
@@ -161,7 +163,7 @@ test("homepage uses the supplied steel tread photo and rotates banners every sec
   );
   assert.match(
     css,
-    /\.products,\s*\.about\s*\{[^}]*url\("\/textures\/chequered-plate\.jpg"\)/is,
+    /\.products,\s*\.about\s*\{[^}]*url\("\/textures\/dark-chequered-plate\.png"\)/is,
   );
   assert.match(
     css,
@@ -169,11 +171,14 @@ test("homepage uses the supplied steel tread photo and rotates banners every sec
   );
   assert.match(
     css,
+    /\.products,\s*\.about\s*\{[^}]*background-size:\s*auto,\s*2752px auto/is,
+  );
+  assert.match(
+    css,
     /\.products \.section-heading h2,[\s\S]*?color:\s*var\(--white\)/,
   );
-  assert.equal(texture[0], 0xff);
-  assert.equal(texture[1], 0xd8);
-  assert.ok(texture.length > 100_000);
+  assert.deepEqual([...texture.subarray(0, 4)], [0x89, 0x50, 0x4e, 0x47]);
+  assert.ok(texture.length > 5_000_000);
 });
 
 test("rebar prices are sourced, validated, and refreshed on a schedule", async () => {

@@ -692,8 +692,8 @@ noscript {
 .about {
   background-color: #3b3b3e;
   background-image:
-    linear-gradient(rgb(59 59 62 / 74%), rgb(59 59 62 / 74%)),
-    url("/textures/chequered-plate.jpg");
+    linear-gradient(rgb(59 59 62 / 28%), rgb(59 59 62 / 28%)),
+    url("/textures/dark-chequered-plate.png");
   background-position:
     center,
     center top;
@@ -702,7 +702,7 @@ noscript {
     repeat-y;
   background-size:
     auto,
-    max(100%, 1600px) auto;
+    2752px auto;
 }
 
 .products .section-heading h2,
