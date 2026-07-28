@@ -1166,7 +1166,7 @@ export default function IronDemo() {
       <footer className="site-footer" id="contact">
         <div className="shell footer-grid">
           <div>
-            <Brand />
+            <Brand headerLogo />
             <p>
               استعلام و تأمین مقاطع فولادی برای پروژه‌های ساختمانی و صنعتی.
             </p>
