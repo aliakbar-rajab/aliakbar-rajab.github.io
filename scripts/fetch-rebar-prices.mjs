@@ -160,7 +160,7 @@ async function fetchSource(source) {
       accept: "text/html,application/xhtml+xml",
       "accept-language": "fa-IR,fa;q=0.9",
       "user-agent":
-        "Bonyan-Foulad-Daria/1.0 (+https://aliakbar-rajab.github.io/)",
+        "Bonyan-Foulad-Daria/1.0 (+https://fouladbonyan.com/)",
     },
     signal: AbortSignal.timeout(25_000),
   });

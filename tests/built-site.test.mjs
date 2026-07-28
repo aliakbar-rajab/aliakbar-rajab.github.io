@@ -27,7 +27,7 @@ test("production output contains required GitHub Pages files", async () => {
 test("built HTML uses root-safe assets and production metadata", async () => {
   const html = await readDist("index.html");
   assert.match(html, /lang="fa" dir="rtl"/);
-  assert.match(html, /https:\/\/aliakbar-rajab\.github\.io\//);
+  assert.match(html, /https:\/\/fouladbonyan\.com\//);
   assert.match(html, /\/assets\/[^"]+\.js/);
   assert.match(html, /\/preloader\/fb-preloader\.js/);
   assert.doesNotMatch(html, /localhost|pages-dist|_next/);

@@ -155,8 +155,8 @@ test("source exposes one H1 and complete social metadata", async () => {
   ]) {
     assert.match(html, new RegExp(token));
   }
-  assert.match(robots, /Sitemap: https:\/\/aliakbar-rajab\.github\.io\/sitemap\.xml/);
-  assert.match(sitemap, /<loc>https:\/\/aliakbar-rajab\.github\.io\/<\/loc>/);
+  assert.match(robots, /Sitemap: https:\/\/fouladbonyan\.com\/sitemap\.xml/);
+  assert.match(sitemap, /<loc>https:\/\/fouladbonyan\.com\/<\/loc>/);
 });
 
 test("homepage hero uses sharp landscape images", async () => {
