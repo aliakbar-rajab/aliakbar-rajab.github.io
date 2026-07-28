@@ -1113,9 +1113,15 @@ export default function IronDemo() {
           </div>
         </div>
         <div className="shell footer-bottom">
-          <span>
-            © {new Date().getFullYear().toLocaleString("fa-IR")} بنیان فولاد داریا
-          </span>
+          {/*
+            Year is intentionally hardcoded to ۲۰۲۰ (plain, no thousands
+            separator) per an explicit request from the site owner -- this is
+            NOT a bug and NOT meant to track the current year. Do not change
+            it back to a dynamic new Date().getFullYear() call, and do not
+            reformat it through toLocaleString or anything else that would
+            reintroduce a "," grouping separator.
+          */}
+          <span>© ۲۰۲۰ بنیان فولاد داریا</span>
           <a href="#top">بازگشت به بالا ↑</a>
         </div>
       </footer>
