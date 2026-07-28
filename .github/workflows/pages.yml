@@ -39,20 +39,16 @@ jobs:
       - name: Refresh and validate prices
         run: npm run prices:update
 
-      - name: Persist latest known-good prices
+      - name: Commit refreshed prices to main
         shell: bash
         run: |
-          git fetch origin price-data
-          price_data_sha="$(git rev-parse origin/price-data)"
           if ! git diff --quiet -- app/data; then
             git config user.name "github-actions[bot]"
             git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
             git add app/data
             git commit -m "chore(data): refresh prices"
+            git push origin HEAD:main
           fi
-          git push \
-            --force-with-lease="price-data:${price_data_sha}" \
-            origin HEAD:price-data
 
   build:
     needs: refresh
@@ -77,13 +73,6 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
-
-      - name: Restore latest known-good prices
-        if: github.event_name != 'pull_request'
-        shell: bash
-        run: |
-          git fetch --depth=1 origin price-data
-          git checkout FETCH_HEAD -- app/data
 
       - name: Lint, type-check, test, and build
         run: npm run verify
