@@ -380,7 +380,7 @@ test("all remaining product groups expose complete live price catalogs", async (
   assert.match(packageJson.scripts["prices:update"], /prices:update:products/);
 });
 
-test("deployment workflow pins actions and limits write permissions by job", async () => {
+test("CI workflow pins actions, limits write permissions by job, and no longer deploys to GitHub Pages", async () => {
   const workflow = await read("../.github/workflows/pages.yml");
 
   assert.doesNotMatch(
@@ -394,15 +394,14 @@ test("deployment workflow pins actions and limits write permissions by job", asy
   );
   assert.match(
     workflow,
-    /build:[\s\S]*?contents: read[\s\S]*?pages: write/,
-  );
-  assert.match(
-    workflow,
-    /deploy:[\s\S]*?pages: write[\s\S]*?id-token: write/,
-  );
-  assert.match(
-    workflow,
     /refresh:[\s\S]*?prices:update[\s\S]*?git push origin HEAD:main/,
   );
   assert.doesNotMatch(workflow, /price-data/);
+
+  // Hosting moved to Cloudflare Pages, which watches main directly, so this
+  // workflow's job is CI verification (and the price refresh) only -- it
+  // must not also try to publish to GitHub Pages.
+  assert.doesNotMatch(workflow, /deploy-pages|configure-pages|github-pages/);
+  assert.doesNotMatch(workflow, /^\s*deploy:/m);
+  assert.match(workflow, /build:[\s\S]*?permissions:\s*\n\s+contents: read/);
 });
