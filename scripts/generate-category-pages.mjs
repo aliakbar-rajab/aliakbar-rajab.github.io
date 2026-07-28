@@ -1,6 +1,7 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { productGroups } from "../app/category-meta.ts";
+import { getCategoryPricingState } from "../app/catalog-behavior.mjs";
 
 const SITE_URL = "https://fouladbonyan.com";
 const distDir = resolve(import.meta.dirname, "..", "dist");
@@ -28,6 +29,12 @@ async function loadPriceRanges() {
   const addRange = (id, category) => {
     const summary = category?.summary;
     if (!summary || summary.max <= 0) return;
+    // Rows within one sub-category aren't always priced in the same unit
+    // (e.g. beam's "beam" id mixes per-kilogram and per-bar rows); the UI
+    // itself only trusts a category's min/max when it has exactly one unit
+    // (RebarPrices.tsx's pricingState.units check), and this needs the same
+    // guard or it'll quote a range spanning two incompatible units.
+    if (getCategoryPricingState(category).units.length !== 1) return;
     const rowCount =
       category.factories?.reduce(
         (total, factory) => total + (factory.rows?.length ?? 0),
