@@ -36,6 +36,7 @@ const phones = [
   { label: "021-88888122", href: "tel:+982188888122" },
   { label: "021-88889005", href: "tel:+982188889005" },
   { label: "021-88889006", href: "tel:+982188889006" },
+  { label: "09123300815", href: "tel:+989123300815", name: "علی اسماعیل‌پور" },
 ];
 
 const address =
@@ -484,8 +485,18 @@ export default function IronDemo() {
           <p>مشاوره و استعلام تلفنی محصولات فولادی</p>
           <div aria-label="شماره‌های تماس">
             {phones.map((phone) => (
-              <a href={phone.href} key={phone.href} dir="ltr">
-                {phone.label}
+              <a
+                href={phone.href}
+                key={phone.href}
+                dir={phone.name ? undefined : "ltr"}
+              >
+                {phone.name ? (
+                  <>
+                    {phone.name}: <span dir="ltr">{phone.label}</span>
+                  </>
+                ) : (
+                  phone.label
+                )}
               </a>
             ))}
           </div>
@@ -1081,8 +1092,18 @@ export default function IronDemo() {
           <div id="phone-numbers">
             <h2>شماره‌های تماس</h2>
             {phones.map((phone) => (
-              <a href={phone.href} key={phone.href} dir="ltr">
-                {phone.label}
+              <a
+                href={phone.href}
+                key={phone.href}
+                dir={phone.name ? undefined : "ltr"}
+              >
+                {phone.name ? (
+                  <>
+                    {phone.name}: <span dir="ltr">{phone.label}</span>
+                  </>
+                ) : (
+                  phone.label
+                )}
               </a>
             ))}
           </div>
