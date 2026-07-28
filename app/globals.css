@@ -18,11 +18,11 @@
   --radius: 14px;
   --shell-gutter: 2rem;
 
-  /* Extruded hero panel: physical depth of the raised display panel. */
-  --hero-radius: 28px;
-  --hero-depth: 54px;
-  --hero-side-depth: 20px;
-  --hero-inset: 1rem; /* must stay <= 1rem so .hero .shell keeps page alignment */
+  /* The image itself is the panel: one continuous, molded printer-like edge. */
+  --hero-radius: 0px;
+  --hero-bevel: clamp(12px, 1.4vw, 18px);
+  --hero-depth: 0px;
+  --hero-inset: 0px;
   --hero-backdrop: #17171b;
   font-family:
     "Vazirmatn", Tahoma, Arial, sans-serif;
@@ -54,12 +54,15 @@ body {
 
 body,
 button,
-input {
+input,
+select,
+option {
   font-family: inherit;
 }
 
 button,
-input {
+input,
+select {
   font-size: inherit;
 }
 
@@ -539,27 +542,16 @@ noscript {
   font-weight: 900;
 }
 
-/*
- * Outer wrapper: carries the extruded slab, so it must stay overflow: visible.
- * The inset is padding rather than margin so the dark backdrop wraps the panel;
- * that backdrop is what the next section fades out of, so no seam is left.
- */
+/* No surrounding frame—the hero image is the only visible surface. */
 .hero-frame {
   position: relative;
   z-index: 2;
   overflow: visible;
-  padding: var(--hero-inset);
-  padding-block-end: calc(var(--hero-inset) + var(--hero-depth));
-  background: linear-gradient(
-    180deg,
-    #2c2c31 0,
-    #1c1c21 calc(var(--hero-inset) * 1.6),
-    var(--hero-backdrop) 100%
-  );
 }
 
-/* The extruded slab, offset down/right so only its bottom and side edges show. */
+/* The former extrusion is intentionally removed; the hero is one soft surface. */
 .hero-frame::before {
+  display: none;
   content: "";
   position: absolute;
   z-index: 0;
@@ -568,52 +560,22 @@ noscript {
   bottom: calc(var(--hero-inset) + var(--hero-depth));
   left: var(--hero-inset);
   border-radius: var(--hero-radius);
-  background:
-    /* Fine horizontal machining lines make the exposed metal read as a solid edge. */
-    repeating-linear-gradient(
-      0deg,
-      rgb(255 255 255 / 6%) 0 1px,
-      transparent 1px 4px
-    ),
-    /* machined chamfer catching the light at the top of the exposed lip */
-    linear-gradient(
-      180deg,
-      transparent calc(100% - var(--hero-depth)),
-      #eef0f4 calc(100% - var(--hero-depth)),
-      #a9adb7 calc(100% - var(--hero-depth) + 3px),
-      transparent calc(100% - var(--hero-depth) + 8px)
-    ),
-    /* warm bounce from the brand yellow above the shadowed base */
-    linear-gradient(
-      180deg,
-      transparent calc(100% - 30px),
-      rgb(246 181 0 / 42%) calc(100% - 20px),
-      transparent calc(100% - 10px)
-    ),
-    /* the side edge turns away from the light, so it stays darker */
-    linear-gradient(
-      90deg,
-      transparent calc(100% - var(--hero-side-depth)),
-      rgb(4 4 6 / 82%) 100%
-    ),
-    /* brushed charcoal body, ramping down the front face to the contact line */
-    linear-gradient(
-      180deg,
-      #666a73 0%,
-      #464a53 calc(100% - var(--hero-depth)),
-      #777c87 calc(100% - var(--hero-depth) + 4px),
-      #40444d calc(100% - var(--hero-depth) + 12px),
-      #25272e calc(100% - 14px),
-      #090a0c 100%
-    );
-  border: 1px solid rgb(218 221 229 / 38%);
+  background: linear-gradient(
+    180deg,
+    #24252a 0,
+    #24252a calc(100% - var(--hero-depth)),
+    #303238 calc(100% - var(--hero-depth) + 1px),
+    #1b1c20 calc(100% - 12px),
+    #0c0d0f 100%
+  );
   box-shadow:
-    0 44px 72px -20px rgb(0 0 0 / 92%),
-    0 18px 30px -12px rgb(0 0 0 / 78%);
-  transform: translate(var(--hero-side-depth), var(--hero-depth));
+    inset 0 1px 0 rgb(255 255 255 / 12%),
+    0 32px 52px -20px rgb(0 0 0 / 88%),
+    0 14px 24px -12px rgb(0 0 0 / 66%);
+  transform: translateY(var(--hero-depth));
 }
 
-/* Inner surface: rounded + clipped, holds the slider, image and content. */
+/* The image panel is clipped by one continuous rounded rectangle. */
 .hero {
   position: relative;
   z-index: 1;
@@ -627,17 +589,51 @@ noscript {
   color: var(--white);
 }
 
-/* Rim light: silver on the top/left edge, dark seam at the bottom. */
+/*
+ * A continuous shallow bevel on all four sides, matching the molded transition
+ * marked on the printer reference. The banner remains a single image surface.
+ */
 .hero::after {
   content: "";
   position: absolute;
   z-index: 4;
   inset: 0;
   border-radius: inherit;
+  background:
+    linear-gradient(
+      180deg,
+      rgb(0 0 0 / 18%) 0,
+      rgb(0 0 0 / 6%) 36%,
+      transparent 100%
+    )
+      top / 100% var(--hero-bevel) no-repeat,
+    linear-gradient(
+        0deg,
+        rgb(0 0 0 / 48%) 0,
+        rgb(0 0 0 / 17%) 38%,
+        transparent 100%
+      )
+      bottom / 100% var(--hero-bevel) no-repeat,
+    linear-gradient(
+        90deg,
+        rgb(0 0 0 / 12%) 0,
+        rgb(0 0 0 / 4%) 38%,
+        transparent 100%
+      )
+      left / var(--hero-bevel) 100% no-repeat,
+    linear-gradient(
+        270deg,
+        rgb(0 0 0 / 38%) 0,
+        rgb(0 0 0 / 13%) 38%,
+        transparent 100%
+      )
+      right / var(--hero-bevel) 100% no-repeat;
   box-shadow:
-    inset 0 1px 0 rgb(236 238 244 / 22%),
-    inset 1px 0 0 rgb(236 238 244 / 10%),
-    inset 0 -1px 0 rgb(0 0 0 / 45%);
+    inset 0 1px 2px rgb(0 0 0 / 24%),
+    inset 0 -3px 4px rgb(0 0 0 / 34%),
+    inset 2px 0 2px rgb(0 0 0 / 16%),
+    inset -3px 0 4px rgb(0 0 0 / 25%),
+    inset 0 0 0 calc(var(--hero-bevel) - 1px) rgb(16 17 20 / 5%);
   pointer-events: none;
 }
 
@@ -807,6 +803,26 @@ noscript {
 .products,
 .about {
   background-color: #3b3b3e;
+}
+
+.products {
+  position: relative;
+  isolation: isolate;
+  padding-block-end: clamp(4rem, 8vw, 7rem);
+}
+
+/*
+ * Same idea as .about below: the diamond-plate texture lives on its own
+ * layer, masked to dissolve into the section's flat colour before the box
+ * edge, so it eases into .prices' solid tone instead of stopping dead.
+ * Sits behind the hero ramp (z-index 0 vs 1) so that overlay still reads
+ * on top where the two layers share the top of the section.
+ */
+.products::after {
+  content: "";
+  position: absolute;
+  z-index: 0;
+  inset: 0;
   background-image:
     linear-gradient(rgb(59 59 62 / 28%), rgb(59 59 62 / 28%)),
     url("/textures/dark-chequered-plate.png");
@@ -819,6 +835,62 @@ noscript {
   background-size:
     auto,
     2752px auto;
+  mask-image: linear-gradient(180deg, #000 0%, #000 78%, transparent 100%);
+  -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 78%, transparent 100%);
+  pointer-events: none;
+}
+
+.products > .shell {
+  position: relative;
+  z-index: 2;
+}
+
+.about {
+  position: relative;
+  isolation: isolate;
+  padding-block: calc(clamp(4rem, 8vw, 7rem) + 3rem) clamp(4rem, 8vw, 7rem);
+  background-color: #34353a;
+  background-image: none;
+}
+
+/*
+ * The weave texture lives on its own layer, masked so it dissolves into
+ * the section's flat colour before both box edges. Without this the mesh
+ * pattern stays crisp right up to the border and then just stops, which
+ * reads as a hard seam against whatever comes next (.prices' lifted card
+ * above, the quote banner below).
+ */
+.about::before {
+  content: "";
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  background-image:
+    linear-gradient(rgb(20 21 24 / 56%), rgb(20 21 24 / 56%)),
+    url("/textures/woven-metal.png");
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  mask-image: linear-gradient(
+    180deg,
+    transparent 0%,
+    #000 14%,
+    #000 78%,
+    transparent 100%
+  );
+  -webkit-mask-image: linear-gradient(
+    180deg,
+    transparent 0%,
+    #000 14%,
+    #000 78%,
+    transparent 100%
+  );
+  pointer-events: none;
+}
+
+.about > .shell {
+  position: relative;
+  z-index: 1;
 }
 
 /*
@@ -835,7 +907,7 @@ noscript {
 .hero-frame + .products::before {
   content: "";
   position: absolute;
-  z-index: 0;
+  z-index: 1;
   inset-block-start: 0;
   inset-inline: 0;
   height: clamp(9rem, 20vw, 15rem);
@@ -855,7 +927,7 @@ noscript {
 
 .hero-frame + .products > .shell {
   position: relative;
-  z-index: 1;
+  z-index: 2;
 }
 
 .products .section-heading h2,
@@ -975,7 +1047,41 @@ noscript {
 }
 
 .prices {
-  background: var(--surface);
+  position: relative;
+  isolation: isolate;
+  z-index: 2;
+  padding-block-end: clamp(4rem, 8vw, 7rem);
+  background-color: #3b3b3e;
+}
+
+/*
+ * Used to end in a rounded, shadowed "card" edge that overlapped .about --
+ * the rounded corner and shadow line landed on the mesh below as a hard
+ * ring. Replaced with the same flat-colour ramp used elsewhere so the two
+ * (near-identical) dark tones hand off without a visible seam.
+ */
+.prices::after {
+  content: "";
+  position: absolute;
+  z-index: 0;
+  inset-block-end: 0;
+  inset-inline: 0;
+  height: clamp(4rem, 8vw, 6rem);
+  background: linear-gradient(180deg, transparent 0%, #34353a 100%);
+  pointer-events: none;
+}
+
+.prices > .shell {
+  position: relative;
+  z-index: 1;
+}
+
+.prices .section-heading h2 {
+  color: var(--white);
+}
+
+.prices .section-heading p {
+  color: #e1e1e4;
 }
 
 .search-status {
@@ -1006,9 +1112,9 @@ noscript {
   gap: 0.35rem;
   overflow-x: auto;
   padding: 0.4rem;
-  border: 1px solid var(--line);
+  border: 1px solid rgb(255 255 255 / 18%);
   border-radius: 12px 12px 0 0;
-  background: var(--white);
+  background: #3b3b3e;
   scrollbar-width: thin;
 }
 
@@ -1020,22 +1126,22 @@ noscript {
   border: 0;
   border-radius: 8px;
   background: transparent;
-  color: #505056;
+  color: #f2f2f4;
   font-weight: 800;
   cursor: pointer;
 }
 
 .product-tabs button[aria-selected="true"] {
-  background: var(--brand-dark);
-  color: var(--white);
+  background: var(--brand-yellow);
+  color: var(--ink);
 }
 
 .product-panel {
-  border: 1px solid var(--line);
+  border: 1px solid rgb(255 255 255 / 18%);
   border-top: 0;
   border-radius: 0 0 12px 12px;
-  background: var(--white);
-  box-shadow: 0 12px 32px rgb(20 20 24 / 5%);
+  background: #3b3b3e;
+  box-shadow: 0 12px 32px rgb(20 20 24 / 16%);
 }
 
 .table-scroll {
@@ -1746,7 +1852,18 @@ tbody td a,
   outline: 0;
   background: #fafafa;
   color: #3e3f48;
+  font-family: "Vazirmatn", Tahoma, Arial, sans-serif;
+  font-size: 0.92rem;
+  font-weight: 650;
   cursor: pointer;
+}
+
+.filter-fields select option {
+  min-height: 2.75rem;
+  padding: 0.65rem 0.8rem;
+  font-family: "Vazirmatn", Tahoma, Arial, sans-serif;
+  font-size: 1rem;
+  font-weight: 500;
 }
 
 .filter-fields select:focus {
@@ -1976,15 +2093,63 @@ tbody td a,
   font-size: 0.9rem;
 }
 
+/*
+ * The about panel (mesh texture) and this banner (i-beam photo) are both
+ * dark but visually unrelated surfaces; without a ramp the seam reads as a
+ * hard cut. Fade the about panel's own colour in over the top of the photo,
+ * the same technique used for .hero-frame + .products above.
+ */
+.about + .quote-section::before {
+  content: "";
+  position: absolute;
+  z-index: 0;
+  inset-block-start: 0;
+  inset-inline: 0;
+  height: clamp(6rem, 14vw, 10rem);
+  background: linear-gradient(
+    180deg,
+    #34353a 0%,
+    #34353a 12%,
+    rgb(52 53 58 / 88%) 26%,
+    rgb(52 53 58 / 68%) 42%,
+    rgb(52 53 58 / 44%) 58%,
+    rgb(52 53 58 / 24%) 74%,
+    rgb(52 53 58 / 9%) 88%,
+    transparent 100%
+  );
+  pointer-events: none;
+}
+
 .quote-section {
+  position: relative;
+  isolation: isolate;
   padding-block: 4rem;
-  background:
-    linear-gradient(90deg, rgb(40 40 43 / 94%), rgb(59 59 62 / 98%)),
-    url("/categories/02-ibeam.jpg") center / cover;
+  background-color: #242427;
   color: var(--white);
 }
 
+/*
+ * The i-beam photo lives on its own layer (below the entry ramp above,
+ * z-index -1 vs 0) and fades out near the bottom, revealing the section's
+ * own flat colour -- which matches .site-footer's tone -- so the photo
+ * eases into the footer instead of cutting off against it.
+ */
+.quote-section::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  background:
+    linear-gradient(90deg, rgb(40 40 43 / 94%), rgb(59 59 62 / 98%)),
+    url("/categories/02-ibeam.jpg") center / cover;
+  mask-image: linear-gradient(180deg, #000 0%, #000 80%, transparent 100%);
+  -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 80%, transparent 100%);
+  pointer-events: none;
+}
+
 .quote-inner {
+  position: relative;
+  z-index: 1;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -2139,10 +2304,10 @@ tbody td a,
 
 @media (max-width: 900px) {
   :root {
-    --hero-radius: 22px;
-    --hero-depth: 38px;
-    --hero-side-depth: 14px;
-    --hero-inset: 0.75rem;
+    --hero-radius: 0px;
+    --hero-bevel: 14px;
+    --hero-depth: 0px;
+    --hero-inset: 0px;
   }
 
   html {
@@ -2372,10 +2537,10 @@ tbody td a,
 @media (max-width: 640px) {
   :root {
     --shell-gutter: 1.25rem;
-    --hero-radius: 18px;
-    --hero-depth: 26px;
-    --hero-side-depth: 10px;
-    --hero-inset: 0.5rem;
+    --hero-radius: 0px;
+    --hero-bevel: 11px;
+    --hero-depth: 0px;
+    --hero-inset: 0px;
   }
 
   .header-main {
