@@ -54,6 +54,14 @@ test("category landing pages have unique metadata, a CSP-safe initial tab, and s
     const productLd = html.match(
       /<script type="application\/ld\+json">(\{"@context":"https:\/\/schema\.org","@type":"Product".*?)<\/script>/,
     )?.[1];
+    if (category.id === "beam") {
+      // beam's default "beam" sub-category mixes per-kilogram and per-bar
+      // rows, so its min/max would span two incompatible units -- the
+      // generator skips the schema entirely rather than publish a bogus
+      // range, matching RebarPrices.tsx's own units.length !== 1 guard.
+      assert.equal(productLd, undefined);
+      continue;
+    }
     assert.ok(productLd, `${category.id} is missing its Product JSON-LD`);
     const product = JSON.parse(productLd);
     assert.equal(product.offers.priceCurrency, "IRR");
