@@ -5,6 +5,7 @@ import {
   normalizeSearchText,
   toAsciiDigits,
 } from "../app/site-logic.mjs";
+import { localizeCatalogValue } from "../app/catalog-utils.ts";
 
 // Shaped like the rows buildCatalogSearchGroups actually produces: ASCII digits
 // in the title, plus the categoryId/factory/size/searchText navigation metadata.
@@ -73,4 +74,12 @@ test("search matches normalized Persian digits", () => {
 
 test("empty search retains all groups", () => {
   assert.equal(filterProductGroups(groups, "  ").length, 2);
+});
+
+test("F5: dimensions convert to Persian digits without a thousands separator", () => {
+  // localizeCatalogValue formats sizes/lengths/weights, never money, so a
+  // 1250mm length must read as ۱۲۵۰, not ۱٬۲۵۰ (which looks like "1,250" and
+  // implies a completely different magnitude).
+  assert.equal(localizeCatalogValue("طول*1250"), "طول*۱۲۵۰");
+  assert.equal(localizeCatalogValue("1000 گرم"), "۱۰۰۰ گرم");
 });

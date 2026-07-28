@@ -955,6 +955,10 @@ export default function IronDemo() {
             <div className="product-tabs" role="tablist" aria-label="گروه محصولات">
               {productGroups.map((group, index) => {
                 const selected = visibleGroup?.id === group.id;
+                // When a search leaves no group visible, every tab would
+                // otherwise get tabIndex -1 and the whole tablist would drop
+                // out of the tab order. Keep the first tab reachable instead.
+                const focusable = selected || (!visibleGroup && index === 0);
                 return (
                   <button
                     type="button"
@@ -962,7 +966,7 @@ export default function IronDemo() {
                     id={`tab-${group.id}`}
                     aria-selected={selected}
                     aria-controls={`panel-${group.id}`}
-                    tabIndex={selected ? 0 : -1}
+                    tabIndex={focusable ? 0 : -1}
                     key={group.id}
                     ref={(node) => {
                       tabRefs.current[index] = node;

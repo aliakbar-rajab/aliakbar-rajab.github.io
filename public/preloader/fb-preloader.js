@@ -2,7 +2,6 @@
   "use strict";
 
   const SESSION_KEY = "bonyan-foulad-daria-preloader-seen-v8";
-  const root = document.documentElement;
   let finished = false;
   let watchdog = 0;
   let overlay = null;
@@ -31,7 +30,6 @@
       site.removeAttribute("inert");
       site.removeAttribute("aria-hidden");
     }
-    root.classList.add("fb-preloader-complete");
   }
 
   function finish() {
@@ -48,7 +46,6 @@
 
   function skipPreloader() {
     storage.set();
-    root.classList.add("fb-preloader-complete");
   }
 
   if (
