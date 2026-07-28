@@ -160,13 +160,14 @@ test("source exposes one H1 and complete social metadata", async () => {
 });
 
 test("homepage hero uses sharp landscape images", async () => {
-  const [component, css] = await Promise.all([
+  const [component, categoryMeta, css] = await Promise.all([
     read("../app/IronDemo.tsx"),
+    read("../app/category-meta.ts"),
     read("../app/globals.css"),
   ]);
-  assert.match(component, /hero-rebar-1680\.jpg/);
-  assert.match(component, /hero-beam-1680\.jpg/);
-  assert.match(component, /hero-sheet-1680\.jpg/);
+  assert.match(categoryMeta, /hero-rebar-1680\.jpg/);
+  assert.match(categoryMeta, /hero-beam-1680\.jpg/);
+  assert.match(categoryMeta, /hero-sheet-1680\.jpg/);
   assert.match(component, /width="1672"/);
   assert.match(component, /height="941"/);
   assert.match(

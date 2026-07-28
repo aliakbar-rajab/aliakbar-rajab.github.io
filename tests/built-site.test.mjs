@@ -24,6 +24,43 @@ test("production output contains required GitHub Pages files", async () => {
   );
 });
 
+test("category landing pages have unique metadata, a CSP-safe initial tab, and sitemap entries", async () => {
+  const categories = [
+    { id: "rebar", title: "قیمت میلگرد" },
+    { id: "beam", title: "قیمت تیرآهن" },
+    { id: "sheet", title: "قیمت ورق" },
+    { id: "profile", title: "قیمت پروفیل" },
+    { id: "pipe", title: "قیمت لوله" },
+    { id: "angle", title: "قیمت نبشی" },
+    { id: "channel", title: "قیمت ناودانی" },
+    { id: "wire", title: "قیمت مفتول" },
+  ];
+
+  for (const category of categories) {
+    const html = await readDist(`${category.id}/index.html`);
+    assert.match(html, new RegExp(`<title>${category.title}`));
+    assert.match(
+      html,
+      new RegExp(
+        `<link rel="canonical" href="https://fouladbonyan\\.com/${category.id}/" />`,
+      ),
+    );
+    assert.match(html, new RegExp(`data-initial-category="${category.id}"`));
+    // The CSP is script-src 'self' with no unsafe-inline: any inline <script>
+    // here would silently fail to run, so the category selection must come
+    // from a plain data attribute instead (see category-meta.ts).
+    assert.doesNotMatch(html, /<script>window\./);
+  }
+
+  const sitemap = await readDist("sitemap.xml");
+  for (const category of categories) {
+    assert.match(
+      sitemap,
+      new RegExp(`<loc>https://fouladbonyan\\.com/${category.id}/</loc>`),
+    );
+  }
+});
+
 test("built HTML uses root-safe assets and production metadata", async () => {
   const html = await readDist("index.html");
   assert.match(html, /lang="fa" dir="rtl"/);
