@@ -86,6 +86,22 @@ test("F1: validation rejects a summary that drifts from its rows", async () => {
   assert.equal(validateCatalogPriceData(rebar), rebar);
 });
 
+test("F10: sourceUrl is scheme-checked like sourceHome, since it (not sourceHome) is rendered into an href", async () => {
+  const rebar = await readJson("../app/data/rebar-prices.json");
+
+  for (const badUrl of ["javascript:alert(1)", "", "example.com"]) {
+    const tampered = structuredClone(rebar);
+    tampered.categories[0].sourceUrl = badUrl;
+    assert.throws(
+      () => validateCatalogPriceData(tampered),
+      /sourceUrl/,
+      `sourceUrl of ${JSON.stringify(badUrl)} must be rejected`,
+    );
+  }
+
+  assert.equal(validateCatalogPriceData(rebar), rebar);
+});
+
 test("F3: a failed load is not cached, so the next attempt retries", async () => {
   let attempts = 0;
   const load = createRetryableLoader(async () => {

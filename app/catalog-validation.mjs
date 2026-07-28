@@ -79,18 +79,20 @@ function validateSummary(summary, location, rows) {
 
 function validateCategory(category, location) {
   assert(isRecord(category), `${location} شیء نیست`);
-  for (const field of [
-    "id",
-    "label",
-    "groupingLabel",
-    "specificationLabel",
-    "sourceUrl",
-  ]) {
+  for (const field of ["id", "label", "groupingLabel", "specificationLabel"]) {
     assert(
       typeof category[field] === "string" && category[field].trim(),
       `${location}.${field} خالی است`,
     );
   }
+  // sourceUrl is rendered straight into an href (unlike sourceHome, which
+  // never reaches markup), so it gets the same scheme check as sourceHome
+  // rather than just a non-empty-string check.
+  assert(
+    typeof category.sourceUrl === "string" &&
+      /^https:\/\//.test(category.sourceUrl),
+    `${location}.sourceUrl معتبر نیست`,
+  );
   assert(Array.isArray(category.factories), `${location}.factories آرایه نیست`);
   assert(category.factories.length > 0, `${location}.factories خالی است`);
 
