@@ -216,7 +216,7 @@ test("homepage uses the supplied dense steel tread photo and cross-fades banners
   );
   assert.match(
     css,
-    /\.products,\s*\.about\s*\{[^}]*url\("\/textures\/dark-chequered-plate\.png"\)/is,
+    /\.products::after\s*\{[^}]*url\("\/textures\/dark-chequered-plate\.png"\)/is,
   );
   assert.match(
     css,
@@ -224,7 +224,7 @@ test("homepage uses the supplied dense steel tread photo and cross-fades banners
   );
   assert.match(
     css,
-    /\.products,\s*\.about\s*\{[^}]*background-size:\s*auto,\s*2752px auto/is,
+    /\.products::after\s*\{[^}]*background-size:\s*auto,\s*2752px auto/is,
   );
   assert.match(
     css,
