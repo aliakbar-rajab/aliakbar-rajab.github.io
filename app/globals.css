@@ -989,7 +989,9 @@ noscript {
   border: 1px solid var(--line);
   border-radius: var(--radius);
   background: var(--white);
+  color: inherit;
   text-align: start;
+  text-decoration: none;
   box-shadow: 0 8px 28px rgb(20 20 24 / 6%);
   cursor: pointer;
   transition:

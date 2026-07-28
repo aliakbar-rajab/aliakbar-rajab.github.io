@@ -22,41 +22,13 @@ import {
   type ProductPriceCatalog,
   type ProductViewRequest,
 } from "./product-price-data";
-
-type ProductRow = {
-  product: string;
-  origin: string;
-  unit: string;
-  categoryId?: string;
-  factory?: string;
-  size?: string;
-  searchText?: string;
-};
-
-type ProductGroup = {
-  id: ProductGroupId;
-  label: string;
-  shortLabel: string;
-  image: string;
-  heroImage?: string;
-  description: string;
-  rows: ProductRow[];
-};
-
-type ProductGroupId = "rebar" | "beam" | ProductCatalogId;
-
-const liveProductCatalogIds: ProductCatalogId[] = [
-  "sheet",
-  "profile",
-  "pipe",
-  "angle",
-  "channel",
-  "wire",
-];
-
-function isProductCatalogId(value: string): value is ProductCatalogId {
-  return liveProductCatalogIds.includes(value as ProductCatalogId);
-}
+import {
+  getInitialCategory,
+  isProductCatalogId,
+  productGroups,
+  type ProductGroup,
+  type ProductGroupId,
+} from "./category-meta";
 
 const phones = [
   { label: "021-88888280", href: "tel:+982188888280" },
@@ -68,84 +40,6 @@ const phones = [
 
 const address =
   "آجودانیه پورابتهاج نبش لشکری ساختمان سرو واحد ۳۰۳";
-
-// rows is filled in by buildCatalogSearchGroups from the live catalogs. It is
-// deliberately empty here: search only ever runs once those have loaded, so any
-// placeholder listed at this level would be unreachable.
-//
-// Exported so the empty-rows invariant can be asserted directly in tests.
-// allowConstantExport does not cover array initialisers, and moving this to its
-// own module would drag the ProductGroup/ProductGroupId types with it.
-// eslint-disable-next-line react-refresh/only-export-components
-export const productGroups: ProductGroup[] = [
-  {
-    id: "rebar",
-    label: "میلگرد",
-    shortLabel: "میلگرد",
-    image: "/categories/01-rebar.jpg",
-    heroImage: "/categories/hero-rebar-1680.jpg",
-    description: "میلگرد آجدار و ساده برای پروژه‌های ساختمانی و صنعتی",
-    rows: [],
-  },
-  {
-    id: "beam",
-    label: "تیرآهن",
-    shortLabel: "تیرآهن",
-    image: "/categories/02-ibeam.jpg",
-    heroImage: "/categories/hero-beam-1680.jpg",
-    description: "تیرآهن IPE، هاش و مقاطع سازه‌ای",
-    rows: [],
-  },
-  {
-    id: "sheet",
-    label: "ورق فولادی",
-    shortLabel: "ورق",
-    image: "/categories/03-sheet-coil.jpg",
-    heroImage: "/categories/hero-sheet-1680.jpg",
-    description: "ورق سیاه، گالوانیزه، روغنی و رنگی",
-    rows: [],
-  },
-  {
-    id: "profile",
-    label: "قوطی و پروفیل",
-    shortLabel: "پروفیل",
-    image: "/categories/04-profile.jpg",
-    description: "پروفیل ساختمانی و صنعتی در ابعاد گوناگون",
-    rows: [],
-  },
-  {
-    id: "pipe",
-    label: "لوله فولادی",
-    shortLabel: "لوله",
-    image: "/categories/05-pipe.jpg",
-    description: "لوله صنعتی، گازی و داربستی",
-    rows: [],
-  },
-  {
-    id: "angle",
-    label: "نبشی",
-    shortLabel: "نبشی",
-    image: "/categories/06-angle.jpg",
-    description: "نبشی بال مساوی و بال نامساوی",
-    rows: [],
-  },
-  {
-    id: "channel",
-    label: "ناودانی",
-    shortLabel: "ناودانی",
-    image: "/categories/07-channel.jpg",
-    description: "ناودانی سبک و سنگین برای مصارف سازه‌ای",
-    rows: [],
-  },
-  {
-    id: "wire",
-    label: "مفتول و سیم",
-    shortLabel: "مفتول",
-    image: "/categories/08-wire.jpg",
-    description: "مفتول سیاه، گالوانیزه و محصولات سیمی",
-    rows: [],
-  },
-];
 
 const heroSlides = productGroups.slice(0, 3);
 const HERO_SLIDE_INTERVAL_MS = 1_700;
@@ -297,7 +191,7 @@ export default function IronDemo() {
   const [megaProduct, setMegaProduct] = useState<ProductGroupId>("rebar");
   const [activeSlide, setActiveSlide] = useState(0);
   const [carouselPaused, setCarouselPaused] = useState(false);
-  const [activeGroup, setActiveGroup] = useState(productGroups[0].id);
+  const [activeGroup, setActiveGroup] = useState(getInitialCategory);
   const [searchInput, setSearchInput] = useState("");
   const [committedSearch, setCommittedSearch] = useState("");
   const [searchMessage, setSearchMessage] = useState("");
@@ -1003,11 +897,14 @@ export default function IronDemo() {
             />
             <div className="category-grid">
               {productGroups.map((group) => (
-                <button
+                <a
                   className="category-card"
-                  type="button"
+                  href={`/${group.id}/`}
                   key={group.id}
-                  onClick={() => goToGroup(group.id)}
+                  onClick={(event) => {
+                    event.preventDefault();
+                    goToGroup(group.id);
+                  }}
                 >
                   <img
                     src={group.image}
@@ -1022,7 +919,7 @@ export default function IronDemo() {
                     <small>{group.description}</small>
                   </span>
                   <b aria-hidden="true">←</b>
-                </button>
+                </a>
               ))}
             </div>
           </div>
@@ -1128,7 +1025,7 @@ export default function IronDemo() {
               <SectionTitle
                 eyebrow="درباره بنیان فولاد داریا"
                 title="از انتخاب محصول تا هماهنگی تحویل"
-                description="بنیان فولاد داریا برای استعلام موجودی، مقایسه گزینه‌های تأمین و هماهنگی سفارش در کنار خریداران ساختمانی و صنعتی است."
+                description="بنیان فولاد داریا (با نام‌های فولاد بنیان داریا، بنیان فولاد و فولاد بنیان نیز شناخته می‌شود) برای استعلام موجودی، مقایسه گزینه‌های تأمین و هماهنگی سفارش در کنار خریداران ساختمانی و صنعتی است."
               />
               <ul className="feature-list">
                 <li>

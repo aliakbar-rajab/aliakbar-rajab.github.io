@@ -188,7 +188,7 @@ test("known source ambiguities are represented honestly", async () => {
 });
 
 test("F17: product groups carry no placeholder search rows", async () => {
-  const { productGroups } = await import("../app/IronDemo.tsx");
+  const { productGroups } = await import("../app/category-meta.ts");
 
   assert.ok(productGroups.length > 0, "there should be product groups");
   for (const group of productGroups) {
@@ -201,7 +201,7 @@ test("F17: product groups carry no placeholder search rows", async () => {
 });
 
 test("F17: every searchable row is built from live catalog data", async () => {
-  const { productGroups } = await import("../app/IronDemo.tsx");
+  const { productGroups } = await import("../app/category-meta.ts");
   const [rebar, beam, products] = await Promise.all([
     readJson("../app/data/rebar-prices.json"),
     readJson("../app/data/beam-prices.json"),
