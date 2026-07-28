@@ -50,6 +50,16 @@ test("category landing pages have unique metadata, a CSP-safe initial tab, and s
     // here would silently fail to run, so the category selection must come
     // from a plain data attribute instead (see category-meta.ts).
     assert.doesNotMatch(html, /<script>window\./);
+
+    const productLd = html.match(
+      /<script type="application\/ld\+json">(\{"@context":"https:\/\/schema\.org","@type":"Product".*?)<\/script>/,
+    )?.[1];
+    assert.ok(productLd, `${category.id} is missing its Product JSON-LD`);
+    const product = JSON.parse(productLd);
+    assert.equal(product.offers.priceCurrency, "IRR");
+    assert.ok(product.offers.lowPrice > 0);
+    assert.ok(product.offers.highPrice >= product.offers.lowPrice);
+    assert.ok(product.offers.offerCount > 0);
   }
 
   const sitemap = await readDist("sitemap.xml");
