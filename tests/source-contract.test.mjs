@@ -399,6 +399,9 @@ test("deployment workflow pins actions and limits write permissions by job", asy
     workflow,
     /deploy:[\s\S]*?pages: write[\s\S]*?id-token: write/,
   );
-  assert.match(workflow, /force-with-lease="price-data:/);
-  assert.match(workflow, /git checkout FETCH_HEAD -- app\/data/);
+  assert.match(
+    workflow,
+    /refresh:[\s\S]*?prices:update[\s\S]*?git push origin HEAD:main/,
+  );
+  assert.doesNotMatch(workflow, /price-data/);
 });
