@@ -742,7 +742,7 @@ export default function App() {
                   index === activeSlide ? " is-active" : ""
                 }`}
                 src={item.heroImage ?? item.image}
-                alt=""
+                alt={item.label}
                 width="1672"
                 height="941"
                 decoding="async"

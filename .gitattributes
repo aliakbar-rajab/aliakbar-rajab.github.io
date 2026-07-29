@@ -1,0 +1,16 @@
+# Normalize line endings for text files
+* text=auto eol=lf
+
+# Treat all binary assets explicitly (prevents accidental text-diff/merge corruption)
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.webp binary
+*.avif binary
+*.woff binary
+*.woff2 binary
+*.mp4 binary
+*.ico binary
+
+# Large price-data JSON: mark as generated so PR diffs collapse by default
+app/data/*.json linguist-generated=true
