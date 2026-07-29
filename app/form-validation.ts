@@ -1,0 +1,39 @@
+export type FieldErrors = Record<string, string>;
+
+const iranianPhonePattern = /^(?:\+98|0098|98|0)?(?:9\d{9}|21\d{8})$/;
+
+export function normalizePhone(value: string) {
+  return value.replace(/[\s()-]/g, "");
+}
+
+export function validateFullName(value: string) {
+  const normalized = value.trim();
+  if (!normalized) return "نام و نام خانوادگی را وارد کنید.";
+  if (normalized.length < 3) return "نام واردشده باید حداقل ۳ حرف باشد.";
+  return "";
+}
+
+export function validatePhone(value: string) {
+  const normalized = normalizePhone(value);
+  if (!normalized) return "شماره تماس را وارد کنید.";
+  if (!iranianPhonePattern.test(normalized)) {
+    return "شماره تماس معتبر ایرانی وارد کنید؛ مانند 09121234567.";
+  }
+  return "";
+}
+export function validateRequired(value: string, label: string) {
+  return value.trim() ? "" : `${label} را وارد کنید.`;
+}
+
+export function validateMinimumText(
+  value: string,
+  label: string,
+  minimum: number,
+) {
+  const requiredError = validateRequired(value, label);
+  if (requiredError) return requiredError;
+  if (value.trim().length < minimum) {
+    return `${label} باید حداقل ${minimum.toLocaleString("fa-IR")} حرف باشد.`;
+  }
+  return "";
+}

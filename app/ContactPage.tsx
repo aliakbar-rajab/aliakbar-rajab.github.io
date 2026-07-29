@@ -1,4 +1,4 @@
-import { Fragment, useState } from "react";
+import { useState } from "react";
 import { Brand } from "./site-ui";
 import { useMediaQuery } from "./use-media-query";
 import { localizeCatalogValue } from "./catalog-utils";
@@ -12,6 +12,8 @@ import {
   buildWazeUrl,
   neshanShareUrl,
 } from "./contact-data";
+import { siteConfig } from "./site-config";
+import { SiteFooter } from "./SiteFooter";
 
 const googleMapsUrl = buildGoogleMapsUrl(officeCoordinates);
 const wazeUrl = buildWazeUrl(officeCoordinates);
@@ -96,12 +98,12 @@ export default function ContactPage() {
             <a href="/#prices" onClick={() => setMobileNavOpen(false)}>
               راهنمای استعلام
             </a>
-            <a href="/#about" onClick={() => setMobileNavOpen(false)}>
+            <a href="/about/" onClick={() => setMobileNavOpen(false)}>
               درباره ما
             </a>
             <a aria-current="page">تماس با ما</a>
-            <a className="nav-quote" href={phones[0].href}>
-              تماس برای استعلام
+            <a className="nav-quote" href="/quote-process/#quote-form">
+              درخواست پیش‌فاکتور
             </a>
           </nav>
         </div>
@@ -133,6 +135,37 @@ export default function ContactPage() {
                       </li>
                     ))}
                   </ul>
+                </div>
+              </div>
+
+              <div className="contact-info-row">
+                <span className="contact-info-icon" aria-hidden="true">
+                  ✉
+                </span>
+                <div>
+                  <h2>ایمیل رسمی</h2>
+                  {siteConfig.contact.officialEmail ? (
+                    <a href={`mailto:${siteConfig.contact.officialEmail}`}>
+                      {siteConfig.contact.officialEmail}
+                    </a>
+                  ) : (
+                    <p className="pending-owner-info">
+                      پس از اعلام و تأیید مالک سایت درج می‌شود.
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              <div className="contact-info-row">
+                <span className="contact-info-icon" aria-hidden="true">
+                  ◷
+                </span>
+                <div>
+                  <h2>ساعات کاری</h2>
+                  <p className="pending-owner-info">
+                    {siteConfig.contact.workingHours ??
+                      "پس از اعلام و تأیید مالک سایت درج می‌شود."}
+                  </p>
                 </div>
               </div>
 
@@ -240,51 +273,7 @@ export default function ContactPage() {
         </section>
       </main>
 
-      <footer className="site-footer">
-        <div className="shell footer-grid">
-          <div>
-            <Brand headerLogo href="/" />
-            <p>استعلام و تأمین مقاطع فولادی برای پروژه‌های ساختمانی و صنعتی.</p>
-          </div>
-          <div>
-            <h2>دسترسی سریع</h2>
-            <a href="/">صفحه اصلی</a>
-            <a href="/#products">محصولات</a>
-            <a href="/#about">درباره ما</a>
-          </div>
-          <div>
-            <h2>شماره‌های تماس</h2>
-            {phones.map((phone) => (
-              <a href={phone.href} key={phone.href} dir="ltr">
-                {phone.label}
-              </a>
-            ))}
-          </div>
-          <div>
-            <h2>تماس با مدیریت</h2>
-            {managementContacts.map((contact) => (
-              <Fragment key={contact.href}>
-                <strong className="footer-contact-name">{contact.name}</strong>
-                <a href={contact.href} dir="ltr">
-                  {contact.label}
-                </a>
-              </Fragment>
-            ))}
-          </div>
-          <div>
-            <h2>نشانی دفتر</h2>
-            <address>
-              {address}
-              <br />
-              کد پستی {localizeCatalogValue(postalCode)}
-            </address>
-          </div>
-        </div>
-        <div className="shell footer-bottom">
-          <span>© ۲۰۲۰ بنیان فولاد داریا</span>
-          <a href="/">بازگشت به صفحه اصلی</a>
-        </div>
-      </footer>
+      <SiteFooter topHref="/" />
 
       <div className="mobile-actions" aria-label="اقدام‌های سریع">
         <a href={phones[0].href}>

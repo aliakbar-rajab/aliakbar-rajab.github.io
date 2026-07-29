@@ -4,7 +4,10 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="robots" content="noindex" />
-    <meta http-equiv="refresh" content="5; url=/" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'none'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'"
+    />
     <title>صفحه پیدا نشد | بنیان فولاد داریا</title>
     <style>
       body {
@@ -35,13 +38,23 @@
         font-weight: 700;
         text-decoration: none;
       }
+      nav {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 0.75rem;
+      }
     </style>
   </head>
   <body>
     <main>
       <h1>این صفحه پیدا نشد</h1>
-      <p>تا چند لحظه دیگر به صفحه اصلی هدایت می‌شوید.</p>
-      <a href="/">بازگشت به صفحه اصلی</a>
+      <p>نشانی واردشده وجود ندارد یا جابه‌جا شده است.</p>
+      <nav aria-label="مسیرهای پیشنهادی">
+        <a href="/">صفحه اصلی</a>
+        <a href="/#products">محصولات فولادی</a>
+        <a href="/contact/">تماس با ما</a>
+      </nav>
     </main>
   </body>
 </html>
