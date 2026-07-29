@@ -1,0 +1,19 @@
+# Build output & deps — never needed for source review
+/dist/
+/node_modules/
+/pages-dist/
+/.wrangler/
+/coverage/
+
+# Bulk price data — read schema via a small `head`/limited Read, never in full
+app/data/*.json
+
+# Binary assets — irrelevant to code review
+public/**/*.png
+public/**/*.jpg
+public/**/*.jpeg
+public/**/*.webp
+public/**/*.woff
+public/**/*.woff2
+public/**/*.mp4
+package-lock.json
