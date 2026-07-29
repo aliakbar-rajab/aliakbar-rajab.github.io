@@ -18,7 +18,7 @@ globalThis.MutationObserver = dom.window.MutationObserver;
 globalThis.getComputedStyle = dom.window.getComputedStyle;
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 
-// jsdom implements neither of these, and IronDemo calls both. Every query
+// jsdom implements neither of these, and App calls both. Every query
 // reports false, which is the desktop / motion-allowed case.
 dom.window.Element.prototype.scrollIntoView = () => {};
 dom.window.matchMedia = (query) => ({
@@ -37,7 +37,7 @@ const { act, cleanup, fireEvent, render, screen, waitFor, within } = await impor
 );
 const userEvent = (await import("@testing-library/user-event")).default;
 const { PriceCatalog } = await import("../app/RebarPrices.tsx");
-const IronDemo = (await import("../app/IronDemo.tsx")).default;
+const App = (await import("../app/App.tsx")).default;
 
 afterEach(cleanup);
 
@@ -228,7 +228,7 @@ test("F4: a whole-number move is not padded with decimals", () => {
 });
 
 test("F2: a search that is still loading does not report 'no products found'", async () => {
-  render(React.createElement(IronDemo));
+  render(React.createElement(App));
   await settle();
 
   const input = screen.getByRole("searchbox", { name: "جست‌وجوی محصول" });

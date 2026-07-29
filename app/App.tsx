@@ -191,7 +191,7 @@ function SectionTitle({
   );
 }
 
-export default function IronDemo() {
+export default function App() {
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [productsOpen, setProductsOpen] = useState(false);
   const [megaProduct, setMegaProduct] = useState<ProductGroupId>("rebar");

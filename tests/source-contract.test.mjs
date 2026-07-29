@@ -6,7 +6,7 @@ const read = (path) => readFile(new URL(path, import.meta.url), "utf8");
 
 test("brand, contact details, RTL, and palette match the approved contract", async () => {
   const [component, html, css, preloader, headerLogo] = await Promise.all([
-    read("../app/IronDemo.tsx"),
+    read("../app/App.tsx"),
     read("../index.html"),
     read("../app/globals.css"),
     read("../public/preloader/fb-preloader.js"),
@@ -52,7 +52,7 @@ test("brand, contact details, RTL, and palette match the approved contract", asy
 
 test("there is no sales form or simulated lead submission", async () => {
   const [component, workflow] = await Promise.all([
-    read("../app/IronDemo.tsx"),
+    read("../app/App.tsx"),
     read("../.github/workflows/pages.yml"),
   ]);
 
@@ -138,7 +138,7 @@ test("core palette combinations meet WCAG AA contrast", () => {
 
 test("source exposes one H1 and complete social metadata", async () => {
   const [component, html, robots, sitemap] = await Promise.all([
-    read("../app/IronDemo.tsx"),
+    read("../app/App.tsx"),
     read("../index.html"),
     read("../public/robots.txt"),
     read("../public/sitemap.xml"),
@@ -161,7 +161,7 @@ test("source exposes one H1 and complete social metadata", async () => {
 
 test("homepage hero uses sharp landscape images", async () => {
   const [component, categoryMeta, css] = await Promise.all([
-    read("../app/IronDemo.tsx"),
+    read("../app/App.tsx"),
     read("../app/category-meta.ts"),
     read("../app/globals.css"),
   ]);
@@ -178,7 +178,7 @@ test("homepage hero uses sharp landscape images", async () => {
 });
 
 test("about section does not render the square-profile photo", async () => {
-  const component = await read("../app/IronDemo.tsx");
+  const component = await read("../app/App.tsx");
   const aboutSection = component.match(
     /<section className="about section"[\s\S]*?<\/section>/,
   )?.[0];
@@ -189,7 +189,7 @@ test("about section does not render the square-profile photo", async () => {
 
 test("homepage uses the supplied dense steel tread photo and cross-fades banners every 1.7 seconds", async () => {
   const [component, css, texture] = await Promise.all([
-    read("../app/IronDemo.tsx"),
+    read("../app/App.tsx"),
     read("../app/globals.css"),
     readFile(
       new URL("../public/textures/dark-chequered-plate.png", import.meta.url),
@@ -238,7 +238,7 @@ test("homepage uses the supplied dense steel tread photo and cross-fades banners
 test("rebar prices are sourced, validated, and refreshed on a schedule", async () => {
   const [component, navigation, fetcher, workflow, priceData] = await Promise.all([
     read("../app/RebarPrices.tsx"),
-    read("../app/IronDemo.tsx"),
+    read("../app/App.tsx"),
     read("../scripts/fetch-rebar-prices.mjs"),
     read("../.github/workflows/pages.yml"),
     read("../app/data/rebar-prices.json").then(JSON.parse),
@@ -278,7 +278,7 @@ test("beam and hash prices are sourced and exposed through the catalog", async (
   const [component, navigation, styles, fetcher, priceData, packageJson] =
     await Promise.all([
       read("../app/BeamPrices.tsx"),
-      read("../app/IronDemo.tsx"),
+      read("../app/App.tsx"),
       read("../app/globals.css"),
       read("../scripts/fetch-beam-prices.mjs"),
       read("../app/data/beam-prices.json").then(JSON.parse),
@@ -325,7 +325,7 @@ test("all remaining product groups expose complete live price catalogs", async (
   const [component, navigation, fetcher, priceData, packageJson] =
     await Promise.all([
       read("../app/ProductPrices.tsx"),
-      read("../app/IronDemo.tsx"),
+      read("../app/App.tsx"),
       read("../scripts/fetch-product-prices.mjs"),
       read("../app/data/product-prices.json").then(JSON.parse),
       read("../package.json").then(JSON.parse),
