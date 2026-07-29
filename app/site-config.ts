@@ -1,0 +1,116 @@
+export type ContactNumber = {
+  label: string;
+  href: string;
+};
+
+export type ManagementContact = ContactNumber & {
+  name: string;
+};
+
+export const siteConfig = {
+  brand: {
+    name: "بنیان فولاد داریا",
+    alternateName: "Bonyan Foulad Daria",
+    aliases: ["فولاد بنیان داریا", "بنیان فولاد", "فولاد بنیان"],
+  },
+  siteUrl: "https://fouladbonyan.com",
+  contact: {
+    phones: [
+      { label: "021-88888280", href: "tel:+982188888280" },
+      { label: "021-88888780", href: "tel:+982188888780" },
+      { label: "021-88888122", href: "tel:+982188888122" },
+      { label: "021-88889005", href: "tel:+982188889005" },
+      { label: "021-88889006", href: "tel:+982188889006" },
+    ] satisfies ContactNumber[],
+    management: [
+      {
+        name: "اسماعیل‌پور",
+        href: "tel:+989123300815",
+        label: "09123300815",
+      },
+      {
+        name: "کریمی",
+        href: "tel:+989126333326",
+        label: "09126333326",
+      },
+    ] satisfies ManagementContact[],
+    officialEmail: null as string | null,
+    workingHours: null as string | null,
+  },
+  business: {
+    legalName: null as string | null,
+    nationalId: null as string | null,
+    registrationNumber: null as string | null,
+    address: "آجودانیه پورابتهاج نبش لشکری ساختمان سرو واحد ۳۰۳",
+    city: "تهران",
+    province: "تهران",
+    postalCode: "1978977198",
+    countryCode: "IR",
+    countryName: "ایران",
+  },
+  officeCoordinates: {
+    lat: 35.817127,
+    lng: 51.4809619,
+  },
+  neshanShareUrl: "https://nshn.ir/QbvL2OWxRwI7",
+} as const;
+
+export const missingOwnerInformation = [
+  {
+    key: "legalName",
+    label: "نام حقوقی یا نام صاحب امتیاز",
+    value: siteConfig.business.legalName,
+  },
+  {
+    key: "nationalId",
+    label: "شناسه ملی یا کد ملی صاحب امتیاز",
+    value: siteConfig.business.nationalId,
+  },
+  {
+    key: "registrationNumber",
+    label: "شماره ثبت",
+    value: siteConfig.business.registrationNumber,
+  },
+  {
+    key: "officialEmail",
+    label: "ایمیل رسمی",
+    value: siteConfig.contact.officialEmail,
+  },
+  {
+    key: "workingHours",
+    label: "ساعات کاری",
+    value: siteConfig.contact.workingHours,
+  },
+] as const;
+
+export function buildOrganizationStructuredData(
+  pageUrl: string = siteConfig.siteUrl,
+) {
+  const organization = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    name: siteConfig.brand.name,
+    alternateName: siteConfig.brand.alternateName,
+    url: pageUrl,
+    logo: `${siteConfig.siteUrl}/og.png`,
+    telephone: siteConfig.contact.phones.map((phone) =>
+      phone.href.replace("tel:", ""),
+    ),
+    address: {
+      "@type": "PostalAddress",
+      streetAddress: siteConfig.business.address,
+      addressLocality: siteConfig.business.city,
+      addressRegion: siteConfig.business.province,
+      postalCode: siteConfig.business.postalCode,
+      addressCountry: siteConfig.business.countryCode,
+    },
+    ...(siteConfig.business.legalName
+      ? { legalName: siteConfig.business.legalName }
+      : {}),
+    ...(siteConfig.contact.officialEmail
+      ? { email: siteConfig.contact.officialEmail }
+      : {}),
+  };
+
+  return organization;
+}

@@ -2,6 +2,12 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import App from "../app/App";
 import ContactPage from "../app/ContactPage";
+import InfoPage from "../app/InfoPage";
+import { type InfoPageKey } from "../app/info-page-data";
+import {
+  buildOrganizationStructuredData,
+  siteConfig,
+} from "../app/site-config";
 import "../app/globals.css";
 
 document.documentElement.lang = "fa";
@@ -13,11 +19,35 @@ if (!root) {
   throw new Error("React root element was not found.");
 }
 
-// /contact/ is a static clone of this same HTML/JS bundle (see
-// scripts/generate-contact-page.mjs) stamped with this data attribute, the
-// same trick category landing pages use for their initial category.
-const isContactPage = root.dataset.page === "contact";
-
-createRoot(root).render(
-  <StrictMode>{isContactPage ? <ContactPage /> : <App />}</StrictMode>,
+const organizationJsonLd = document.getElementById(
+  "organization-structured-data",
 );
+if (organizationJsonLd) {
+  organizationJsonLd.textContent = JSON.stringify(
+    buildOrganizationStructuredData(
+      new URL(window.location.pathname, siteConfig.siteUrl).toString(),
+    ),
+  );
+}
+
+const pageFromPath = window.location.pathname
+  .replace(/^\/|\/$/g, "")
+  .toLowerCase();
+const pageName = root.dataset.page || pageFromPath;
+const infoPages = new Set<InfoPageKey>([
+  "about",
+  "terms",
+  "privacy",
+  "quote-process",
+  "complaints",
+  "shipping-delivery",
+]);
+
+let content = <App />;
+if (pageName === "contact") {
+  content = <ContactPage />;
+} else if (infoPages.has(pageName as InfoPageKey)) {
+  content = <InfoPage page={pageName as InfoPageKey} />;
+}
+
+createRoot(root).render(<StrictMode>{content}</StrictMode>);

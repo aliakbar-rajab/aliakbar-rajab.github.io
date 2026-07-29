@@ -1,0 +1,106 @@
+import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
+import test from "node:test";
+import {
+  normalizePhone,
+  validateFullName,
+  validateMinimumText,
+  validatePhone,
+  validateRequired,
+} from "../app/form-validation.ts";
+import { infoPageDefinitions } from "../app/info-page-data.ts";
+import {
+  calculateApproximateTotal,
+  loadQuotePriceEstimates,
+} from "../app/quote-pricing.ts";
+
+const read = (path) => readFile(new URL(path, import.meta.url), "utf8");
+
+test("all required informational pages are defined and linked from the footer", async () => {
+  const footer = await read("../app/SiteFooter.tsx");
+  const expectedPages = [
+    "about",
+    "terms",
+    "privacy",
+    "quote-process",
+    "complaints",
+    "shipping-delivery",
+  ];
+
+  assert.deepEqual(Object.keys(infoPageDefinitions), expectedPages);
+  for (const page of expectedPages) {
+    assert.match(footer, new RegExp(`href: "/${page}/"`));
+  }
+});
+
+test("owner-only legal information remains explicitly unset", async () => {
+  const [config, checklist] = await Promise.all([
+    read("../app/site-config.ts"),
+    read("../docs/enamad-required-info.md"),
+  ]);
+
+  assert.match(config, /legalName: null/);
+  assert.match(config, /nationalId: null/);
+  assert.match(config, /registrationNumber: null/);
+  assert.match(config, /officialEmail: null/);
+  assert.match(config, /workingHours: null/);
+  assert.match(checklist, /نام حقوقی/);
+  assert.match(checklist, /شناسه ملی/);
+  assert.match(checklist, /شماره ثبت/);
+  assert.match(checklist, /ایمیل رسمی/);
+  assert.match(checklist, /ساعات و روزهای کاری/);
+});
+
+test("Persian form validation rejects incomplete and malformed requests", () => {
+  assert.equal(validateFullName(""), "نام و نام خانوادگی را وارد کنید.");
+  assert.ok(validateFullName("ع").includes("حداقل"));
+  assert.equal(validateFullName("علی رضایی"), "");
+
+  assert.equal(normalizePhone("0912 123-4567"), "09121234567");
+  assert.equal(validatePhone("0912 123-4567"), "");
+  assert.equal(validatePhone("021-88888280"), "");
+  assert.ok(validatePhone("123").includes("معتبر ایرانی"));
+
+  assert.equal(validateRequired("", "نوع محصول"), "نوع محصول را وارد کنید.");
+  assert.ok(validateMinimumText("کوتاه", "شرح موضوع", 20).includes("حداقل"));
+  assert.equal(
+    validateMinimumText(
+      "شرح کامل و روشن برای بررسی موضوع ثبت شده است.",
+      "شرح موضوع",
+      20,
+    ),
+    "",
+  );
+});
+
+test("homepage navigation reaches the quote form directly and one request supports many items", async () => {
+  const [homepage, requestForms] = await Promise.all([
+    read("../app/App.tsx"),
+    read("../app/RequestForms.tsx"),
+  ]);
+
+  assert.match(
+    homepage,
+    /<a className="nav-quote" href="\/quote-process\/#quote-form">\s*درخواست پیش‌فاکتور/,
+  );
+  assert.match(requestForms, /const MAX_QUOTE_ITEMS = 100/);
+  assert.match(requestForms, /items\.map\(\(item, index\) =>/);
+  assert.match(requestForms, /ساخت ردیف‌ها/);
+  assert.match(requestForms, /افزودن کالای جدید/);
+  assert.match(requestForms, /کالاهای درخواست \(\$\{quoteItems\.length/);
+  assert.doesNotMatch(requestForms, /قلم|اقلام/);
+});
+
+test("quote estimates reuse site price data and calculate weight-based totals", async () => {
+  assert.equal(calculateApproximateTotal(67_293, 1, "تن"), 67_293_000);
+  assert.equal(calculateApproximateTotal(67_293, 10, "کیلوگرم"), 672_930);
+  assert.equal(calculateApproximateTotal(67_293, 2, "شاخه"), null);
+  assert.equal(calculateApproximateTotal(67_293, 2, "عدد"), null);
+
+  const estimates = await loadQuotePriceEstimates();
+  for (const product of ["میلگرد", "تیرآهن", "هاش", "ورق فولادی"]) {
+    assert.ok(estimates[product], `missing estimate for ${product}`);
+    assert.ok(estimates[product].unitPriceTomanPerKg > 0);
+    assert.ok(estimates[product].rowCount > 0);
+  }
+});

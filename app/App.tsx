@@ -1,5 +1,4 @@
 import {
-  Fragment,
   FormEvent,
   KeyboardEvent as ReactKeyboardEvent,
   useEffect,
@@ -29,7 +28,8 @@ import {
   type ProductGroup,
   type ProductGroupId,
 } from "./category-meta";
-import { phones, address, postalCode, managementContacts } from "./contact-data";
+import { phones } from "./contact-data";
+import { SiteFooter } from "./SiteFooter";
 import { Brand, SectionTitle } from "./site-ui";
 import { useMediaQuery } from "./use-media-query";
 
@@ -708,14 +708,14 @@ export default function App() {
             <a href="#prices" onClick={() => setMobileNavOpen(false)}>
               راهنمای استعلام
             </a>
-            <a href="#about" onClick={() => setMobileNavOpen(false)}>
+            <a href="/about/" onClick={() => setMobileNavOpen(false)}>
               درباره ما
             </a>
             <a href="/contact/" onClick={() => setMobileNavOpen(false)}>
               تماس با ما
             </a>
-            <a className="nav-quote" href={contactHref}>
-              تماس برای استعلام
+            <a className="nav-quote" href="/quote-process/#quote-form">
+              درخواست پیش‌فاکتور
             </a>
           </nav>
         </div>
@@ -755,12 +755,12 @@ export default function App() {
               <p className="hero-kicker">تأمین و استعلام مقاطع فولادی</p>
               <h1>
                 <span>بنیان فولاد داریا؛</span>
-                <span>همراه مطمئن خرید آهن و فولاد</span>
+              <span>همراه مطمئن استعلام آهن و فولاد</span>
               </h1>
               <p>{slide.description}</p>
               <div className="hero-actions">
-                <a href={contactHref}>
-                  استعلام {slide.label}
+                <a href="/quote-process/#quote-form">
+                  درخواست پیش‌فاکتور {slide.label}
                 </a>
                 <a href="#products">مشاهده محصولات</a>
               </div>
@@ -956,7 +956,7 @@ export default function App() {
               <SectionTitle
                 eyebrow="درباره بنیان فولاد داریا"
                 title="از انتخاب محصول تا هماهنگی تحویل"
-                description="بنیان فولاد داریا (با نام‌های فولاد بنیان داریا، بنیان فولاد و فولاد بنیان نیز شناخته می‌شود) برای استعلام موجودی، مقایسه گزینه‌های تأمین و هماهنگی سفارش در کنار خریداران ساختمانی و صنعتی است."
+                description="بنیان فولاد داریا (با نام‌های فولاد بنیان داریا، بنیان فولاد و فولاد بنیان نیز شناخته می‌شود) برای معرفی محصولات، استعلام موجودی، مقایسه گزینه‌های تأمین و هماهنگی تحویل در کنار متقاضیان ساختمانی و صنعتی است."
               />
               <ul className="feature-list">
                 <li>
@@ -964,14 +964,17 @@ export default function App() {
                   <span>قیمت نهایی پس از مشخص‌شدن نوع، ابعاد، مقدار و محل تحویل اعلام می‌شود.</span>
                 </li>
                 <li>
-                  <strong>راهنمایی پیش از خرید</strong>
-                  <span>مشخصات سفارش قبل از ثبت نهایی با خریدار مرور می‌شود.</span>
+                  <strong>راهنمایی پیش از درخواست</strong>
+                  <span>مشخصات محصول پیش از صدور پیش‌فاکتور با متقاضی مرور می‌شود.</span>
                 </li>
                 <li>
                   <strong>پیگیری هماهنگ</strong>
-                  <span>هماهنگی موجودی و تحویل از طریق واحد فروش انجام می‌شود.</span>
+                  <span>هماهنگی موجودی و تحویل پس از استعلام از طریق واحد فروش انجام می‌شود.</span>
                 </li>
               </ul>
+              <a className="about-more-link" href="/about/">
+                آشنایی بیشتر با بنیان فولاد داریا
+              </a>
             </div>
           </div>
         </section>
@@ -979,81 +982,26 @@ export default function App() {
         <section className="quote-section section" aria-labelledby="quote-heading">
           <div className="shell quote-inner">
             <div>
-              <span>استعلام خرید</span>
-              <h2 id="quote-heading">مشخصات سفارش خود را با ما در میان بگذارید</h2>
+              <span>درخواست پیش‌فاکتور</span>
+              <h2 id="quote-heading">مشخصات محصول موردنیاز را آماده کنید</h2>
               <p>
                 نوع محصول، ابعاد، مقدار و شهر مقصد را آماده کنید تا واحد فروش
                 بتواند استعلام دقیق‌تری ارائه کند.
               </p>
             </div>
-            <a href={contactHref}>تماس با واحد فروش</a>
+            <a href="/quote-process/#quote-form">تکمیل فرم پیش‌فاکتور</a>
           </div>
         </section>
       </main>
 
-      <footer className="site-footer" id="contact">
-        <div className="shell footer-grid">
-          <div>
-            <Brand headerLogo />
-            <p>
-              استعلام و تأمین مقاطع فولادی برای پروژه‌های ساختمانی و صنعتی.
-            </p>
-          </div>
-          <div>
-            <h2>دسترسی سریع</h2>
-            <a href="#products">محصولات</a>
-            <a href="#prices">راهنمای استعلام</a>
-            <a href="#about">درباره ما</a>
-            <a href="/contact/">تماس با ما و مسیریابی</a>
-          </div>
-          <div id="phone-numbers">
-            <h2>شماره‌های تماس</h2>
-            {phones.map((phone) => (
-              <a href={phone.href} key={phone.href} dir="ltr">
-                {phone.label}
-              </a>
-            ))}
-          </div>
-          <div>
-            <h2>تماس با مدیریت</h2>
-            {managementContacts.map((contact) => (
-              <Fragment key={contact.href}>
-                <strong className="footer-contact-name">{contact.name}</strong>
-                <a href={contact.href} dir="ltr">
-                  {contact.label}
-                </a>
-              </Fragment>
-            ))}
-          </div>
-          <div>
-            <h2>نشانی دفتر</h2>
-            <address>
-              {address}
-              <br />
-              کد پستی {localizeCatalogValue(postalCode)}
-            </address>
-          </div>
-        </div>
-        <div className="shell footer-bottom">
-          {/*
-            Year is intentionally hardcoded to ۲۰۲۰ (plain, no thousands
-            separator) per an explicit request from the site owner -- this is
-            NOT a bug and NOT meant to track the current year. Do not change
-            it back to a dynamic new Date().getFullYear() call, and do not
-            reformat it through toLocaleString or anything else that would
-            reintroduce a "," grouping separator.
-          */}
-          <span>© ۲۰۲۰ بنیان فولاد داریا</span>
-          <a href="#top">بازگشت به بالا ↑</a>
-        </div>
-      </footer>
+      <SiteFooter />
 
       <div className="mobile-actions" aria-label="اقدام‌های سریع">
         <a href={contactHref}>
           <span aria-hidden="true">☎</span>
           تماس
         </a>
-        <a href={contactHref}>استعلام خرید</a>
+        <a href="/quote-process/#quote-form">درخواست پیش‌فاکتور</a>
       </div>
     </div>
   );
