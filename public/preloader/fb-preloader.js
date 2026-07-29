@@ -1,11 +1,12 @@
 (() => {
   "use strict";
 
-  const SESSION_KEY = "bonyan-foulad-daria-preloader-seen-v8";
+  const SESSION_KEY = "bonyan-foulad-daria-preloader-seen-v9";
   let finished = false;
   let watchdog = 0;
   let overlay = null;
   let site = null;
+  let video = null;
 
   const storage = {
     get() {
@@ -48,6 +49,12 @@
     storage.set();
   }
 
+  function showPlaybackPrompt() {
+    if (!overlay || finished) return;
+    window.clearTimeout(watchdog);
+    overlay.classList.add("needs-play");
+  }
+
   if (
     storage.get() ||
     window.matchMedia("(prefers-reduced-motion: reduce)").matches
@@ -75,7 +82,8 @@
           autoplay
           muted
           playsinline
-          preload="auto"
+          preload="metadata"
+          poster="/preloader/assets/tr2-poster.jpg"
           aria-hidden="true"
         >
           <source src="/preloader/assets/tr2.mp4" type="video/mp4">
@@ -91,6 +99,9 @@
             <span class="fb-preloader__accent">DARIA</span>
           </span>
         </div>
+        <button class="fb-preloader__play" type="button">
+          پخش و ورود به سایت
+        </button>
         <button class="fb-preloader__skip" type="button">ورود به سایت</button>
       `;
 
@@ -99,22 +110,40 @@
       site?.setAttribute("inert", "");
       site?.setAttribute("aria-hidden", "true");
 
-      const video = overlay.querySelector("video");
-      const skip = overlay.querySelector("button");
+      video = overlay.querySelector("video");
+      const skip = overlay.querySelector(".fb-preloader__skip");
+      const play = overlay.querySelector(".fb-preloader__play");
       skip?.addEventListener("click", finish, { once: true });
       video?.addEventListener("ended", finish, { once: true });
-      video?.addEventListener("error", finish, { once: true });
+      video?.addEventListener("error", showPlaybackPrompt, { once: true });
+      play?.addEventListener(
+        "click",
+        () => {
+          if (!video) {
+            finish();
+            return;
+          }
+
+          const playPromise = video.play();
+          if (playPromise && typeof playPromise.catch === "function") {
+            playPromise.catch(finish);
+          }
+        },
+        { once: true },
+      );
       skip?.focus();
 
-      watchdog = window.setTimeout(finish, 8000);
+      watchdog = window.setTimeout(showPlaybackPrompt, 8000);
       if (video) {
+        // Safari requires the muted property itself to be set before play().
+        video.muted = true;
         video.playbackRate = 1.25;
         const playPromise = video.play();
         if (playPromise && typeof playPromise.catch === "function") {
-          playPromise.catch(finish);
+          playPromise.catch(showPlaybackPrompt);
         }
       } else {
-        finish();
+        showPlaybackPrompt();
       }
     } catch {
       finish();

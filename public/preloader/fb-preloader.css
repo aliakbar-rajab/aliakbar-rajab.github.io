@@ -102,8 +102,35 @@
   cursor: pointer;
 }
 
+.fb-preloader__play {
+  position: relative;
+  z-index: 2;
+  display: none;
+  min-width: 12rem;
+  min-height: 3rem;
+  padding-inline: 1.25rem;
+  border: 0;
+  border-radius: 999px;
+  background: var(--brand-yellow, #f6b500);
+  color: #202024;
+  font: 700 1rem / 1.5 "B Titr", Tahoma, sans-serif;
+  cursor: pointer;
+}
+
+#fb-preloader.needs-play .fb-preloader__play {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#fb-preloader.needs-play .fb-preloader__video {
+  opacity: 0.72;
+}
+
 .fb-preloader__skip:hover,
-.fb-preloader__skip:focus-visible {
+.fb-preloader__skip:focus-visible,
+.fb-preloader__play:hover,
+.fb-preloader__play:focus-visible {
   border-color: #f6b500;
   outline: 3px solid rgb(246 181 0 / 38%);
   outline-offset: 2px;
