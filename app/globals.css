@@ -2197,7 +2197,7 @@ tbody td a,
 
 .footer-grid {
   display: grid;
-  grid-template-columns: 1.45fr 0.75fr 0.9fr 1.25fr;
+  grid-template-columns: 1.25fr 0.65fr 0.85fr 0.85fr 1.1fr;
   gap: 2.5rem;
   padding-bottom: 3rem;
 }
@@ -2233,6 +2233,11 @@ tbody td a,
   display: inline-flex;
   align-items: center;
   color: #c9c9ce;
+}
+
+.footer-contact-name {
+  color: var(--white);
+  font-size: 0.9rem;
 }
 
 .footer-grid a:not(.brand):hover {
@@ -2280,10 +2285,10 @@ tbody td a,
   }
 
   .footer-grid {
-    grid-template-columns: 1.3fr 0.8fr 1fr;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
-  .footer-grid > div:last-child {
+  .footer-grid > div:first-child {
     grid-column: 1 / -1;
   }
 
