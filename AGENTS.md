@@ -56,6 +56,11 @@
   Pages دیپلوی می‌شود.**
 - `npm run dev` دیگر CSP را نمی‌شکند (پلاگین `allowViteDevelopmentStyles`
   در `vite.config.ts` فقط در حالت dev متای CSP را حذف می‌کند).
+- **`main` روی گیت‌هاب branch protection دارد.** `git push origin main`
+  مستقیم رد می‌شود (`GH013: Changes must be made through a pull request`)
+  و چک وضعیت `build` اجباری است. مسیر همیشه: برنچ → PR → سبزشدن `build`
+  → squash-merge. کامیت خودکار رفرش قیمت (job `refresh`) از این قانون
+  مستثناست؛ push انسانی/ایجنت نیست.
 
 ## هشدار محیط لوکال
 این ریپو به‌خاطر کامیت خودکار دیتای قیمت هر ۴ ساعت و کار روی برنچ‌های

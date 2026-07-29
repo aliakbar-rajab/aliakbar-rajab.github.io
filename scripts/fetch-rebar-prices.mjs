@@ -184,7 +184,7 @@ async function main() {
   });
 
   await mkdir(dirname(outputPath), { recursive: true });
-  await writeFile(temporaryPath, `${JSON.stringify(payload, null, 2)}\n`);
+  await writeFile(temporaryPath, `${JSON.stringify(payload)}\n`);
   await rename(temporaryPath, outputPath);
 
   const itemCount = categories.reduce(
