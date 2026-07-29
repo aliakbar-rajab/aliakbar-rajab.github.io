@@ -7,6 +7,7 @@ import {
   validateRequired,
 } from "./form-validation";
 import { phones } from "./contact-data";
+import { calculateRebarWeight } from "./catalog-behavior.mjs";
 import {
   calculateApproximateTotal,
   loadQuotePriceEstimates,
@@ -14,6 +15,81 @@ import {
   type QuoteProductName,
 } from "./quote-pricing";
 import { siteConfig } from "./site-config";
+
+// Standard commercial rebar branch length in Iran; used only to estimate a
+// per-branch/per-piece weight when a buyer orders میلگرد by شاخه/عدد instead
+// of by weight.
+const REBAR_STANDARD_BRANCH_LENGTH_M = 12;
+
+// Products whose catalog actually prices specific items in a real,
+// non-weight unit (شاخه/برگ/طاقه‌ای/مترمربع). Picking شاخه/عدد for these shows
+// a list of the site's own real catalog items instead of a free quantity.
+const PRODUCTS_WITH_PIECE_OPTIONS: readonly QuoteProductName[] = [
+  "تیرآهن",
+  "لوله فولادی",
+  "مفتول و سیم",
+];
+
+// Products whose catalog has no per-piece data at all (only کیلوگرم rows) —
+// شاخه/عدد are hidden for these so the form never offers a unit it can't
+// price. میلگرد is handled separately via a real weight formula, so it keeps
+// its شاخه/عدد options even though it isn't in PRODUCTS_WITH_PIECE_OPTIONS.
+const PRODUCTS_WITHOUT_PIECE_UNITS: readonly QuoteProductName[] = [
+  "هاش",
+  "ورق فولادی",
+  "پروفیل و قوطی",
+  "نبشی",
+  "ناودانی",
+];
+
+function resolvePieceOption(
+  item: Pick<QuoteItem, "product" | "pieceOptionKey">,
+  estimate: QuotePriceEstimate | undefined,
+) {
+  if (!item.pieceOptionKey || !PRODUCTS_WITH_PIECE_OPTIONS.includes(item.product as QuoteProductName)) {
+    return undefined;
+  }
+  return estimate?.pieceOptions?.find((option) => option.key === item.pieceOptionKey);
+}
+
+function calculateItemTotal(
+  item: Pick<
+    QuoteItem,
+    "product" | "unit" | "quantity" | "rebarDiameterMm" | "pieceOptionKey"
+  >,
+  estimate: QuotePriceEstimate | undefined,
+) {
+  if (!estimate) return null;
+  const quantity = Number(item.quantity);
+
+  const pieceOption = resolvePieceOption(item, estimate);
+  if (pieceOption) {
+    return Number.isFinite(quantity) && quantity > 0
+      ? Math.round(pieceOption.priceToman * quantity)
+      : null;
+  }
+
+  if (item.unit === "تن" || item.unit === "کیلوگرم") {
+    return calculateApproximateTotal(
+      estimate.unitPriceTomanPerKg,
+      quantity,
+      item.unit,
+    );
+  }
+
+  if (item.product === "میلگرد" && item.rebarDiameterMm) {
+    const weightKg = calculateRebarWeight(
+      Number(item.rebarDiameterMm),
+      REBAR_STANDARD_BRANCH_LENGTH_M,
+      Math.trunc(quantity),
+    );
+    return weightKg
+      ? Math.round(estimate.unitPriceTomanPerKg * weightKg)
+      : null;
+  }
+
+  return null;
+}
 
 const quoteDisclaimer =
   "ثبت این درخواست به معنی ثبت سفارش، انعقاد قرارداد، تضمین موجودی یا قطعی‌شدن قیمت نیست. قیمت و شرایط نهایی پس از بررسی واحد فروش در پیش‌فاکتور دارای مدت اعتبار اعلام می‌شود.";
@@ -39,11 +115,38 @@ type QuoteItem = {
   quantity: string;
   unit: "تن" | "کیلوگرم" | "شاخه" | "عدد";
   dimensions: string;
+  rebarDiameterMm: string;
+  // Key of a real catalog item selected for products in
+  // PRODUCTS_WITH_PIECE_OPTIONS (e.g. a specific تیرآهن size or a specific
+  // رابیتس/توری product) — determines both the real unit and real price.
+  pieceOptionKey: string;
 };
 
 type QuotePriceEstimates = Partial<
   Record<QuoteProductName, QuotePriceEstimate>
 >;
+
+type GeneratedQuoteItem = {
+  product: QuoteProductName;
+  quantity: string;
+  // The real, effective unit charged (may differ from the form's plain
+  // واحد dropdown when a catalog pieceOption like برگ/طاقه‌ای/مترمربع applies).
+  unit: string;
+  dimensions: string;
+  unitPriceRial: number | null;
+  totalRial: number | null;
+};
+
+type GeneratedQuote = {
+  number: string;
+  date: string;
+  fullName: string;
+  phone: string;
+  destination: string;
+  notes: string;
+  items: GeneratedQuoteItem[];
+  totalRial: number;
+};
 
 const createQuoteItem = (id: number): QuoteItem => ({
   id,
@@ -51,10 +154,184 @@ const createQuoteItem = (id: number): QuoteItem => ({
   quantity: "",
   unit: "تن",
   dimensions: "",
+  rebarDiameterMm: "",
+  pieceOptionKey: "",
 });
 
 const formatToman = (value: number) =>
   `${value.toLocaleString("fa-IR")} تومان`;
+
+const formatRial = (value: number) =>
+  `${value.toLocaleString("fa-IR")} ریال`;
+
+const persianDate = () =>
+  new Intl.DateTimeFormat("fa-IR-u-ca-persian", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(new Date());
+
+const ones = [
+  "", "یک", "دو", "سه", "چهار", "پنج", "شش", "هفت", "هشت", "نه",
+  "ده", "یازده", "دوازده", "سیزده", "چهارده", "پانزده", "شانزده",
+  "هفده", "هجده", "نوزده",
+];
+const tens = ["", "", "بیست", "سی", "چهل", "پنجاه", "شصت", "هفتاد", "هشتاد", "نود"];
+const hundreds = ["", "صد", "دویست", "سیصد", "چهارصد", "پانصد", "ششصد", "هفتصد", "هشتصد", "نهصد"];
+const scales = ["", "هزار", "میلیون", "میلیارد", "تریلیون"];
+
+function threeDigitsToWords(value: number) {
+  const parts: string[] = [];
+  if (value >= 100) parts.push(hundreds[Math.floor(value / 100)]);
+  const remainder = value % 100;
+  if (remainder < 20) {
+    if (remainder) parts.push(ones[remainder]);
+  } else {
+    parts.push(tens[Math.floor(remainder / 10)]);
+    if (remainder % 10) parts.push(ones[remainder % 10]);
+  }
+  return parts.join(" و ");
+}
+
+function rialToWords(value: number) {
+  if (!value) return "صفر ریال";
+  const groups: string[] = [];
+  let remaining = Math.round(value);
+  let scaleIndex = 0;
+
+  while (remaining > 0 && scaleIndex < scales.length) {
+    const group = remaining % 1000;
+    if (group) {
+      groups.unshift(
+        `${threeDigitsToWords(group)}${scales[scaleIndex] ? ` ${scales[scaleIndex]}` : ""}`,
+      );
+    }
+    remaining = Math.floor(remaining / 1000);
+    scaleIndex += 1;
+  }
+
+  return `${groups.join(" و ")} ریال`;
+}
+
+function QuoteDocument({ quote }: { quote: GeneratedQuote }) {
+  const calculableItems = quote.items.filter((item) => item.totalRial !== null);
+  const emptyRowCount = Math.max(0, 8 - quote.items.length);
+
+  return (
+    <section className="quote-document" aria-label="پیش‌فاکتور آماده چاپ">
+      <div className="quote-document-actions">
+        <strong>پیش‌فاکتور آماده است.</strong>
+        <button type="button" onClick={() => window.print()}>
+          چاپ یا ذخیره PDF
+        </button>
+      </div>
+      <article className="quote-print-sheet" dir="rtl">
+        <header className="quote-print-header">
+          <img src="/brand/bonyan-foulad-daria-logo.png" alt="بنیان فولاد داریا" />
+          <div className="quote-print-company">
+            <p>پیش‌فاکتور فروش</p>
+            <h2>{siteConfig.brand.name}</h2>
+            <span>تامین و استعلام محصولات فولادی</span>
+          </div>
+          <dl>
+            <div><dt>شماره:</dt><dd dir="ltr">{quote.number}</dd></div>
+            <div><dt>تاریخ:</dt><dd>{quote.date}</dd></div>
+            <div><dt>وضعیت:</dt><dd>غیرقطعی</dd></div>
+          </dl>
+        </header>
+
+        <section className="quote-customer-details" aria-label="مشخصات خریدار">
+          <p className="quote-customer-buyer">
+            <strong>نام خریدار:</strong> {quote.fullName}
+          </p>
+          <div className="quote-customer-meta">
+            <p><strong>شماره تماس:</strong> <b dir="ltr">{quote.phone}</b></p>
+            <p><strong>شهر مقصد:</strong> {quote.destination}</p>
+          </div>
+        </section>
+
+        <table className="quote-print-table">
+          <colgroup>
+            <col className="quote-col-row" />
+            <col className="quote-col-product" />
+            <col className="quote-col-qty" />
+            <col className="quote-col-unit" />
+            <col className="quote-col-unit-price" />
+            <col className="quote-col-total" />
+            <col className="quote-col-notes" />
+          </colgroup>
+          <thead>
+            <tr>
+              <th>ردیف</th>
+              <th>شرح کالا</th>
+              <th>تعداد</th>
+              <th>واحد</th>
+              <th>مبلغ واحد (ریال)</th>
+              <th>مبلغ کل (ریال)</th>
+              <th>ملاحظات</th>
+            </tr>
+          </thead>
+          <tbody>
+            {quote.items.map((item, index) => (
+              <tr key={`${item.product}-${index}`}>
+                <td>{(index + 1).toLocaleString("fa-IR")}</td>
+                <td>{item.product}</td>
+                <td>{Number(item.quantity).toLocaleString("fa-IR")}</td>
+                <td>{item.unit}</td>
+                <td>{item.unitPriceRial ? item.unitPriceRial.toLocaleString("fa-IR") : "استعلام فروش"}</td>
+                <td>{item.totalRial ? item.totalRial.toLocaleString("fa-IR") : "استعلام فروش"}</td>
+                <td>{item.dimensions || "-"}</td>
+              </tr>
+            ))}
+            {Array.from({ length: emptyRowCount }, (_, index) => (
+              <tr className="quote-print-empty-row" key={`empty-${index}`}>
+                <td />
+                <td />
+                <td />
+                <td />
+                <td />
+                <td />
+                <td />
+              </tr>
+            ))}
+          </tbody>
+        </table>
+
+        <section className="quote-print-summary">
+          <div className="quote-total-box">
+            <div>
+              <span>جمع ردیف‌های قابل محاسبه</span>
+              <strong>{formatRial(quote.totalRial)}</strong>
+            </div>
+            <div>
+              <span>تعداد ردیف‌های برآوردشده</span>
+              <strong>
+                {calculableItems.length.toLocaleString("fa-IR")} از {quote.items.length.toLocaleString("fa-IR")}
+              </strong>
+            </div>
+            <div className="quote-total-final">
+              <span>جمع برآوردی پیش‌فاکتور</span>
+              <strong>{formatRial(quote.totalRial)}</strong>
+            </div>
+          </div>
+          <div className="quote-print-notes">
+            <p><strong>مبلغ به حروف:</strong> {rialToWords(quote.totalRial)}</p>
+            <p><strong>توضیحات خریدار:</strong> {quote.notes || "ندارد"}</p>
+            <p>{quoteDisclaimer}</p>
+          </div>
+        </section>
+
+        <footer className="quote-print-footer">
+          <address>
+            <strong>نشانی:</strong> {siteConfig.business.address}، {siteConfig.business.city}<br />
+            <strong>تلفن:</strong> <span dir="ltr">{phones.map((phone) => phone.label).join(" - ")}</span>
+          </address>
+          <div><span>امضای فروشنده</span><span>امضای خریدار</span></div>
+        </footer>
+      </article>
+    </section>
+  );
+}
 
 function ErrorMessage({ id, message }: { id: string; message?: string }) {
   if (!message) return null;
@@ -145,6 +422,9 @@ export function QuoteRequestForm() {
   const [priceEstimates, setPriceEstimates] =
     useState<QuotePriceEstimates | null>(null);
   const [priceLoadError, setPriceLoadError] = useState(false);
+  const [generatedQuote, setGeneratedQuote] = useState<GeneratedQuote | null>(
+    null,
+  );
   const nextItemId = useRef(2);
   const prepared = usePreparedRequest();
 
@@ -174,15 +454,10 @@ export function QuoteRequestForm() {
           item.product && priceEstimates
             ? priceEstimates[item.product]
             : undefined;
-        const approximateTotal = estimate
-          ? calculateApproximateTotal(
-              estimate.unitPriceTomanPerKg,
-              Number(item.quantity),
-              item.unit,
-            )
-          : null;
+        const approximateTotal = calculateItemTotal(item, estimate);
+        const pieceOption = resolvePieceOption(item, estimate);
 
-        return { item, estimate, approximateTotal };
+        return { item, estimate, approximateTotal, pieceOption };
       }),
     [items, priceEstimates],
   );
@@ -206,6 +481,7 @@ export function QuoteRequestForm() {
       ),
     );
     prepared.clear();
+    setGeneratedQuote(null);
   };
 
   const appendItems = (count: number) => {
@@ -220,6 +496,7 @@ export function QuoteRequestForm() {
     setTargetItemCount(items.length + amount);
     setErrors({});
     prepared.clear();
+    setGeneratedQuote(null);
     window.requestAnimationFrame(() => {
       const firstNewProduct = document.querySelector<HTMLElement>(
         `[name="itemProduct-${additions[0].id}"]`,
@@ -243,6 +520,7 @@ export function QuoteRequestForm() {
       setItems((current) => current.slice(0, requested));
       setErrors({});
       prepared.clear();
+      setGeneratedQuote(null);
     }
   };
 
@@ -252,6 +530,7 @@ export function QuoteRequestForm() {
     setTargetItemCount(items.length - 1);
     setErrors({});
     prepared.clear();
+    setGeneratedQuote(null);
   };
 
   const submit = (event: FormEvent<HTMLFormElement>) => {
@@ -271,7 +550,8 @@ export function QuoteRequestForm() {
     const quoteItems = items.map((item, index) => {
       const productField = `itemProduct-${item.id}`;
       const quantityField = `itemQuantity-${item.id}`;
-      const { product, quantity, unit, dimensions } = item;
+      const { product, quantity, unit, dimensions, rebarDiameterMm, pieceOptionKey } =
+        item;
       const itemNumber = (index + 1).toLocaleString("fa-IR");
 
       nextErrors[productField] = validateRequired(
@@ -294,18 +574,22 @@ export function QuoteRequestForm() {
 
       const estimate =
         product && priceEstimates ? priceEstimates[product] : undefined;
-      const approximateTotal = estimate
-        ? calculateApproximateTotal(
-            estimate.unitPriceTomanPerKg,
-            numericQuantity,
-            unit,
-          )
-        : null;
+      const pieceOption = resolvePieceOption(
+        { product, pieceOptionKey },
+        estimate,
+      );
+      const approximateTotal = calculateItemTotal(
+        { product, unit, quantity, rebarDiameterMm, pieceOptionKey },
+        estimate,
+      );
+      const effectiveUnit = pieceOption?.unit ?? unit;
 
       return {
         product,
         quantity,
         unit,
+        effectiveUnit,
+        pieceOption,
         dimensions,
         estimate,
         approximateTotal,
@@ -338,10 +622,12 @@ export function QuoteRequestForm() {
         `کالاهای درخواست (${quoteItems.length.toLocaleString("fa-IR")} کالا):`,
         ...quoteItems.map((item, index) => {
           const priceDescription =
-            item.approximateTotal !== null && item.estimate
-              ? ` | قیمت تقریبی: ${formatToman(item.approximateTotal)} (مبنای محاسبه: ${formatToman(item.estimate.unitPriceTomanPerKg)} برای هر کیلوگرم)`
-              : " | قیمت تقریبی: نیازمند بررسی واحد فروش";
-          return `${(index + 1).toLocaleString("fa-IR")}) ${item.product.trim()} | ${item.quantity.trim()} ${item.unit} | ابعاد/استاندارد: ${item.dimensions.trim() || "اعلام نشده"}${priceDescription}`;
+            item.approximateTotal === null || !item.estimate
+              ? " | قیمت تقریبی: نیازمند بررسی واحد فروش"
+              : item.pieceOption
+                ? ` | قیمت تقریبی: ${formatToman(item.approximateTotal)} (بر اساس قیمت واقعی سایت برای این آیتم: ${formatToman(item.pieceOption.priceToman)} برای هر ${item.pieceOption.unit})`
+                : ` | قیمت تقریبی: ${formatToman(item.approximateTotal)} (مبنای محاسبه: ${formatToman(item.estimate.unitPriceTomanPerKg)} برای هر کیلوگرم)`;
+          return `${(index + 1).toLocaleString("fa-IR")}) ${item.product.trim()} | ${item.quantity.trim()} ${item.effectiveUnit} | ابعاد/استاندارد: ${item.dimensions.trim() || "اعلام نشده"}${priceDescription}`;
         }),
         "",
         `جمع تقریبی: ${
@@ -362,6 +648,34 @@ export function QuoteRequestForm() {
         quoteDisclaimer,
       ].join("\n"),
     );
+    setGeneratedQuote({
+      number: `PF-${String(Date.now()).slice(-8)}`,
+      date: persianDate(),
+      fullName: fullName.trim(),
+      phone: phone.trim(),
+      destination: destination.trim(),
+      notes: notes.trim(),
+      items: quoteItems.map((item) => {
+        const totalRial =
+          item.approximateTotal === null ? null : item.approximateTotal * 10;
+        const numericQuantity = Number(item.quantity);
+        return {
+          product: item.product as QuoteProductName,
+          quantity: item.quantity,
+          unit: item.effectiveUnit,
+          dimensions: item.dimensions,
+          unitPriceRial:
+            totalRial === null || !numericQuantity
+              ? null
+              : Math.round(totalRial / numericQuantity),
+          totalRial,
+        };
+      }),
+      totalRial: quoteItems.reduce(
+        (sum, item) => sum + (item.approximateTotal ?? 0) * 10,
+        0,
+      ),
+    });
   };
 
   return (
@@ -370,7 +684,10 @@ export function QuoteRequestForm() {
       id="quote-form"
       noValidate
       onSubmit={submit}
-      onChange={prepared.clear}
+      onChange={() => {
+        prepared.clear();
+        setGeneratedQuote(null);
+      }}
     >
       <div className="form-heading">
         <span>فرم محلی</span>
@@ -486,6 +803,8 @@ export function QuoteRequestForm() {
                         updateItem(item.id, {
                           product: event.currentTarget
                             .value as QuoteItem["product"],
+                          rebarDiameterMm: "",
+                          pieceOptionKey: "",
                         })
                       }
                       aria-invalid={Boolean(errors[productField])}
@@ -534,13 +853,20 @@ export function QuoteRequestForm() {
                         onChange={(event) =>
                           updateItem(item.id, {
                             unit: event.currentTarget.value as QuoteItem["unit"],
+                            pieceOptionKey: "",
                           })
                         }
                       >
                         <option>تن</option>
                         <option>کیلوگرم</option>
-                        <option>شاخه</option>
-                        <option>عدد</option>
+                        {!PRODUCTS_WITHOUT_PIECE_UNITS.includes(
+                          item.product as QuoteProductName,
+                        ) ? (
+                          <>
+                            <option>شاخه</option>
+                            <option>عدد</option>
+                          </>
+                        ) : null}
                       </select>
                     </span>
                     <ErrorMessage
@@ -561,6 +887,52 @@ export function QuoteRequestForm() {
                       }
                     />
                   </label>
+                  {item.product === "میلگرد" &&
+                  (item.unit === "شاخه" || item.unit === "عدد") ? (
+                    <label className="quote-item-rebar-size">
+                      قطر میلگرد برای محاسبه وزن (میلی‌متر)
+                      <input
+                        name={`itemRebarDiameter-${item.id}`}
+                        type="number"
+                        min="4"
+                        step="0.5"
+                        inputMode="decimal"
+                        placeholder="مثلاً 8"
+                        value={item.rebarDiameterMm}
+                        onChange={(event) =>
+                          updateItem(item.id, {
+                            rebarDiameterMm: event.currentTarget.value,
+                          })
+                        }
+                      />
+                    </label>
+                  ) : null}
+                  {PRODUCTS_WITH_PIECE_OPTIONS.includes(
+                    item.product as QuoteProductName,
+                  ) &&
+                  (item.unit === "شاخه" || item.unit === "عدد") ? (
+                    <label className="quote-item-rebar-size">
+                      انتخاب دقیق از فهرست قیمت سایت
+                      <select
+                        name={`itemPieceOption-${item.id}`}
+                        value={item.pieceOptionKey}
+                        onChange={(event) =>
+                          updateItem(item.id, {
+                            pieceOptionKey: event.currentTarget.value,
+                          })
+                        }
+                      >
+                        <option value="">انتخاب کنید</option>
+                        {(pricedItem.estimate?.pieceOptions ?? []).map(
+                          (option) => (
+                            <option key={option.key} value={option.key}>
+                              {option.label}
+                            </option>
+                          ),
+                        )}
+                      </select>
+                    </label>
+                  ) : null}
                 </div>
                 <div className="quote-item-price" aria-live="polite">
                   {!priceEstimates && !priceLoadError ? (
@@ -580,15 +952,63 @@ export function QuoteRequestForm() {
                       برای این کالا قیمت وزنی قابل محاسبه نیست؛ با واحد فروش
                       تماس بگیرید.
                     </span>
-                  ) : item.unit === "شاخه" || item.unit === "عدد" ? (
+                  ) : (item.unit === "شاخه" || item.unit === "عدد") &&
+                    item.product === "میلگرد" &&
+                    !item.rebarDiameterMm ? (
                     <span>
-                      داده قیمت سایت بر حسب کیلوگرم است؛ برای محاسبه بر اساس{" "}
-                      {item.unit} وزن یا مشخصات دقیق را با واحد فروش هماهنگ کنید.
+                      برای محاسبه قیمت بر اساس {item.unit}، قطر میلگرد
+                      (میلی‌متر) را در فیلد بالا وارد کنید.
+                    </span>
+                  ) : (item.unit === "شاخه" || item.unit === "عدد") &&
+                    PRODUCTS_WITH_PIECE_OPTIONS.includes(
+                      item.product as QuoteProductName,
+                    ) &&
+                    !item.pieceOptionKey ? (
+                    <span>
+                      برای محاسبه قیمت، آیتم دقیق را از فهرست قیمت سایت در
+                      فیلد بالا انتخاب کنید.
                     </span>
                   ) : pricedItem.approximateTotal === null ? (
                     <span>
                       برای مشاهده برآورد، مقدار معتبر بزرگ‌تر از صفر وارد کنید.
                     </span>
+                  ) : item.product === "میلگرد" &&
+                    (item.unit === "شاخه" || item.unit === "عدد") ? (
+                    <>
+                      <span>
+                        میانگین داده قیمت سایت:{" "}
+                        <strong>
+                          {formatToman(
+                            pricedItem.estimate.unitPriceTomanPerKg,
+                          )}
+                        </strong>{" "}
+                        برای هر کیلوگرم (بر اساس وزن تقریبی هر {item.unit} با
+                        فرمول استاندارد میلگرد و طول شاخه{" "}
+                        {REBAR_STANDARD_BRANCH_LENGTH_M} متر)
+                      </span>
+                      <span>
+                        قیمت تقریبی این کالا:{" "}
+                        <strong>
+                          {formatToman(pricedItem.approximateTotal)}
+                        </strong>
+                      </span>
+                    </>
+                  ) : pricedItem.pieceOption ? (
+                    <>
+                      <span>
+                        قیمت واقعی سایت برای {pricedItem.pieceOption.label}:{" "}
+                        <strong>
+                          {formatToman(pricedItem.pieceOption.priceToman)}
+                        </strong>{" "}
+                        برای هر {pricedItem.pieceOption.unit}
+                      </span>
+                      <span>
+                        قیمت تقریبی این کالا:{" "}
+                        <strong>
+                          {formatToman(pricedItem.approximateTotal)}
+                        </strong>
+                      </span>
+                    </>
                   ) : (
                     <>
                       <span>
@@ -633,8 +1053,10 @@ export function QuoteRequestForm() {
           {pricedItemCount
             ? `جمع ${pricedItemCount.toLocaleString("fa-IR")} از ${items.length.toLocaleString("fa-IR")} کالا محاسبه شده است. `
             : ""}
-          این مبلغ از داده‌های قیمت فعلی سایت و فقط برای واحد تن یا کیلوگرم
-          محاسبه می‌شود، نهایی نیست و برای تأیید قیمت و موجودی باید با واحد فروش
+          این مبلغ از داده‌های قیمت فعلی سایت محاسبه می‌شود (برای واحد تن و
+          کیلوگرم مستقیم، برای شاخه/عدد میلگرد بر اساس وزن تقریبی، و برای
+          تیرآهن، لوله فولادی و مفتول و سیم بر اساس آیتم دقیق انتخابی از فهرست
+          قیمت سایت)، نهایی نیست و برای تأیید قیمت و موجودی باید با واحد فروش
           تماس بگیرید.
         </p>
       </section>
@@ -659,13 +1081,17 @@ export function QuoteRequestForm() {
       <button className="form-submit" type="submit">
         بررسی و آماده‌سازی درخواست
       </button>
-      <PreparedRequest
-        title="پیش‌نویس درخواست پیش‌فاکتور"
-        preparedText={prepared.preparedText}
-        copyMessage={prepared.copyMessage}
-        resultRef={prepared.resultRef}
-        onCopy={prepared.copy}
-      />
+      {generatedQuote ? (
+        <QuoteDocument quote={generatedQuote} />
+      ) : (
+        <PreparedRequest
+          title="پیش‌نویس درخواست پیش‌فاکتور"
+          preparedText={prepared.preparedText}
+          copyMessage={prepared.copyMessage}
+          resultRef={prepared.resultRef}
+          onCopy={prepared.copy}
+        />
+      )}
     </form>
   );
 }
