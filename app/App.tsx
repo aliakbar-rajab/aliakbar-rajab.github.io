@@ -6,7 +6,6 @@ import {
   useMemo,
   useRef,
   useState,
-  useSyncExternalStore,
 } from "react";
 import { filterProductGroups } from "./site-logic.mjs";
 import { buildCatalogSearchGroups } from "./catalog-search.mjs";
@@ -30,22 +29,9 @@ import {
   type ProductGroup,
   type ProductGroupId,
 } from "./category-meta";
-
-const phones = [
-  { label: "021-88888280", href: "tel:+982188888280" },
-  { label: "021-88888780", href: "tel:+982188888780" },
-  { label: "021-88888122", href: "tel:+982188888122" },
-  { label: "021-88889005", href: "tel:+982188889005" },
-  { label: "021-88889006", href: "tel:+982188889006" },
-];
-
-const address =
-  "آجودانیه پورابتهاج نبش لشکری ساختمان سرو واحد ۳۰۳";
-
-const managementContacts = [
-  { name: "اسماعیل‌پور", href: "tel:+989123300815", label: "09123300815" },
-  { name: "کریمی", href: "tel:+989126333326", label: "09126333326" },
-];
+import { phones, address, postalCode, managementContacts } from "./contact-data";
+import { Brand, SectionTitle } from "./site-ui";
+import { useMediaQuery } from "./use-media-query";
 
 const heroSlides = productGroups.slice(0, 3);
 const HERO_SLIDE_INTERVAL_MS = 1_700;
@@ -125,71 +111,6 @@ const beamFactories = [
 ];
 
 const beamSizes = ["12", "14", "16", "18", "20", "22", "24", "27", "30"];
-
-function subscribeToMedia(query: string, callback: () => void) {
-  const media = window.matchMedia(query);
-  media.addEventListener("change", callback);
-  return () => media.removeEventListener("change", callback);
-}
-
-function useMediaQuery(query: string) {
-  return useSyncExternalStore(
-    (callback) => subscribeToMedia(query, callback),
-    () => window.matchMedia(query).matches,
-    () => false,
-  );
-}
-
-function Brand({ headerLogo = false }: { headerLogo?: boolean }) {
-  return (
-    <a
-      className={`brand${headerLogo ? " brand-header-logo" : ""}`}
-      href="#top"
-      aria-label="بنیان فولاد داریا، صفحه اصلی"
-    >
-      {headerLogo ? (
-        <img
-          src="/brand/bonyan-foulad-daria-logo.png"
-          alt=""
-          width="1254"
-          height="1254"
-          decoding="async"
-          fetchPriority="high"
-        />
-      ) : (
-        <>
-          <span className="brand-mark" aria-hidden="true">
-            <i />
-            <i />
-            <i />
-          </span>
-          <span className="brand-copy">
-            <strong>بنیان فولاد داریا</strong>
-            <span>BONYAN FOULAD DARIA</span>
-          </span>
-        </>
-      )}
-    </a>
-  );
-}
-
-function SectionTitle({
-  eyebrow,
-  title,
-  description,
-}: {
-  eyebrow: string;
-  title: string;
-  description?: string;
-}) {
-  return (
-    <div className="section-heading">
-      <span>{eyebrow}</span>
-      <h2>{title}</h2>
-      {description ? <p>{description}</p> : null}
-    </div>
-  );
-}
 
 export default function App() {
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
@@ -790,7 +711,7 @@ export default function App() {
             <a href="#about" onClick={() => setMobileNavOpen(false)}>
               درباره ما
             </a>
-            <a href={contactHref} onClick={() => setMobileNavOpen(false)}>
+            <a href="/contact/" onClick={() => setMobileNavOpen(false)}>
               تماس با ما
             </a>
             <a className="nav-quote" href={contactHref}>
@@ -1083,6 +1004,7 @@ export default function App() {
             <a href="#products">محصولات</a>
             <a href="#prices">راهنمای استعلام</a>
             <a href="#about">درباره ما</a>
+            <a href="/contact/">تماس با ما و مسیریابی</a>
           </div>
           <div id="phone-numbers">
             <h2>شماره‌های تماس</h2>
@@ -1105,7 +1027,11 @@ export default function App() {
           </div>
           <div>
             <h2>نشانی دفتر</h2>
-            <address>{address}</address>
+            <address>
+              {address}
+              <br />
+              کد پستی {localizeCatalogValue(postalCode)}
+            </address>
           </div>
         </div>
         <div className="shell footer-bottom">

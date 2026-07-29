@@ -13,7 +13,7 @@
     "prices:update:products": "node scripts/fetch-product-prices.mjs",
     "prices:update": "npm run prices:update:rebar && npm run prices:update:beam && npm run prices:update:products && npm run prices:validate",
     "prices:validate": "node scripts/validate-price-data.mjs",
-    "build": "npm run prices:validate && vite build && node --import tsx scripts/generate-category-pages.mjs",
+    "build": "npm run prices:validate && vite build && node --import tsx scripts/generate-category-pages.mjs && node --import tsx scripts/generate-contact-page.mjs",
     "preview": "vite preview",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit --incremental false",
