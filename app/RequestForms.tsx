@@ -45,6 +45,26 @@ type QuotePriceEstimates = Partial<
   Record<QuoteProductName, QuotePriceEstimate>
 >;
 
+type GeneratedQuoteItem = {
+  product: QuoteProductName;
+  quantity: string;
+  unit: QuoteItem["unit"];
+  dimensions: string;
+  unitPriceRial: number | null;
+  totalRial: number | null;
+};
+
+type GeneratedQuote = {
+  number: string;
+  date: string;
+  fullName: string;
+  phone: string;
+  destination: string;
+  notes: string;
+  items: GeneratedQuoteItem[];
+  totalRial: number;
+};
+
 const createQuoteItem = (id: number): QuoteItem => ({
   id,
   product: "",
@@ -55,6 +75,165 @@ const createQuoteItem = (id: number): QuoteItem => ({
 
 const formatToman = (value: number) =>
   `${value.toLocaleString("fa-IR")} تومان`;
+
+const formatRial = (value: number) =>
+  `${value.toLocaleString("fa-IR")} ریال`;
+
+const persianDate = () =>
+  new Intl.DateTimeFormat("fa-IR-u-ca-persian", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(new Date());
+
+const ones = [
+  "", "یک", "دو", "سه", "چهار", "پنج", "شش", "هفت", "هشت", "نه",
+  "ده", "یازده", "دوازده", "سیزده", "چهارده", "پانزده", "شانزده",
+  "هفده", "هجده", "نوزده",
+];
+const tens = ["", "", "بیست", "سی", "چهل", "پنجاه", "شصت", "هفتاد", "هشتاد", "نود"];
+const hundreds = ["", "صد", "دویست", "سیصد", "چهارصد", "پانصد", "ششصد", "هفتصد", "هشتصد", "نهصد"];
+const scales = ["", "هزار", "میلیون", "میلیارد", "تریلیون"];
+
+function threeDigitsToWords(value: number) {
+  const parts: string[] = [];
+  if (value >= 100) parts.push(hundreds[Math.floor(value / 100)]);
+  const remainder = value % 100;
+  if (remainder < 20) {
+    if (remainder) parts.push(ones[remainder]);
+  } else {
+    parts.push(tens[Math.floor(remainder / 10)]);
+    if (remainder % 10) parts.push(ones[remainder % 10]);
+  }
+  return parts.join(" و ");
+}
+
+function rialToWords(value: number) {
+  if (!value) return "صفر ریال";
+  const groups: string[] = [];
+  let remaining = Math.round(value);
+  let scaleIndex = 0;
+
+  while (remaining > 0 && scaleIndex < scales.length) {
+    const group = remaining % 1000;
+    if (group) {
+      groups.unshift(
+        `${threeDigitsToWords(group)}${scales[scaleIndex] ? ` ${scales[scaleIndex]}` : ""}`,
+      );
+    }
+    remaining = Math.floor(remaining / 1000);
+    scaleIndex += 1;
+  }
+
+  return `${groups.join(" و ")} ریال`;
+}
+
+function QuoteDocument({ quote }: { quote: GeneratedQuote }) {
+  const calculableItems = quote.items.filter((item) => item.totalRial !== null);
+  const emptyRowCount = Math.max(0, 8 - quote.items.length);
+
+  return (
+    <section className="quote-document" aria-label="پیش‌فاکتور آماده چاپ">
+      <div className="quote-document-actions">
+        <strong>پیش‌فاکتور آماده است.</strong>
+        <button type="button" onClick={() => window.print()}>
+          چاپ یا ذخیره PDF
+        </button>
+      </div>
+      <article className="quote-print-sheet" dir="rtl">
+        <header className="quote-print-header">
+          <img src="/brand/bonyan-foulad-daria-logo.png" alt="بنیان فولاد داریا" />
+          <div className="quote-print-company">
+            <p>پیش‌فاکتور فروش</p>
+            <h2>{siteConfig.brand.name}</h2>
+            <span>تامین و استعلام محصولات فولادی</span>
+          </div>
+          <dl>
+            <div><dt>شماره:</dt><dd dir="ltr">{quote.number}</dd></div>
+            <div><dt>تاریخ:</dt><dd>{quote.date}</dd></div>
+            <div><dt>وضعیت:</dt><dd>غیرقطعی</dd></div>
+          </dl>
+        </header>
+
+        <section className="quote-customer-details" aria-label="مشخصات خریدار">
+          <p><strong>نام خریدار:</strong> {quote.fullName}</p>
+          <p><strong>شماره تماس:</strong> <b dir="ltr">{quote.phone}</b></p>
+          <p><strong>شهر مقصد:</strong> {quote.destination}</p>
+        </section>
+
+        <table className="quote-print-table">
+          <thead>
+            <tr>
+              <th>ردیف</th>
+              <th>شرح کالا</th>
+              <th>تعداد</th>
+              <th>واحد</th>
+              <th>مبلغ واحد (ریال)</th>
+              <th>مبلغ کل (ریال)</th>
+              <th>ملاحظات</th>
+            </tr>
+          </thead>
+          <tbody>
+            {quote.items.map((item, index) => (
+              <tr key={`${item.product}-${index}`}>
+                <td>{(index + 1).toLocaleString("fa-IR")}</td>
+                <td>{item.product}</td>
+                <td>{Number(item.quantity).toLocaleString("fa-IR")}</td>
+                <td>{item.unit}</td>
+                <td>{item.unitPriceRial ? item.unitPriceRial.toLocaleString("fa-IR") : "استعلام فروش"}</td>
+                <td>{item.totalRial ? item.totalRial.toLocaleString("fa-IR") : "استعلام فروش"}</td>
+                <td>{item.dimensions || "-"}</td>
+              </tr>
+            ))}
+            {Array.from({ length: emptyRowCount }, (_, index) => (
+              <tr className="quote-print-empty-row" key={`empty-${index}`}>
+                <td />
+                <td />
+                <td />
+                <td />
+                <td />
+                <td />
+                <td />
+              </tr>
+            ))}
+          </tbody>
+        </table>
+
+        <section className="quote-print-summary">
+          <div className="quote-total-box">
+            <div>
+              <span>جمع ردیف‌های قابل محاسبه</span>
+              <strong>{formatRial(quote.totalRial)}</strong>
+            </div>
+            <div>
+              <span>تعداد ردیف‌های برآوردشده</span>
+              <strong>
+                {calculableItems.length.toLocaleString("fa-IR")} از {quote.items.length.toLocaleString("fa-IR")}
+              </strong>
+            </div>
+            <div className="quote-total-final">
+              <span>جمع برآوردی پیش‌فاکتور</span>
+              <strong>{formatRial(quote.totalRial)}</strong>
+            </div>
+          </div>
+          <div className="quote-print-notes">
+            <p><strong>مبلغ به حروف:</strong> {rialToWords(quote.totalRial)}</p>
+            <p><strong>توضیحات خریدار:</strong> {quote.notes || "ندارد"}</p>
+            <p>{quoteDisclaimer}</p>
+          </div>
+        </section>
+
+        <footer className="quote-print-footer">
+          <address>
+            <strong>نشانی:</strong> {siteConfig.business.address}، {siteConfig.business.city}<br />
+            <strong>تلفن:</strong> <span dir="ltr">{phones.map((phone) => phone.label).join(" - ")}</span>
+          </address>
+          <div><span>امضای فروشنده</span><span>امضای خریدار</span></div>
+        </footer>
+      </article>
+    </section>
+  );
+}
 
 function ErrorMessage({ id, message }: { id: string; message?: string }) {
   if (!message) return null;
@@ -145,6 +324,9 @@ export function QuoteRequestForm() {
   const [priceEstimates, setPriceEstimates] =
     useState<QuotePriceEstimates | null>(null);
   const [priceLoadError, setPriceLoadError] = useState(false);
+  const [generatedQuote, setGeneratedQuote] = useState<GeneratedQuote | null>(
+    null,
+  );
   const nextItemId = useRef(2);
   const prepared = usePreparedRequest();
 
@@ -206,6 +388,7 @@ export function QuoteRequestForm() {
       ),
     );
     prepared.clear();
+    setGeneratedQuote(null);
   };
 
   const appendItems = (count: number) => {
@@ -220,6 +403,7 @@ export function QuoteRequestForm() {
     setTargetItemCount(items.length + amount);
     setErrors({});
     prepared.clear();
+    setGeneratedQuote(null);
     window.requestAnimationFrame(() => {
       const firstNewProduct = document.querySelector<HTMLElement>(
         `[name="itemProduct-${additions[0].id}"]`,
@@ -243,6 +427,7 @@ export function QuoteRequestForm() {
       setItems((current) => current.slice(0, requested));
       setErrors({});
       prepared.clear();
+      setGeneratedQuote(null);
     }
   };
 
@@ -252,6 +437,7 @@ export function QuoteRequestForm() {
     setTargetItemCount(items.length - 1);
     setErrors({});
     prepared.clear();
+    setGeneratedQuote(null);
   };
 
   const submit = (event: FormEvent<HTMLFormElement>) => {
@@ -362,6 +548,29 @@ export function QuoteRequestForm() {
         quoteDisclaimer,
       ].join("\n"),
     );
+    setGeneratedQuote({
+      number: `PF-${String(Date.now()).slice(-8)}`,
+      date: persianDate(),
+      fullName: fullName.trim(),
+      phone: phone.trim(),
+      destination: destination.trim(),
+      notes: notes.trim(),
+      items: quoteItems.map((item) => ({
+        product: item.product as QuoteProductName,
+        quantity: item.quantity,
+        unit: item.unit,
+        dimensions: item.dimensions,
+        unitPriceRial: item.estimate
+          ? item.estimate.unitPriceTomanPerKg * 10
+          : null,
+        totalRial:
+          item.approximateTotal === null ? null : item.approximateTotal * 10,
+      })),
+      totalRial: quoteItems.reduce(
+        (sum, item) => sum + (item.approximateTotal ?? 0) * 10,
+        0,
+      ),
+    });
   };
 
   return (
@@ -370,7 +579,10 @@ export function QuoteRequestForm() {
       id="quote-form"
       noValidate
       onSubmit={submit}
-      onChange={prepared.clear}
+      onChange={() => {
+        prepared.clear();
+        setGeneratedQuote(null);
+      }}
     >
       <div className="form-heading">
         <span>فرم محلی</span>
@@ -659,13 +871,17 @@ export function QuoteRequestForm() {
       <button className="form-submit" type="submit">
         بررسی و آماده‌سازی درخواست
       </button>
-      <PreparedRequest
-        title="پیش‌نویس درخواست پیش‌فاکتور"
-        preparedText={prepared.preparedText}
-        copyMessage={prepared.copyMessage}
-        resultRef={prepared.resultRef}
-        onCopy={prepared.copy}
-      />
+      {generatedQuote ? (
+        <QuoteDocument quote={generatedQuote} />
+      ) : (
+        <PreparedRequest
+          title="پیش‌نویس درخواست پیش‌فاکتور"
+          preparedText={prepared.preparedText}
+          copyMessage={prepared.copyMessage}
+          resultRef={prepared.resultRef}
+          onCopy={prepared.copy}
+        />
+      )}
     </form>
   );
 }
