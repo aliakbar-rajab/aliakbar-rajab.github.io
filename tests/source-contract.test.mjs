@@ -5,8 +5,10 @@ import test from "node:test";
 const read = (path) => readFile(new URL(path, import.meta.url), "utf8");
 
 test("brand, contact details, RTL, and palette match the approved contract", async () => {
-  const [component, html, css, preloader, headerLogo] = await Promise.all([
+  const [component, contactData, siteUi, html, css, preloader, headerLogo] = await Promise.all([
     read("../app/App.tsx"),
+    read("../app/contact-data.ts"),
+    read("../app/site-ui.tsx"),
     read("../index.html"),
     read("../app/globals.css"),
     read("../public/preloader/fb-preloader.js"),
@@ -17,27 +19,27 @@ test("brand, contact details, RTL, and palette match the approved contract", asy
       ),
     ),
   ]);
-  const combined = `${component}\n${html}\n${preloader}`;
+  const combined = `${component}\n${contactData}\n${siteUi}\n${html}\n${preloader}`;
 
   assert.match(html, /<html lang="fa" dir="rtl">/);
   assert.match(combined, /بنیان فولاد داریا/);
   assert.match(combined, /BONYAN FOULAD DARIA/);
   assert.doesNotMatch(combined, /Foolad/i);
-  assert.match(component, /021-88888280/);
-  assert.match(component, /021-88888780/);
-  assert.match(component, /021-88888122/);
-  assert.match(component, /021-88889005/);
-  assert.match(component, /021-88889006/);
+  assert.match(contactData, /021-88888280/);
+  assert.match(contactData, /021-88888780/);
+  assert.match(contactData, /021-88888122/);
+  assert.match(contactData, /021-88889005/);
+  assert.match(contactData, /021-88889006/);
   assert.doesNotMatch(combined, /021-88888180|\+98-21-88888180/);
   assert.match(
-    component,
+    contactData,
     /آجودانیه پورابتهاج نبش لشکری ساختمان سرو واحد ۳۰۳/,
   );
   assert.doesNotMatch(combined, /mailto:|[\w.+-]+@[\w.-]+\.[a-z]{2,}/i);
   assert.match(css, /--brand-yellow:\s*#f6b500/i);
   assert.match(css, /--brand-dark:\s*#3b3b3e/i);
   assert.match(component, /<Brand headerLogo \/>/);
-  assert.match(component, /src="\/brand\/bonyan-foulad-daria-logo\.png"/);
+  assert.match(siteUi, /src="\/brand\/bonyan-foulad-daria-logo\.png"/);
   assert.match(
     css,
     /\.header-main\s*\{[^}]*min-height:\s*8\.4rem/is,
@@ -51,18 +53,19 @@ test("brand, contact details, RTL, and palette match the approved contract", asy
 });
 
 test("there is no sales form or simulated lead submission", async () => {
-  const [component, workflow] = await Promise.all([
+  const [component, contactData, workflow] = await Promise.all([
     read("../app/App.tsx"),
+    read("../app/contact-data.ts"),
     read("../.github/workflows/pages.yml"),
   ]);
 
   assert.doesNotMatch(component, /<form className="quote-form"|submitQuote|fetch\(/);
   assert.doesNotMatch(workflow, /LEAD_ENDPOINT/);
-  assert.match(component, /tel:\+982188888280/);
-  assert.match(component, /tel:\+982188888780/);
-  assert.match(component, /tel:\+982188888122/);
-  assert.match(component, /tel:\+982188889005/);
-  assert.match(component, /tel:\+982188889006/);
+  assert.match(contactData, /tel:\+982188888280/);
+  assert.match(contactData, /tel:\+982188888780/);
+  assert.match(contactData, /tel:\+982188888122/);
+  assert.match(contactData, /tel:\+982188889005/);
+  assert.match(contactData, /tel:\+982188889006/);
   assert.match(
     component,
     /\(max-width: 900px\) and \(hover: none\) and \(pointer: coarse\)/,

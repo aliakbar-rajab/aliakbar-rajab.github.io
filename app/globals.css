@@ -2954,6 +2954,271 @@ tbody td a,
   }
 }
 
+/*
+ * The contact page's header reuses .header-main's 3-column grid (brand /
+ * flexible middle / phone badge) without a real search form to fill that
+ * middle column. This invisible spacer holds that column open at desktop so
+ * the phone badge still lands in the narrow right-hand column instead of
+ * stretching into the wide middle one. At <=900px .header-main drops to a
+ * 2-column grid (brand / nav-toggle) with no middle column at all, so the
+ * spacer has to get out of the way there or it steals the toggle's slot.
+ */
+.header-spacer {
+  min-width: 0;
+}
+
+@media (max-width: 900px) {
+  .header-spacer {
+    display: none;
+  }
+}
+
+/*
+ * Contact page. Deliberately compact: a slim title strip, then everything
+ * else -- phone/management/address and the map -- side by side in one
+ * section so the map is visible without much scrolling, instead of three
+ * stacked full-height sections like the homepage's marketing pages use.
+ */
+.contact-main {
+  background-color: #202124;
+  background-image:
+    linear-gradient(90deg, rgb(15 16 18 / 30%), rgb(15 16 18 / 12%)),
+    url("/contact-background.png");
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
+.contact-hero {
+  position: relative;
+  isolation: isolate;
+  padding-block: 1.75rem;
+  background-color: #242427;
+  color: var(--white);
+}
+
+.contact-hero::before {
+  content: "";
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  background: rgb(20 21 24 / 72%);
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  pointer-events: none;
+}
+
+.contact-hero > .shell {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: baseline;
+  gap: 1rem;
+}
+
+.contact-hero-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  min-height: 1.8rem;
+  padding-inline: 0.7rem;
+  border-radius: 999px;
+  background: var(--brand-yellow);
+  color: var(--ink);
+  font-size: 0.75rem;
+  font-weight: 900;
+}
+
+.contact-hero-title {
+  margin: 0;
+  font-size: clamp(1.3rem, 2.5vw, 1.7rem);
+}
+
+.contact-body {
+  position: relative;
+  isolation: isolate;
+  padding-block: clamp(2rem, 4vw, 3rem);
+  background: rgb(18 19 22 / 42%);
+}
+
+.contact-body-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.1fr;
+  align-items: start;
+  gap: 2.5rem;
+}
+
+.contact-info-panel {
+  display: grid;
+  gap: 1.5rem;
+  padding: clamp(1.25rem, 3vw, 2rem);
+  border: 1px solid rgb(255 255 255 / 18%);
+  border-radius: var(--radius);
+  background: rgb(18 19 22 / 78%);
+  box-shadow: var(--shadow);
+  color: var(--white);
+  backdrop-filter: blur(6px);
+}
+
+.contact-info-row {
+  display: flex;
+  gap: 1rem;
+}
+
+.contact-info-icon {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 50%;
+  background: var(--brand-yellow);
+  font-size: 1.15rem;
+}
+
+.contact-info-row h2 {
+  margin: 0 0 0.5rem;
+  font-size: 1rem;
+}
+
+.contact-info-row address {
+  font-style: normal;
+  color: #dedee2;
+  line-height: 1.7;
+}
+
+.contact-phone-list {
+  display: grid;
+  gap: 0.4rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.contact-phone-list li {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+/* Keep the management names in a fixed column so their phone numbers align. */
+.contact-phone-list li:has(strong) {
+  display: grid;
+  grid-template-columns: 6.75rem max-content;
+  justify-content: start;
+  gap: 0.75rem;
+}
+
+.contact-phone-list li:has(strong) strong {
+  white-space: nowrap;
+  text-align: right;
+}
+
+.contact-phone-list a {
+  font-weight: 700;
+  color: var(--white);
+}
+
+.contact-phone-list a:hover {
+  color: #b5860a;
+}
+
+.contact-map-panel {
+  position: relative;
+  isolation: isolate;
+  padding: 1.25rem;
+  border-radius: var(--radius);
+  background-color: #34353a;
+  box-shadow: var(--shadow);
+}
+
+.contact-map-panel::before {
+  content: "";
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(145deg, #393a3f, #242529);
+  pointer-events: none;
+}
+
+.contact-map-panel > * {
+  position: relative;
+  z-index: 1;
+}
+
+.map-visual {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  border-radius: calc(var(--radius) - 4px);
+  box-shadow: 0 18px 50px rgb(0 0 0 / 35%);
+}
+
+.map-visual-art {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.map-visual-caption {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  display: grid;
+  gap: 0.2rem;
+  padding: 1.25rem 1.5rem;
+  background: linear-gradient(0deg, rgb(0 0 0 / 82%), transparent);
+  color: var(--white);
+}
+
+.map-visual-caption strong {
+  font-size: 1.05rem;
+}
+
+.map-visual-caption span {
+  font-size: 0.85rem;
+  opacity: 0.85;
+}
+
+.map-destinations {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1.1rem;
+}
+
+.map-destinations a {
+  padding: 0.7rem 1.4rem;
+  border-radius: 999px;
+  border: 1px solid rgb(255 255 255 / 25%);
+  color: var(--white);
+  font-weight: 700;
+  font-size: 0.92rem;
+}
+
+.map-destinations a:first-child {
+  border-color: var(--brand-yellow);
+  background: var(--brand-yellow);
+  color: var(--ink);
+}
+
+.map-destinations a:hover {
+  border-color: var(--brand-yellow);
+  color: var(--brand-yellow);
+}
+
+.map-destinations a:first-child:hover {
+  color: var(--ink);
+  background: #ffc82d;
+}
+
+@media (max-width: 900px) {
+  .contact-body-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
