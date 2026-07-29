@@ -1,4 +1,5 @@
 import {
+  Fragment,
   FormEvent,
   KeyboardEvent as ReactKeyboardEvent,
   useEffect,
@@ -40,6 +41,11 @@ const phones = [
 
 const address =
   "آجودانیه پورابتهاج نبش لشکری ساختمان سرو واحد ۳۰۳";
+
+const managementContacts = [
+  { name: "اسماعیل‌پور", href: "tel:+989123300815", label: "09123300815" },
+  { name: "کریمی", href: "tel:+989126333326", label: "09126333326" },
+];
 
 const heroSlides = productGroups.slice(0, 3);
 const HERO_SLIDE_INTERVAL_MS = 1_700;
@@ -1084,6 +1090,17 @@ export default function IronDemo() {
               <a href={phone.href} key={phone.href} dir="ltr">
                 {phone.label}
               </a>
+            ))}
+          </div>
+          <div>
+            <h2>تماس با مدیریت</h2>
+            {managementContacts.map((contact) => (
+              <Fragment key={contact.href}>
+                <strong className="footer-contact-name">{contact.name}</strong>
+                <a href={contact.href} dir="ltr">
+                  {contact.label}
+                </a>
+              </Fragment>
             ))}
           </div>
           <div>
