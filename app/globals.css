@@ -2954,21 +2954,45 @@ tbody td a,
   }
 }
 
-/*
- * The contact page's header reuses .header-main's 3-column grid (brand /
- * flexible middle / phone badge) without a real search form to fill that
- * middle column. This invisible spacer holds that column open at desktop so
- * the phone badge still lands in the narrow right-hand column instead of
- * stretching into the wide middle one. At <=900px .header-main drops to a
- * 2-column grid (brand / nav-toggle) with no middle column at all, so the
- * spacer has to get out of the way there or it steals the toggle's slot.
- */
-.header-spacer {
+.contact-header-catalog {
   min-width: 0;
+  min-height: 3rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  overflow: hidden;
+  border: 1px solid #d3d3d8;
+  border-radius: 10px;
+  background: var(--surface);
+  color: #75757b;
+}
+
+.contact-header-catalog > span {
+  padding-inline: 1rem;
+}
+
+.contact-header-catalog > strong {
+  align-self: stretch;
+  display: inline-flex;
+  align-items: center;
+  padding-inline: 1rem;
+  background: var(--brand-yellow);
+  color: var(--ink);
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+
+.contact-header-catalog:hover {
+  border-color: #8a6500;
+}
+
+.contact-header-catalog:hover > strong {
+  background: #dca100;
 }
 
 @media (max-width: 900px) {
-  .header-spacer {
+  .contact-header-catalog {
     display: none;
   }
 }

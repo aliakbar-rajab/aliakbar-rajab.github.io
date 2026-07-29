@@ -57,7 +57,10 @@ export default function ContactPage() {
       <header className="site-header">
         <div className="shell header-main">
           <Brand headerLogo href="/" />
-          <div className="header-spacer" aria-hidden="true" />
+          <a className="contact-header-catalog" href="/#products">
+            <span>قیمت روز مقاطع فولادی و اطلاعات محصولات</span>
+            <strong>مشاهده محصولات</strong>
+          </a>
           <a className="header-phone" href={phones[0].href}>
             <span aria-hidden="true">☎</span>
             <span>
@@ -88,14 +91,17 @@ export default function ContactPage() {
               صفحه اصلی
             </a>
             <a href="/#products" onClick={() => setMobileNavOpen(false)}>
-              محصولات
+              قیمت روز محصولات
+            </a>
+            <a href="/#prices" onClick={() => setMobileNavOpen(false)}>
+              راهنمای استعلام
             </a>
             <a href="/#about" onClick={() => setMobileNavOpen(false)}>
               درباره ما
             </a>
             <a aria-current="page">تماس با ما</a>
-            <a className="nav-quote" href={phones[0].href} dir="ltr">
-              {phones[0].label}
+            <a className="nav-quote" href={phones[0].href}>
+              تماس برای استعلام
             </a>
           </nav>
         </div>
