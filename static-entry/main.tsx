@@ -1,6 +1,6 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import IronDemo from "../app/IronDemo";
+import App from "../app/App";
 import "../app/globals.css";
 
 document.documentElement.lang = "fa";
@@ -14,6 +14,6 @@ if (!root) {
 
 createRoot(root).render(
   <StrictMode>
-    <IronDemo />
+    <App />
   </StrictMode>,
 );
