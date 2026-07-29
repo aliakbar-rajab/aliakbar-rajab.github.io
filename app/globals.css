@@ -3719,6 +3719,11 @@ tbody td a,
   padding-top: 0.4rem;
 }
 
+.quote-item-rebar-size {
+  grid-column: 1 / -1;
+  max-width: 16rem;
+}
+
 .quote-item-price {
   display: flex;
   flex-wrap: wrap;
@@ -3932,6 +3937,7 @@ tbody td a,
   min-height: 28mm;
   padding-bottom: 3mm;
   border-bottom: 1px solid #222;
+  break-inside: avoid;
 }
 
 .quote-print-header img {
@@ -3991,26 +3997,36 @@ tbody td a,
 }
 
 .quote-customer-details {
-  display: grid;
-  grid-template-columns: 1.35fr 1fr 1fr;
-  gap: 0;
   margin-block: 3mm;
-  padding: 0;
-  border: 1px solid #333;
+  border: 1px solid #222;
+  border-radius: 0;
+  break-inside: avoid;
 }
 
-.quote-customer-details p {
+.quote-customer-buyer {
   margin: 0;
   padding: 2.2mm 3mm;
-  border-inline-start: 1px solid #333;
+  border-bottom: 1px solid #222;
 }
 
-.quote-customer-details p:last-child {
-  border-inline-start: 0;
+.quote-customer-meta {
+  display: flex;
+}
+
+.quote-customer-meta p {
+  flex: 1;
+  margin: 0;
+  padding: 2.2mm 3mm;
+}
+
+.quote-customer-meta p:first-child {
+  border-inline-end: 1px solid #222;
 }
 
 .quote-print-table {
   width: 100%;
+  min-width: 0;
+  max-width: 100%;
   border-collapse: collapse;
   table-layout: fixed;
   font-size: 8pt;
@@ -4019,7 +4035,7 @@ tbody td a,
 .quote-print-table th,
 .quote-print-table td {
   padding: 2mm 1.25mm;
-  border: 0.75px solid #333;
+  border: 0.75px solid #222;
   vertical-align: middle;
   text-align: center;
   overflow-wrap: anywhere;
@@ -4030,17 +4046,25 @@ tbody td a,
   font-weight: 800;
 }
 
-.quote-print-table th:nth-child(1) { width: 6%; }
-.quote-print-table th:nth-child(2) { width: 27%; }
-.quote-print-table th:nth-child(3) { width: 9%; }
-.quote-print-table th:nth-child(4) { width: 9%; }
-.quote-print-table th:nth-child(5) { width: 16%; }
-.quote-print-table th:nth-child(6) { width: 18%; }
-.quote-print-table th:nth-child(7) { width: 15%; }
+.quote-col-row { width: 6%; }
+.quote-col-product { width: 25%; }
+.quote-col-qty { width: 9%; }
+.quote-col-unit { width: 9%; }
+.quote-col-unit-price { width: 16%; }
+.quote-col-total { width: 18%; }
+.quote-col-notes { width: 17%; }
 
 .quote-print-empty-row td {
   height: 8.2mm;
   padding: 0;
+}
+
+.quote-print-table tr {
+  break-inside: avoid;
+}
+
+.quote-print-table thead {
+  display: table-header-group;
 }
 
 .quote-print-summary {
@@ -4048,8 +4072,9 @@ tbody td a,
   direction: ltr;
   grid-template-columns: 43% 1fr;
   margin-top: 0;
-  border: 1px solid #333;
+  border: 1px solid #222;
   border-top: 0;
+  break-inside: avoid;
 }
 
 .quote-total-box,
@@ -4059,7 +4084,7 @@ tbody td a,
 
 .quote-total-box {
   direction: rtl;
-  border-inline-start: 1px solid #333;
+  border-inline-start: 1px solid #222;
   background: #f7f7f7;
 }
 
@@ -4118,8 +4143,9 @@ tbody td a,
   gap: 4mm;
   margin-top: 4mm;
   padding-top: 2.5mm;
-  border-top: 1px solid #333;
+  border-top: 1px solid #222;
   font-size: 7.8pt;
+  break-inside: avoid;
 }
 
 .quote-print-footer address {

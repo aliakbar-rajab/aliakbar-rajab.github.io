@@ -15,6 +15,16 @@ export type QuoteProductName =
   | "مفتول و سیم"
   | "سایر محصولات فولادی";
 
+// A single, real, orderable item pulled directly from the site's own price
+// catalogs: its own label, its own unit (شاخه/برگ/طاقه‌ای/مترمربع/...), and an
+// averaged real price. Never a computed/estimated weight conversion.
+export type QuotePieceOption = {
+  key: string;
+  label: string;
+  unit: string;
+  priceToman: number;
+};
+
 export type QuotePriceEstimate = {
   product: QuoteProductName;
   unitPriceTomanPerKg: number;
@@ -22,15 +32,17 @@ export type QuotePriceEstimate = {
   maxPriceTomanPerKg: number;
   rowCount: number;
   date: string;
+  // Real, catalog-priced, per-piece options (size/type + real unit + real
+  // averaged price). Only present for products whose catalog actually prices
+  // specific items outside کیلوگرم/تن.
+  pieceOptions?: QuotePieceOption[];
 };
 
 const productCatalogMapping = {
   "ورق فولادی": "sheet",
   "پروفیل و قوطی": "profile",
-  "لوله فولادی": "pipe",
   نبشی: "angle",
   ناودانی: "channel",
-  "مفتول و سیم": "wire",
 } as const;
 
 function buildKilogramEstimate(
@@ -64,6 +76,55 @@ function buildKilogramEstimate(
   };
 }
 
+// Some catalog (sub)categories already price specific sizes directly in a
+// real, non-weight unit (e.g. تیرآهن by شاخه, رابیتس by برگ, توری مرغی by
+// طاقه‌ای, توری حصاری by مترمربع). Average those real prices by size instead
+// of estimating anything, so buyers can order the way they actually ask for
+// these products.
+function buildPieceOptions(
+  category: CatalogCategory | undefined,
+  unit: string,
+): QuotePieceOption[] {
+  if (!category) return [];
+
+  const bySizeSpec = new Map<
+    string,
+    { size: string; specification?: string; prices: number[] }
+  >();
+
+  for (const row of category.factories.flatMap((factory) => factory.rows)) {
+    if (
+      row.unit !== unit ||
+      typeof row.price !== "number" ||
+      !Number.isFinite(row.price) ||
+      row.price <= 0 ||
+      !row.size
+    ) {
+      continue;
+    }
+    const groupKey = `${row.size}|${row.specification ?? ""}`;
+    const entry = bySizeSpec.get(groupKey) ?? {
+      size: row.size,
+      specification: row.specification,
+      prices: [],
+    };
+    entry.prices.push(row.price);
+    bySizeSpec.set(groupKey, entry);
+  }
+
+  const options: QuotePieceOption[] = [];
+  for (const [groupKey, { size, specification, prices }] of bySizeSpec) {
+    const priceToman = Math.round(
+      prices.reduce((sum, price) => sum + price, 0) / prices.length,
+    );
+    const label = specification
+      ? `${category.label} — ${size} (${category.specificationLabel}: ${specification})`
+      : `${category.label} — ${size}`;
+    options.push({ key: `${category.id}:${groupKey}`, label, unit, priceToman });
+  }
+  return options;
+}
+
 export const loadQuotePriceEstimates = createRetryableLoader(async () => {
   const [rebar, beam, productPayload] = await Promise.all([
     loadRebarPriceData(),
@@ -78,19 +139,29 @@ export const loadQuotePriceEstimates = createRetryableLoader(async () => {
   const addEstimate = (
     product: QuoteProductName,
     category: CatalogCategory | undefined,
+    pieceOptions: QuotePieceOption[] = [],
   ) => {
     const estimate = buildKilogramEstimate(product, category);
-    if (estimate) estimates[product] = estimate;
+    if (!estimate) return;
+    estimates[product] = pieceOptions.length
+      ? { ...estimate, pieceOptions }
+      : estimate;
   };
 
   addEstimate(
     "میلگرد",
     rebar.categories.find((category) => category.id === "ribbed"),
   );
+
+  const beamCategory = beam.categories.find(
+    (category) => category.id === "beam",
+  );
   addEstimate(
     "تیرآهن",
-    beam.categories.find((category) => category.id === "beam"),
+    beamCategory,
+    buildPieceOptions(beamCategory, "شاخه"),
   );
+
   addEstimate(
     "هاش",
     beam.categories.find((category) => category.id === "hash"),
@@ -109,6 +180,53 @@ export const loadQuotePriceEstimates = createRetryableLoader(async () => {
       ),
     );
   }
+
+  const pipeCatalog = productPayload.catalogs.find(
+    (candidate) => candidate.id === "pipe",
+  );
+  const pipePieceOptions = ["api-pipe", "gas-pipe", "seamless-pipe"].flatMap(
+    (id) =>
+      buildPieceOptions(
+        pipeCatalog?.categories.find((category) => category.id === id),
+        "شاخه",
+      ),
+  );
+  addEstimate(
+    "لوله فولادی",
+    pipeCatalog?.categories.find(
+      (category) => category.id === pipeCatalog.initialCategoryId,
+    ),
+    pipePieceOptions,
+  );
+
+  const wireCatalog = productPayload.catalogs.find(
+    (candidate) => candidate.id === "wire",
+  );
+  const wirePieceOptions = [
+    ...buildPieceOptions(
+      wireCatalog?.categories.find((category) => category.id === "rib-lath"),
+      "برگ",
+    ),
+    ...buildPieceOptions(
+      wireCatalog?.categories.find(
+        (category) => category.id === "chicken-mesh",
+      ),
+      "طاقه‌ای",
+    ),
+    ...buildPieceOptions(
+      wireCatalog?.categories.find(
+        (category) => category.id === "chain-link-mesh",
+      ),
+      "مترمربع",
+    ),
+  ];
+  addEstimate(
+    "مفتول و سیم",
+    wireCatalog?.categories.find(
+      (category) => category.id === wireCatalog.initialCategoryId,
+    ),
+    wirePieceOptions,
+  );
 
   return estimates;
 });
