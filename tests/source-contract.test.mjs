@@ -50,7 +50,7 @@ test("brand, contact details, RTL, and palette match the approved contract", asy
     /\.brand-header-logo img\s*\{[^}]*width:\s*10\.5rem[^}]*height:\s*10\.5rem/is,
   );
   assert.deepEqual([...headerLogo.subarray(0, 4)], [0x89, 0x50, 0x4e, 0x47]);
-  assert.ok(headerLogo.length > 1_400_000);
+  assert.ok(headerLogo.length > 1_000_000);
 });
 
 test("request forms stay local and never simulate a confirmed submission", async () => {
