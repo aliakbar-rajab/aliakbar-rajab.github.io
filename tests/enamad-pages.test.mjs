@@ -74,13 +74,13 @@ test("Persian form validation rejects incomplete and malformed requests", () => 
 });
 
 test("homepage navigation reaches the quote form directly and one request supports many items", async () => {
-  const [homepage, requestForms] = await Promise.all([
-    read("../app/App.tsx"),
+  const [navigation, requestForms] = await Promise.all([
+    read("../app/MegaMenu.tsx"),
     read("../app/QuoteRequestForm.tsx"),
   ]);
 
   assert.match(
-    homepage,
+    navigation,
     /<a className="nav-quote" href="\/quote-process\/#quote-form">\s*درخواست پیش‌فاکتور/,
   );
   assert.match(requestForms, /const MAX_QUOTE_ITEMS = 100/);

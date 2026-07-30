@@ -189,6 +189,36 @@ test("source exposes one H1 and complete social metadata", async () => {
   assert.match(sitemap, /<loc>https:\/\/fouladbonyan\.com\/<\/loc>/);
 });
 
+test("mega-menu labels stay outside the document heading outline", async () => {
+  const navigation = await read("../app/MegaMenu.tsx");
+
+  assert.match(navigation, /id="product-navigation"/);
+  assert.equal(
+    (navigation.match(/className="mega-group-label"/g) ?? []).length,
+    10,
+  );
+  assert.doesNotMatch(navigation, /<h[1-6]\b/);
+});
+
+test("mega-menu shares App mobile state and selection callbacks", async () => {
+  const [app, navigation] = await Promise.all([
+    read("../app/App.tsx"),
+    read("../app/MegaMenu.tsx"),
+  ]);
+
+  assert.match(app, /onClick=\{toggleMobileNav\}/);
+  assert.match(app, /mobileOpen=\{mobileNavOpen\}/);
+  assert.match(app, /onMobileToggle=\{toggleMobileNav\}/);
+  assert.match(app, /onMobileClose=\{closeMobileNav\}/);
+  assert.match(app, /<CategoryGrid onSelectGroup=\{goToGroup\}/);
+  assert.match(app, /onSelectGroup=\{goToGroup\}/);
+  assert.match(app, /onSelectRebarView=\{goToRebarView\}/);
+  assert.match(app, /onSelectBeamView=\{goToBeamView\}/);
+  assert.match(app, /onSelectProductView=\{goToProductView\}/);
+  assert.match(navigation, /hidden=\{isMobile && !props\.mobileOpen\}/);
+  assert.doesNotMatch(navigation, /\[mobileNavOpen,\s*setMobileNavOpen\]/);
+});
+
 test("homepage hero uses sharp landscape images", async () => {
   const [component, categoryMeta, css] = await Promise.all([
     read("../app/HeroCarousel.tsx"),
@@ -268,7 +298,7 @@ test("homepage uses the supplied dense steel tread photo and cross-fades banners
 test("rebar prices are sourced, validated, and refreshed on a schedule", async () => {
   const [component, navigation, fetcher, workflow, priceData] = await Promise.all([
     read("../app/RebarPrices.tsx"),
-    read("../app/App.tsx"),
+    read("../app/MegaMenu.tsx"),
     read("../scripts/fetch-rebar-prices.mjs"),
     read("../.github/workflows/pages.yml"),
     read("../app/data/rebar-prices.json").then(JSON.parse),
@@ -305,10 +335,11 @@ test("rebar prices are sourced, validated, and refreshed on a schedule", async (
 });
 
 test("beam and hash prices are sourced and exposed through the catalog", async () => {
-  const [component, navigation, styles, fetcher, priceData, packageJson] =
+  const [component, app, navigation, styles, fetcher, priceData, packageJson] =
     await Promise.all([
       read("../app/BeamPrices.tsx"),
       read("../app/App.tsx"),
+      read("../app/MegaMenu.tsx"),
       readGlobalsCss(),
       read("../scripts/fetch-beam-prices.mjs"),
       read("../app/data/beam-prices.json").then(JSON.parse),
@@ -324,7 +355,7 @@ test("beam and hash prices are sourced and exposed through the catalog", async (
   assert.match(navigation, /قیمت هاش/);
   assert.match(navigation, /کارخانه‌های تیرآهن/);
   assert.match(navigation, /سایزهای تیرآهن/);
-  assert.match(navigation, /<BeamPrices/);
+  assert.match(app, /<BeamPrices/);
   assert.match(styles, /grid-template-areas:\s*"other types factories sizes"/);
   assert.match(
     styles,
@@ -352,10 +383,11 @@ test("beam and hash prices are sourced and exposed through the catalog", async (
 });
 
 test("all remaining product groups expose complete live price catalogs", async () => {
-  const [component, navigation, fetcher, priceData, packageJson] =
+  const [component, app, navigation, fetcher, priceData, packageJson] =
     await Promise.all([
       read("../app/ProductPrices.tsx"),
       read("../app/App.tsx"),
+      read("../app/MegaMenu.tsx"),
       read("../scripts/fetch-product-prices.mjs"),
       read("../app/data/product-prices.json").then(JSON.parse),
       read("../package.json").then(JSON.parse),
@@ -396,7 +428,7 @@ test("all remaining product groups expose complete live price catalogs", async (
   );
   assert.ok(rows.some((row) => row.specifications?.length));
   assert.match(component, /PriceCatalog/);
-  assert.match(navigation, /<ProductPrices/);
+  assert.match(app, /<ProductPrices/);
   assert.match(navigation, /loadProductPriceCatalog/);
   assert.match(navigation, /انواع \{megaCatalog\.label\}/);
   assert.match(fetcher, /__NEXT_DATA__/);
