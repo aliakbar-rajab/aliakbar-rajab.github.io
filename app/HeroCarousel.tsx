@@ -6,9 +6,13 @@ const HERO_SLIDE_INTERVAL_MS = 1_700;
 
 type HeroCarouselProps = {
   reduceMotion: boolean;
+  onGoToPrices: () => void;
 };
 
-export function HeroCarousel({ reduceMotion }: HeroCarouselProps) {
+export function HeroCarousel({
+  reduceMotion,
+  onGoToPrices,
+}: HeroCarouselProps) {
   const [activeSlide, setActiveSlide] = useState(0);
   const [carouselPaused, setCarouselPaused] = useState(false);
 
@@ -63,6 +67,13 @@ export function HeroCarousel({ reduceMotion }: HeroCarouselProps) {
             <a href="/quote-process/#quote-form">
               درخواست پیش‌فاکتور {slide.label}
             </a>
+            <button
+              className="hero-price-jump"
+              type="button"
+              onClick={onGoToPrices}
+            >
+              قیمت روز مقاطع فولادی
+            </button>
             <a href="#products">مشاهده محصولات</a>
           </div>
         </div>
