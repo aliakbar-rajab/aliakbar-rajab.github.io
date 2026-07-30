@@ -1,4 +1,5 @@
 import { phones } from "./contact-data";
+import { PreparedRequestActions } from "./request-form-shared";
 import { siteConfig } from "./site-config";
 import { rialToWords } from "./persian-numbers";
 import { quoteDisclaimer, type GeneratedQuote } from "./quote-types";
@@ -6,28 +7,46 @@ import { quoteDisclaimer, type GeneratedQuote } from "./quote-types";
 const formatRial = (value: number) =>
   `${value.toLocaleString("fa-IR")} ریال`;
 
-export function QuoteDocument({ quote }: { quote: GeneratedQuote }) {
+export function QuoteDocument({
+  quote,
+  onCopy,
+  copyMessage,
+}: {
+  quote: GeneratedQuote;
+  onCopy: () => void;
+  copyMessage: string;
+}) {
   const calculableItems = quote.items.filter((item) => item.totalRial !== null);
   const emptyRowCount = Math.max(0, 8 - quote.items.length);
 
   return (
-    <section className="quote-document" aria-label="پیش‌فاکتور آماده چاپ">
+    <section className="quote-document" aria-label="پیش‌نویس برآورد آماده چاپ">
       <div className="quote-document-actions">
-        <strong>پیش‌فاکتور آماده است.</strong>
-        <button type="button" onClick={() => window.print()}>
-          چاپ یا ذخیره PDF
-        </button>
+        <strong>پیش‌نویس برآورد غیرقطعی آماده است.</strong>
+        <div className="quote-document-action-buttons">
+          <button type="button" onClick={() => window.print()}>
+            چاپ یا ذخیره PDF
+          </button>
+          <PreparedRequestActions
+            onCopy={onCopy}
+            copyLabel="کپی مشخصات درخواست"
+            contactLabel="تماس با واحد فروش"
+            contactHref={phones[0].href}
+          />
+        </div>
+        <p className="copy-status" role="status" aria-live="polite">
+          {copyMessage}
+        </p>
       </div>
       <article className="quote-print-sheet" dir="rtl">
         <header className="quote-print-header">
           <img src="/brand/bonyan-foulad-daria-logo.png" alt="بنیان فولاد داریا" />
           <div className="quote-print-company">
-            <p>پیش‌فاکتور فروش</p>
+            <p>برآورد قیمت غیرقطعی</p>
             <h2>{siteConfig.brand.name}</h2>
             <span>تامین و استعلام محصولات فولادی</span>
           </div>
           <dl>
-            <div><dt>شماره:</dt><dd dir="ltr">{quote.number}</dd></div>
             <div><dt>تاریخ:</dt><dd>{quote.date}</dd></div>
             <div><dt>وضعیت:</dt><dd>غیرقطعی</dd></div>
           </dl>
@@ -119,7 +138,6 @@ export function QuoteDocument({ quote }: { quote: GeneratedQuote }) {
             <strong>نشانی:</strong> {siteConfig.business.address}، {siteConfig.business.city}<br />
             <strong>تلفن:</strong> <span dir="ltr">{phones.map((phone) => phone.label).join(" - ")}</span>
           </address>
-          <div><span>امضای فروشنده</span><span>امضای خریدار</span></div>
         </footer>
       </article>
     </section>

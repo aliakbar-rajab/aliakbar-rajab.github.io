@@ -13,6 +13,7 @@ import {
   type QuoteProductName,
 } from "./quote-pricing";
 import { QuoteDocument } from "./QuoteDocument";
+import { phones } from "./contact-data";
 import { quoteDisclaimer, type GeneratedQuote } from "./quote-types";
 import { ErrorMessage, PreparedRequest, usePreparedRequest } from "./request-form-shared";
 
@@ -377,7 +378,6 @@ export function QuoteRequestForm() {
       ].join("\n"),
     );
     setGeneratedQuote({
-      number: `PF-${String(Date.now()).slice(-8)}`,
       date: persianDate(),
       fullName: fullName.trim(),
       phone: phone.trim(),
@@ -810,7 +810,11 @@ export function QuoteRequestForm() {
         بررسی و آماده‌سازی درخواست
       </button>
       {generatedQuote ? (
-        <QuoteDocument quote={generatedQuote} />
+        <QuoteDocument
+          quote={generatedQuote}
+          onCopy={prepared.copy}
+          copyMessage={prepared.copyMessage}
+        />
       ) : (
         <PreparedRequest
           title="پیش‌نویس درخواست پیش‌فاکتور"
@@ -818,6 +822,8 @@ export function QuoteRequestForm() {
           copyMessage={prepared.copyMessage}
           resultRef={prepared.resultRef}
           onCopy={prepared.copy}
+          contactLabel="تماس با واحد فروش"
+          contactHref={phones[0].href}
         />
       )}
     </form>

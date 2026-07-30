@@ -8,6 +8,7 @@
 .quote-document-actions {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   justify-content: space-between;
   gap: 1rem;
   margin-bottom: 1rem;
@@ -28,6 +29,23 @@
 
 .quote-document-actions button:hover {
   background: #111;
+}
+
+.quote-document-action-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.65rem;
+}
+
+.quote-document-action-buttons .prepared-actions {
+  margin-top: 0;
+}
+
+.quote-document-actions .copy-status {
+  flex-basis: 100%;
+  margin: -0.5rem 0 0;
 }
 
 .quote-print-sheet {
@@ -252,9 +270,6 @@
 }
 
 .quote-print-footer {
-  display: grid;
-  grid-template-columns: 1fr 45%;
-  gap: 4mm;
   margin-top: 4mm;
   padding-top: 2.5mm;
   border-top: 1px solid #222;
@@ -264,19 +279,6 @@
 
 .quote-print-footer address {
   font-style: normal;
-}
-
-.quote-print-footer > div {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 5mm;
-}
-
-.quote-print-footer > div span {
-  min-height: 15mm;
-  padding-top: 1.5mm;
-  border-top: 1px solid #777;
-  text-align: center;
 }
 
 @page {
@@ -360,6 +362,18 @@
 }
 
 @media (max-width: 640px) {
+  .quote-document-actions,
+  .quote-document-action-buttons {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .quote-document-action-buttons,
+  .quote-document-action-buttons .prepared-actions,
+  .quote-document-action-buttons .prepared-actions > * {
+    width: 100%;
+  }
+
   .info-hero {
     padding-block: 2.75rem;
   }
@@ -421,4 +435,3 @@
     flex-direction: column;
   }
 }
-

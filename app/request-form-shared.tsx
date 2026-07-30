@@ -47,12 +47,16 @@ export function PreparedRequest({
   copyMessage,
   resultRef,
   onCopy,
+  contactLabel = "تماس با واحد فروش",
+  contactHref = phones[0].href,
 }: {
   title: string;
   preparedText: string;
   copyMessage: string;
   resultRef: React.RefObject<HTMLDivElement | null>;
   onCopy: () => void;
+  contactLabel?: string;
+  contactHref?: string;
 }) {
   if (!preparedText) return null;
 
@@ -64,22 +68,48 @@ export function PreparedRequest({
         هنگام تماس در اختیار پاسخ‌گو بگذارید.
       </p>
       <textarea readOnly value={preparedText} aria-label="متن آماده‌شده درخواست" />
-      <div className="prepared-actions">
-        <button type="button" onClick={onCopy}>
-          کپی متن درخواست
-        </button>
-        <a href={phones[0].href}>تماس با واحد فروش</a>
-        {siteConfig.contact.officialEmail ? (
-          <a
-            href={`mailto:${siteConfig.contact.officialEmail}?subject=${encodeURIComponent(title)}&body=${encodeURIComponent(preparedText)}`}
-          >
-            ارسال با ایمیل رسمی
-          </a>
-        ) : null}
-      </div>
+      <PreparedRequestActions
+        onCopy={onCopy}
+        contactLabel={contactLabel}
+        contactHref={contactHref}
+        emailTitle={title}
+        emailBody={preparedText}
+      />
       <p className="copy-status" role="status" aria-live="polite">
         {copyMessage}
       </p>
+    </div>
+  );
+}
+
+export function PreparedRequestActions({
+  onCopy,
+  copyLabel = "کپی متن درخواست",
+  contactLabel = "تماس با واحد فروش",
+  contactHref = phones[0].href,
+  emailTitle,
+  emailBody,
+}: {
+  onCopy: () => void;
+  copyLabel?: string;
+  contactLabel?: string;
+  contactHref?: string;
+  emailTitle?: string;
+  emailBody?: string;
+}) {
+  return (
+    <div className="prepared-actions">
+      <button type="button" onClick={onCopy}>
+        {copyLabel}
+      </button>
+      <a href={contactHref}>{contactLabel}</a>
+      {siteConfig.contact.officialEmail && emailTitle && emailBody ? (
+        <a
+          href={`mailto:${siteConfig.contact.officialEmail}?subject=${encodeURIComponent(emailTitle)}&body=${encodeURIComponent(emailBody)}`}
+        >
+          ارسال با ایمیل رسمی
+        </a>
+      ) : null}
     </div>
   );
 }
