@@ -85,6 +85,23 @@ function buildProductJsonLd(group, range) {
   return `\n    <script type="application/ld+json">${JSON.stringify(payload)}</script>`;
 }
 
+function buildBreadcrumbJsonLd(group) {
+  const payload = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "خانه", item: `${SITE_URL}/` },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: group.label,
+        item: `${SITE_URL}/${group.id}/`,
+      },
+    ],
+  };
+  return `\n    <script type="application/ld+json">${JSON.stringify(payload)}</script>`;
+}
+
 const replaceTagContent = (html, attrMatcher, value) =>
   html.replace(
     new RegExp(`(<meta[^>]*?${attrMatcher}[^>]*?content=")[^"]*(")`),
@@ -121,7 +138,10 @@ function buildCategoryHtml(baseHtml, group, priceRange) {
     `<div id="root" data-initial-category="${group.id}"></div>`,
   );
 
-  return html.replace("</head>", `${buildProductJsonLd(group, priceRange)}\n  </head>`);
+  return html.replace(
+    "</head>",
+    `${buildProductJsonLd(group, priceRange)}${buildBreadcrumbJsonLd(group)}\n  </head>`,
+  );
 }
 
 async function addCategoryUrlsToSitemap() {

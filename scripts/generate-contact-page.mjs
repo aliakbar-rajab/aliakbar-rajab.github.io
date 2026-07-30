@@ -20,7 +20,22 @@ const replaceTagContent = (html, attrMatcher, value) =>
     `$1${value}$2`,
   );
 
-function buildPageHtml(baseHtml, { page, title, description, pageUrl }) {
+function buildBreadcrumbJsonLd(label, pageUrl) {
+  const payload = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "خانه", item: `${SITE_URL}/` },
+      { "@type": "ListItem", position: 2, name: label, item: pageUrl },
+    ],
+  };
+  return `\n    <script type="application/ld+json">${JSON.stringify(payload)}</script>`;
+}
+
+function buildPageHtml(
+  baseHtml,
+  { page, title, description, pageUrl, breadcrumbLabel },
+) {
   let html = baseHtml
     .replace(/<title>[^<]*<\/title>/, `<title>${title}</title>`)
     .replace(/(<link rel="canonical" href=")[^"]*(")/, `$1${pageUrl}$2`);
@@ -37,7 +52,10 @@ function buildPageHtml(baseHtml, { page, title, description, pageUrl }) {
     `<div id="root" data-page="${page}"></div>`,
   );
 
-  return html;
+  return html.replace(
+    "</head>",
+    `${buildBreadcrumbJsonLd(breadcrumbLabel, pageUrl)}\n  </head>`,
+  );
 }
 
 async function addInformationUrlsToSitemap(pageEntries) {
@@ -98,12 +116,14 @@ const pageEntries = [
     title: TITLE,
     description: DESCRIPTION,
     pageUrl: PAGE_URL,
+    breadcrumbLabel: "تماس با ما",
   },
   ...Object.entries(infoPageDefinitions).map(([page, definition]) => ({
     page,
     title: `${definition.title} | ${siteConfig.brand.name}`,
     description: definition.seoDescription,
     pageUrl: `${SITE_URL}/${page}/`,
+    breadcrumbLabel: definition.title,
   })),
 ];
 
