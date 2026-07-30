@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { phones } from "./contact-data";
 import { ComplaintForm } from "./ComplaintForm";
-import { QuoteRequestForm } from "./RequestForms";
+import { QuoteRequestForm } from "./QuoteRequestForm";
 import { siteConfig } from "./site-config";
 import { SiteFooter } from "./SiteFooter";
 import { Brand } from "./site-ui";
