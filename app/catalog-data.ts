@@ -1,6 +1,6 @@
 import { createRetryableLoader } from "./catalog-cache";
 import { validateCatalogPriceData } from "./catalog-validation.mjs";
-import type { CatalogPriceData } from "./RebarPrices";
+import type { CatalogPriceData } from "./catalog-types";
 
 export const loadRebarPriceData = createRetryableLoader(
   () =>

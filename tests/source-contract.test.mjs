@@ -19,6 +19,27 @@ const readGlobalsCss = async () => {
   return files.join("\n");
 };
 
+test("catalog snapshot producers stay independent from the React catalog presenter", async () => {
+  const [catalogTypes, catalogData, productData, quotePricing, presenter] =
+    await Promise.all([
+      read("../app/catalog-types.ts"),
+      read("../app/catalog-data.ts"),
+      read("../app/product-price-data.ts"),
+      read("../app/quote-pricing.ts"),
+      read("../app/RebarPrices.tsx"),
+    ]);
+
+  assert.match(catalogTypes, /export type CatalogPriceData/);
+  assert.match(catalogTypes, /export type CatalogCategory/);
+  assert.match(catalogTypes, /export type CatalogViewRequest/);
+  assert.match(presenter, /from "\.\/catalog-types"/);
+
+  for (const source of [catalogData, productData, quotePricing]) {
+    assert.match(source, /from "\.\/catalog-types"/);
+    assert.doesNotMatch(source, /from "\.\/RebarPrices"/);
+  }
+});
+
 test("brand, contact details, RTL, and palette match the approved contract", async () => {
   const [component, contactData, siteConfig, siteUi, html, css, preloader, headerLogo] = await Promise.all([
     read("../app/App.tsx"),

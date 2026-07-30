@@ -4,7 +4,7 @@ import type {
   CatalogCategory,
   CatalogPriceData,
   CatalogViewRequest,
-} from "./RebarPrices";
+} from "./catalog-types";
 
 export type ProductCatalogId =
   | "sheet"
