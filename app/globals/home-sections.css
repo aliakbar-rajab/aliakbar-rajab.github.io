@@ -1,0 +1,434 @@
+.section {
+  padding-block: clamp(4rem, 8vw, 7rem);
+}
+
+.products,
+.about {
+  background-color: #3b3b3e;
+}
+
+.products {
+  position: relative;
+  isolation: isolate;
+  padding-block-end: clamp(4rem, 8vw, 7rem);
+}
+
+/*
+ * Same idea as .about below: the diamond-plate texture lives on its own
+ * layer, masked to dissolve into the section's flat colour before the box
+ * edge, so it eases into .prices' solid tone instead of stopping dead.
+ * Sits behind the hero ramp (z-index 0 vs 1) so that overlay still reads
+ * on top where the two layers share the top of the section.
+ */
+.products::after {
+  content: "";
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  background-image:
+    linear-gradient(rgb(59 59 62 / 28%), rgb(59 59 62 / 28%)),
+    url("/textures/dark-chequered-plate.png");
+  background-position:
+    center,
+    center top;
+  background-repeat:
+    no-repeat,
+    repeat-y;
+  background-size:
+    auto,
+    2752px auto;
+  mask-image: linear-gradient(180deg, #000 0%, #000 78%, transparent 100%);
+  -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 78%, transparent 100%);
+  pointer-events: none;
+}
+
+.products > .shell {
+  position: relative;
+  z-index: 2;
+}
+
+.about {
+  position: relative;
+  isolation: isolate;
+  padding-block: calc(clamp(4rem, 8vw, 7rem) + 3rem) clamp(4rem, 8vw, 7rem);
+  background-color: #34353a;
+  background-image: none;
+}
+
+/*
+ * The weave texture lives on its own layer, masked so it dissolves into
+ * the section's flat colour before both box edges. Without this the mesh
+ * pattern stays crisp right up to the border and then just stops, which
+ * reads as a hard seam against whatever comes next (.prices' lifted card
+ * above, the quote banner below).
+ */
+.about::before {
+  content: "";
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  background-image:
+    linear-gradient(rgb(20 21 24 / 56%), rgb(20 21 24 / 56%)),
+    url("/textures/woven-metal.png");
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  mask-image: linear-gradient(
+    180deg,
+    transparent 0%,
+    #000 14%,
+    #000 78%,
+    transparent 100%
+  );
+  -webkit-mask-image: linear-gradient(
+    180deg,
+    transparent 0%,
+    #000 14%,
+    #000 78%,
+    transparent 100%
+  );
+  pointer-events: none;
+}
+
+.about > .shell {
+  position: relative;
+  z-index: 1;
+}
+
+/*
+ * Section right under the hero. It opens on the same colour as the hero
+ * backdrop, so there is no edge to see, then eases the plate in over a long
+ * ramp. The extra top padding keeps the heading clear of the panel's shadow.
+ */
+.hero-frame + .products {
+  position: relative;
+  z-index: 1;
+  padding-block-start: calc(clamp(4rem, 8vw, 7rem) + var(--hero-depth));
+}
+
+.hero-frame + .products::before {
+  content: "";
+  position: absolute;
+  z-index: 1;
+  inset-block-start: 0;
+  inset-inline: 0;
+  height: clamp(9rem, 20vw, 15rem);
+  background: linear-gradient(
+    180deg,
+    var(--hero-backdrop) 0%,
+    var(--hero-backdrop) 12%,
+    rgb(23 23 27 / 88%) 26%,
+    rgb(23 23 27 / 68%) 42%,
+    rgb(23 23 27 / 44%) 58%,
+    rgb(23 23 27 / 24%) 74%,
+    rgb(23 23 27 / 9%) 88%,
+    transparent 100%
+  );
+  pointer-events: none;
+}
+
+.hero-frame + .products > .shell {
+  position: relative;
+  z-index: 2;
+}
+
+.products .section-heading h2,
+.about .section-heading h2,
+.about .feature-list strong {
+  color: var(--white);
+}
+
+.products .section-heading p,
+.about .section-heading p,
+.about .feature-list span {
+  color: #e1e1e4;
+}
+
+.section-heading {
+  max-width: 740px;
+  margin-bottom: 2rem;
+}
+
+.section-heading > span,
+.quote-inner > div > span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2rem;
+  padding-inline: 0.7rem;
+  border-radius: 999px;
+  background: var(--brand-yellow);
+  color: var(--ink);
+  font-size: 0.78rem;
+  font-weight: 900;
+}
+
+.section-heading h2 {
+  margin: 0.8rem 0 0;
+  color: var(--brand-dark);
+  font-size: clamp(1.75rem, 4vw, 2.8rem);
+  line-height: 1.35;
+  text-wrap: balance;
+}
+
+.section-heading p {
+  margin: 0.8rem 0 0;
+  color: var(--muted);
+}
+
+.category-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.category-card {
+  min-width: 0;
+  position: relative;
+  display: grid;
+  grid-template-rows: 11.5rem 1fr;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--white);
+  color: inherit;
+  text-align: start;
+  text-decoration: none;
+  box-shadow: 0 8px 28px rgb(20 20 24 / 6%);
+  cursor: pointer;
+  transition:
+    transform 180ms ease,
+    box-shadow 180ms ease;
+}
+
+.category-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow);
+}
+
+.category-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 300ms ease;
+}
+
+.category-card:hover img {
+  transform: scale(1.035);
+}
+
+.category-card > span {
+  display: grid;
+  align-content: start;
+  gap: 0.35rem;
+  padding: 1rem 1rem 1.2rem;
+}
+
+.category-card strong {
+  color: var(--brand-dark);
+  font-size: 1.08rem;
+  font-weight: 900;
+}
+
+.category-card small {
+  color: var(--muted);
+  font-size: 0.82rem;
+  line-height: 1.75;
+}
+
+.category-card > b {
+  position: absolute;
+  inset-inline-end: 0.8rem;
+  top: 9.4rem;
+  width: 2.5rem;
+  height: 2.5rem;
+  display: grid;
+  place-items: center;
+  border: 3px solid var(--white);
+  border-radius: 50%;
+  background: var(--brand-yellow);
+  color: var(--ink);
+}
+
+.prices {
+  position: relative;
+  isolation: isolate;
+  z-index: 2;
+  padding-block-end: clamp(4rem, 8vw, 7rem);
+  background-color: #3b3b3e;
+}
+
+/*
+ * Used to end in a rounded, shadowed "card" edge that overlapped .about --
+ * the rounded corner and shadow line landed on the mesh below as a hard
+ * ring. Replaced with the same flat-colour ramp used elsewhere so the two
+ * (near-identical) dark tones hand off without a visible seam.
+ */
+.prices::after {
+  content: "";
+  position: absolute;
+  z-index: 0;
+  inset-block-end: 0;
+  inset-inline: 0;
+  height: clamp(4rem, 8vw, 6rem);
+  background: linear-gradient(180deg, transparent 0%, #34353a 100%);
+  pointer-events: none;
+}
+
+.prices > .shell {
+  position: relative;
+  z-index: 1;
+}
+
+.prices .section-heading h2 {
+  color: var(--white);
+}
+
+.prices .section-heading p {
+  color: #e1e1e4;
+}
+
+.search-status {
+  min-height: 2.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin: -0.5rem 0 1rem;
+  color: var(--muted);
+}
+
+.search-status:empty {
+  display: none;
+}
+
+.search-status button {
+  min-height: 2.75rem;
+  padding-inline: 0.8rem;
+  border: 1px solid #aaaab0;
+  border-radius: 8px;
+  background: var(--white);
+  cursor: pointer;
+}
+
+.product-tabs {
+  display: flex;
+  gap: 0.35rem;
+  overflow-x: auto;
+  padding: 0.4rem;
+  border: 1px solid rgb(255 255 255 / 18%);
+  border-radius: 12px 12px 0 0;
+  background: #3b3b3e;
+  scrollbar-width: thin;
+}
+
+.product-tabs button {
+  min-width: 6.5rem;
+  min-height: 3rem;
+  flex: 1 0 auto;
+  padding-inline: 0.8rem;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: #f2f2f4;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.product-tabs button[aria-selected="true"] {
+  background: var(--brand-yellow);
+  color: var(--ink);
+}
+
+.product-panel {
+  border: 1px solid rgb(255 255 255 / 18%);
+  border-top: 0;
+  border-radius: 0 0 12px 12px;
+  background: #3b3b3e;
+  box-shadow: 0 12px 32px rgb(20 20 24 / 16%);
+}
+
+.table-scroll {
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  min-width: 740px;
+  border-collapse: collapse;
+}
+
+th,
+td {
+  padding: 1rem;
+  border-bottom: 1px solid #e7e7ea;
+  text-align: start;
+}
+
+thead th {
+  background: #eeeeef;
+  color: #45454a;
+  font-size: 0.83rem;
+  font-weight: 900;
+}
+
+tbody th {
+  color: var(--brand-dark);
+  font-size: 0.96rem;
+}
+
+tbody td {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+tbody tr:last-child > * {
+  border-bottom: 0;
+}
+
+tbody tr:hover {
+  background: #fffbef;
+}
+
+.price-status {
+  display: inline-flex;
+  min-height: 2rem;
+  align-items: center;
+  padding-inline: 0.65rem;
+  border-radius: 999px;
+  background: #ececef;
+  color: #3f3f44;
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+tbody td a,
+.empty-state a {
+  min-height: 2.75rem;
+  display: inline-flex;
+  align-items: center;
+  padding-inline: 0.85rem;
+  border-radius: 7px;
+  background: var(--brand-yellow);
+  color: var(--ink);
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.empty-state {
+  padding: 3rem 1rem;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--white);
+  text-align: center;
+}
+
+.empty-state h3 {
+  margin: 0;
+  font-size: 1.4rem;
+}
+
+.empty-state p {
+  color: var(--muted);
+}
+

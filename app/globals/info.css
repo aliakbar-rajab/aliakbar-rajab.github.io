@@ -1,0 +1,244 @@
+/*
+ * Inner informational pages reuse the established dark steel palette while
+ * keeping long legal text and forms on a light, highly legible surface.
+ */
+.info-main {
+  min-height: 60vh;
+  background:
+    linear-gradient(rgb(31 32 35 / 96%), rgb(31 32 35 / 96%)),
+    url("/textures/dark-chequered-plate.png");
+}
+
+.info-hero {
+  position: relative;
+  overflow: hidden;
+  padding-block: clamp(3rem, 7vw, 5.5rem);
+  background:
+    linear-gradient(105deg, rgb(19 20 23 / 94%), rgb(59 59 62 / 70%)),
+    url("/categories/hero-sheet-1680.jpg") center / cover;
+  color: var(--white);
+}
+
+.info-hero::after {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  height: 5px;
+  background: var(--brand-yellow);
+}
+
+.info-hero .shell {
+  position: relative;
+  z-index: 1;
+  max-width: 78rem;
+}
+
+.info-hero span {
+  display: inline-flex;
+  margin-bottom: 0.85rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  background: var(--brand-yellow);
+  color: var(--ink);
+  font-size: 0.78rem;
+  font-weight: 900;
+}
+
+.info-hero h1 {
+  max-width: 50rem;
+  margin: 0;
+  font-size: clamp(2rem, 5vw, 3.9rem);
+  line-height: 1.25;
+}
+
+.info-hero p {
+  max-width: 52rem;
+  margin: 1rem 0 0;
+  color: #e6e6e9;
+  font-size: clamp(1rem, 2vw, 1.15rem);
+  line-height: 2;
+}
+
+.info-content {
+  display: grid;
+  gap: 1.25rem;
+  padding-block: clamp(2.5rem, 6vw, 5rem);
+}
+
+.content-card,
+.request-form,
+.important-notice,
+.process-steps {
+  border: 1px solid #d7d7dc;
+  border-radius: var(--radius);
+  background: #f8f8fa;
+  box-shadow: 0 18px 50px rgb(0 0 0 / 20%);
+}
+
+.content-card {
+  padding: clamp(1.35rem, 4vw, 2.5rem);
+}
+
+.content-card h2,
+.request-form h2 {
+  margin: 0 0 1rem;
+  color: #252529;
+  font-size: clamp(1.25rem, 2.4vw, 1.7rem);
+}
+
+.content-card p,
+.content-card li {
+  color: #4f4f55;
+  line-height: 2;
+}
+
+.content-card p:last-child,
+.content-card ul:last-child,
+.content-card ol:last-child {
+  margin-bottom: 0;
+}
+
+.content-card ol {
+  padding-inline-start: 1.5rem;
+}
+
+.legal-copy {
+  border-inline-start: 5px solid var(--brand-yellow);
+}
+
+.checked-list {
+  display: grid;
+  gap: 0.8rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.checked-list li {
+  position: relative;
+  padding-inline-start: 2rem;
+}
+
+.checked-list li::before {
+  content: "✓";
+  position: absolute;
+  inset-inline-start: 0;
+  top: 0.15rem;
+  display: grid;
+  place-items: center;
+  width: 1.35rem;
+  height: 1.35rem;
+  border-radius: 50%;
+  background: var(--brand-yellow);
+  color: var(--ink);
+  font-size: 0.8rem;
+  font-weight: 900;
+}
+
+.inline-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}
+
+.inline-actions a,
+.prepared-actions a,
+.prepared-actions button {
+  min-height: 2.8rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding-inline: 1rem;
+  border: 1px solid #2e2e33;
+  border-radius: 8px;
+  background: #2e2e33;
+  color: var(--white);
+  font: inherit;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.inline-actions a:first-child,
+.prepared-actions button {
+  border-color: var(--brand-yellow);
+  background: var(--brand-yellow);
+  color: var(--ink);
+}
+
+.page-updated {
+  padding-top: 1rem;
+  border-top: 1px solid #dddde1;
+  font-size: 0.88rem;
+}
+
+.process-steps {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  list-style: none;
+  counter-reset: quote-step;
+}
+
+.process-steps li {
+  position: relative;
+  min-height: 13rem;
+  padding: 2rem 1.5rem;
+  border-inline-end: 1px solid #d7d7dc;
+  counter-increment: quote-step;
+}
+
+.process-steps li:last-child {
+  border-inline-end: 0;
+}
+
+.process-steps li::before {
+  content: counter(quote-step, decimal-leading-zero);
+  display: block;
+  margin-bottom: 1.2rem;
+  color: #a47700;
+  font-size: 1.55rem;
+  font-weight: 900;
+}
+
+.process-steps strong,
+.process-steps span {
+  display: block;
+}
+
+.process-steps strong {
+  margin-bottom: 0.65rem;
+  color: var(--ink);
+  font-size: 1.05rem;
+}
+
+.process-steps span {
+  color: #5b5b61;
+  font-size: 0.92rem;
+  line-height: 1.9;
+}
+
+.important-notice {
+  padding: clamp(1.35rem, 4vw, 2rem);
+  border-color: #c18e00;
+  background: #fff7dc;
+  color: #3d3215;
+}
+
+.important-notice strong {
+  display: block;
+  margin-bottom: 0.45rem;
+  color: #6f5200;
+  font-size: 1.1rem;
+}
+
+.important-notice p {
+  margin: 0;
+  font-weight: 700;
+  line-height: 2;
+}
+

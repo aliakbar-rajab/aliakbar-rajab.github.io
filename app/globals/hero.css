@@ -1,0 +1,254 @@
+/* No surrounding frame—the hero image is the only visible surface. */
+.hero-frame {
+  position: relative;
+  z-index: 2;
+  overflow: visible;
+}
+
+/* The former extrusion is intentionally removed; the hero is one soft surface. */
+.hero-frame::before {
+  display: none;
+  content: "";
+  position: absolute;
+  z-index: 0;
+  top: var(--hero-inset);
+  right: var(--hero-inset);
+  bottom: calc(var(--hero-inset) + var(--hero-depth));
+  left: var(--hero-inset);
+  border-radius: var(--hero-radius);
+  background: linear-gradient(
+    180deg,
+    #24252a 0,
+    #24252a calc(100% - var(--hero-depth)),
+    #303238 calc(100% - var(--hero-depth) + 1px),
+    #1b1c20 calc(100% - 12px),
+    #0c0d0f 100%
+  );
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 12%),
+    0 32px 52px -20px rgb(0 0 0 / 88%),
+    0 14px 24px -12px rgb(0 0 0 / 66%);
+  transform: translateY(var(--hero-depth));
+}
+
+/* The image panel is clipped by one continuous rounded rectangle. */
+.hero {
+  position: relative;
+  z-index: 1;
+  min-height: clamp(31rem, 62vw, 39rem);
+  display: grid;
+  align-items: center;
+  isolation: isolate;
+  overflow: hidden;
+  border-radius: var(--hero-radius);
+  background: #242428;
+  color: var(--white);
+}
+
+/*
+ * A continuous shallow bevel on all four sides, matching the molded transition
+ * marked on the printer reference. The banner remains a single image surface.
+ */
+.hero::after {
+  content: "";
+  position: absolute;
+  z-index: 4;
+  inset: 0;
+  border-radius: inherit;
+  background:
+    linear-gradient(
+      180deg,
+      rgb(0 0 0 / 18%) 0,
+      rgb(0 0 0 / 6%) 36%,
+      transparent 100%
+    )
+      top / 100% var(--hero-bevel) no-repeat,
+    linear-gradient(
+        0deg,
+        rgb(0 0 0 / 48%) 0,
+        rgb(0 0 0 / 17%) 38%,
+        transparent 100%
+      )
+      bottom / 100% var(--hero-bevel) no-repeat,
+    linear-gradient(
+        90deg,
+        rgb(0 0 0 / 12%) 0,
+        rgb(0 0 0 / 4%) 38%,
+        transparent 100%
+      )
+      left / var(--hero-bevel) 100% no-repeat,
+    linear-gradient(
+        270deg,
+        rgb(0 0 0 / 38%) 0,
+        rgb(0 0 0 / 13%) 38%,
+        transparent 100%
+      )
+      right / var(--hero-bevel) 100% no-repeat;
+  box-shadow:
+    inset 0 1px 2px rgb(0 0 0 / 24%),
+    inset 0 -3px 4px rgb(0 0 0 / 34%),
+    inset 2px 0 2px rgb(0 0 0 / 16%),
+    inset -3px 0 4px rgb(0 0 0 / 25%),
+    inset 0 0 0 calc(var(--hero-bevel) - 1px) rgb(16 17 20 / 5%);
+  pointer-events: none;
+}
+
+/* Cancel the panel inset so hero content keeps the page-wide .shell alignment. */
+.hero .shell {
+  width: min(100% - var(--shell-gutter) + var(--hero-inset) * 2, 1200px);
+}
+
+.hero-image,
+.hero-overlay {
+  position: absolute;
+  z-index: -2;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.hero-image {
+  object-fit: cover;
+  opacity: 0;
+  transform: scale(1.015);
+  transition:
+    opacity 650ms ease-in-out,
+    transform 1100ms ease;
+}
+
+.hero-image.is-active {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.hero-overlay {
+  z-index: -1;
+  background:
+    linear-gradient(90deg, rgb(17 17 20 / 25%), rgb(17 17 20 / 82%) 70%),
+    linear-gradient(0deg, rgb(17 17 20 / 44%), transparent 45%);
+}
+
+.hero-content {
+  padding-block: 5rem 8rem;
+}
+
+.hero-kicker {
+  width: fit-content;
+  margin: 0 0 1.1rem;
+  padding: 0.35rem 0.7rem;
+  border-inline-start: 4px solid var(--brand-yellow);
+  background: rgb(255 255 255 / 10%);
+  font-size: 0.92rem;
+  font-weight: 800;
+}
+
+.hero h1 {
+  max-width: 1000px;
+  margin: 0;
+  font-size: clamp(2.2rem, 5vw, 4.6rem);
+  line-height: 1.25;
+  text-wrap: balance;
+}
+
+.hero h1 span {
+  display: block;
+}
+
+.hero-content > p:not(.hero-kicker) {
+  max-width: 650px;
+  margin: 1.2rem 0 0;
+  color: #ededee;
+  font-size: clamp(1rem, 2vw, 1.22rem);
+}
+
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 2rem;
+}
+
+.hero-actions a {
+  min-height: 3.1rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding-inline: 1.35rem;
+  border: 1px solid rgb(255 255 255 / 50%);
+  border-radius: 8px;
+  background: rgb(30 30 33 / 35%);
+  color: var(--white);
+  font-weight: 900;
+}
+
+.hero-actions a:first-child {
+  border-color: var(--brand-yellow);
+  background: var(--brand-yellow);
+  color: var(--ink);
+}
+
+.hero-actions a:hover {
+  border-color: var(--brand-yellow);
+}
+
+.carousel-controls {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 2rem;
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.carousel-controls > button {
+  min-width: 2.75rem;
+  height: 2.75rem;
+  border: 1px solid rgb(255 255 255 / 45%);
+  border-radius: 8px;
+  background: rgb(25 25 28 / 55%);
+  color: var(--white);
+  cursor: pointer;
+}
+
+.carousel-controls > button:hover {
+  border-color: var(--brand-yellow);
+  background: var(--brand-yellow);
+  color: var(--ink);
+}
+
+.carousel-dots {
+  display: flex;
+  gap: 0.2rem;
+}
+
+.carousel-dots button {
+  width: 2.75rem;
+  height: 2.75rem;
+  position: relative;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.carousel-dots button::after {
+  content: "";
+  position: absolute;
+  inset-inline: 0.5rem;
+  top: 50%;
+  height: 0.28rem;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 48%);
+  transform: translateY(-50%);
+}
+
+.carousel-dots button.is-active::after {
+  background: var(--brand-yellow);
+}
+
+.carousel-controls .carousel-pause {
+  width: auto;
+  padding-inline: 0.8rem;
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+

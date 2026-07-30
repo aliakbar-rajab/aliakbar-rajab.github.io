@@ -1,0 +1,245 @@
+.about-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.feature-list {
+  display: grid;
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.feature-list li {
+  position: relative;
+  display: grid;
+  gap: 0.15rem;
+  padding: 0.85rem 3rem 0.85rem 0;
+}
+
+.feature-list li::before {
+  content: "✓";
+  position: absolute;
+  inset-inline-start: 0;
+  top: 0.8rem;
+  width: 2.1rem;
+  height: 2.1rem;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  background: var(--brand-yellow);
+  color: var(--ink);
+  font-weight: 900;
+}
+
+.feature-list strong {
+  color: var(--brand-dark);
+  font-size: 1rem;
+}
+
+.feature-list span {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+/*
+ * The about panel (mesh texture) and this banner (i-beam photo) are both
+ * dark but visually unrelated surfaces; without a ramp the seam reads as a
+ * hard cut. Fade the about panel's own colour in over the top of the photo,
+ * the same technique used for .hero-frame + .products above.
+ */
+.about + .quote-section::before {
+  content: "";
+  position: absolute;
+  z-index: 0;
+  inset-block-start: 0;
+  inset-inline: 0;
+  height: clamp(6rem, 14vw, 10rem);
+  background: linear-gradient(
+    180deg,
+    #34353a 0%,
+    #34353a 12%,
+    rgb(52 53 58 / 88%) 26%,
+    rgb(52 53 58 / 68%) 42%,
+    rgb(52 53 58 / 44%) 58%,
+    rgb(52 53 58 / 24%) 74%,
+    rgb(52 53 58 / 9%) 88%,
+    transparent 100%
+  );
+  pointer-events: none;
+}
+
+.quote-section {
+  position: relative;
+  isolation: isolate;
+  padding-block: 4rem;
+  background-color: #242427;
+  color: var(--white);
+}
+
+/*
+ * The i-beam photo lives on its own layer (below the entry ramp above,
+ * z-index -1 vs 0) and fades out near the bottom, revealing the section's
+ * own flat colour -- which matches .site-footer's tone -- so the photo
+ * eases into the footer instead of cutting off against it.
+ */
+.quote-section::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  background:
+    linear-gradient(90deg, rgb(40 40 43 / 94%), rgb(59 59 62 / 98%)),
+    url("/categories/02-ibeam.jpg") center / cover;
+  mask-image: linear-gradient(180deg, #000 0%, #000 80%, transparent 100%);
+  -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 80%, transparent 100%);
+  pointer-events: none;
+}
+
+.quote-inner {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2rem;
+}
+
+.quote-inner h2 {
+  max-width: 700px;
+  margin: 0.8rem 0 0;
+  font-size: clamp(1.7rem, 4vw, 2.6rem);
+  line-height: 1.4;
+}
+
+.quote-inner p {
+  max-width: 740px;
+  margin: 0.6rem 0 0;
+  color: #dedee1;
+}
+
+.quote-inner > a {
+  min-width: 11rem;
+  min-height: 3.3rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding-inline: 1.25rem;
+  border-radius: 8px;
+  background: var(--brand-yellow);
+  color: var(--ink);
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.site-footer {
+  padding-top: 4.5rem;
+  background: #242427;
+  color: #e8e8ea;
+}
+
+#phone-numbers {
+  scroll-margin-top: 8rem;
+}
+
+.footer-grid {
+  display: grid;
+  grid-template-columns: 1.25fr 0.65fr 0.85fr 0.85fr 1.1fr;
+  gap: 2.5rem;
+  padding-bottom: 3rem;
+}
+
+.site-footer .brand-copy strong {
+  color: var(--white);
+}
+
+.site-footer .brand-copy span {
+  color: #c5c5ca;
+}
+
+.footer-grid > div:first-child > p {
+  max-width: 25rem;
+  color: #babac0;
+}
+
+.footer-grid h2 {
+  margin: 0 0 0.8rem;
+  color: var(--white);
+  font-size: 1rem;
+}
+
+.footer-grid > div:not(:first-child) {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.45rem;
+}
+
+.footer-grid a:not(.brand) {
+  min-height: 2.5rem;
+  display: inline-flex;
+  align-items: center;
+  color: #c9c9ce;
+}
+
+.footer-contact-name {
+  color: var(--white);
+  font-size: 0.9rem;
+}
+
+.footer-grid a:not(.brand):hover {
+  color: var(--brand-yellow);
+}
+
+.footer-grid address {
+  color: #c9c9ce;
+  font-style: normal;
+  line-height: 2;
+}
+
+.footer-bottom {
+  min-height: 4.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  border-top: 1px solid rgb(255 255 255 / 10%);
+  color: #b4b4ba;
+  font-size: 0.82rem;
+}
+
+.footer-bottom a {
+  min-height: 2.75rem;
+  display: inline-flex;
+  align-items: center;
+}
+
+.footer-bottom-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1.25rem;
+}
+
+.about-more-link {
+  min-height: 2.8rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 1.25rem;
+  padding-inline: 1.25rem;
+  border: 1px solid rgb(255 255 255 / 38%);
+  border-radius: 8px;
+  color: var(--white);
+  font-weight: 800;
+}
+
+.about-more-link:hover {
+  border-color: var(--brand-yellow);
+  color: var(--brand-yellow);
+}
+
+.mobile-actions {
+  display: none;
+}
+
