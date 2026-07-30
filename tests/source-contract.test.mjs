@@ -69,9 +69,10 @@ test("brand, contact details, RTL, and palette match the approved contract", asy
 });
 
 test("request forms stay local and never simulate a confirmed submission", async () => {
-  const [component, requestForms, siteConfig, footer, workflow] = await Promise.all([
+  const [component, requestForms, quoteTypes, siteConfig, footer, workflow] = await Promise.all([
     read("../app/App.tsx"),
-    read("../app/RequestForms.tsx"),
+    read("../app/QuoteRequestForm.tsx"),
+    read("../app/quote-types.ts"),
     read("../app/site-config.ts"),
     read("../app/SiteFooter.tsx"),
     read("../.github/workflows/pages.yml"),
@@ -81,7 +82,7 @@ test("request forms stay local and never simulate a confirmed submission", async
   assert.doesNotMatch(workflow, /LEAD_ENDPOINT/);
   assert.match(requestForms, /اطلاعات این فرم در مرورگر شما آماده می‌شود/);
   assert.match(
-    requestForms,
+    quoteTypes,
     /ثبت این درخواست به معنی ثبت سفارش، انعقاد قرارداد، تضمین موجودی یا قطعی‌شدن قیمت نیست/,
   );
   assert.match(siteConfig, /tel:\+982188888280/);

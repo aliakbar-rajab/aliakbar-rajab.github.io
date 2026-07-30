@@ -1,7 +1,7 @@
 import { phones } from "./contact-data";
 import { siteConfig } from "./site-config";
 import { rialToWords } from "./persian-numbers";
-import { quoteDisclaimer, type GeneratedQuote } from "./RequestForms";
+import { quoteDisclaimer, type GeneratedQuote } from "./quote-types";
 
 const formatRial = (value: number) =>
   `${value.toLocaleString("fa-IR")} ریال`;

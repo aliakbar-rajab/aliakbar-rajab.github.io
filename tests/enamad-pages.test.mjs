@@ -76,7 +76,7 @@ test("Persian form validation rejects incomplete and malformed requests", () => 
 test("homepage navigation reaches the quote form directly and one request supports many items", async () => {
   const [homepage, requestForms] = await Promise.all([
     read("../app/App.tsx"),
-    read("../app/RequestForms.tsx"),
+    read("../app/QuoteRequestForm.tsx"),
   ]);
 
   assert.match(

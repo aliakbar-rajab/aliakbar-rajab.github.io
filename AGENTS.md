@@ -10,8 +10,8 @@
   پیدا کن؛ کل فایل را برای یک تغییر کوچک لازم نیست بخوانی.
 - صفحه‌ی تماس: `app/ContactPage.tsx`. صفحات اطلاعاتی: `app/InfoPage.tsx` +
   `app/info-page-data.ts`.
-- فرم‌ها: `app/RequestForms.tsx` (۱۲۴۸ خط — `QuoteRequestForm` و
-  `ComplaintForm` در یک فایل). فرم‌ها هیچ داده‌ای به سرور ارسال نمی‌کنند؛
+- فرم‌ها: `app/QuoteRequestForm.tsx` و `app/ComplaintForm.tsx`. فرم‌ها هیچ
+  داده‌ای به سرور ارسال نمی‌کنند؛
   فقط متن آماده برای کپی/تماس/ایمیل می‌سازند.
 - جدول قیمت مشترک: `app/RebarPrices.tsx` (`PriceCatalog`، ۸۲۶ خط)، مصرف‌شده
   توسط `BeamPrices.tsx` و `ProductPrices.tsx`.
