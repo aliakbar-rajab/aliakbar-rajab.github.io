@@ -4,6 +4,21 @@ import test from "node:test";
 
 const read = (path) => readFile(new URL(path, import.meta.url), "utf8");
 
+// app/globals.css is an @import index into app/globals/*.css (kept as
+// separate files for maintainability). Tests assert against the resolved
+// stylesheet, so read and concatenate the split files in import order —
+// same order the build tool inlines them in.
+const readGlobalsCss = async () => {
+  const index = await read("../app/globals.css");
+  const importedPaths = [...index.matchAll(/@import\s+"(\.\/globals\/[^"]+)";/g)].map(
+    (match) => match[1],
+  );
+  const files = await Promise.all(
+    importedPaths.map((path) => read(`../app/${path}`)),
+  );
+  return files.join("\n");
+};
+
 test("brand, contact details, RTL, and palette match the approved contract", async () => {
   const [component, contactData, siteConfig, siteUi, html, css, preloader, headerLogo] = await Promise.all([
     read("../app/App.tsx"),
@@ -11,7 +26,7 @@ test("brand, contact details, RTL, and palette match the approved contract", asy
     read("../app/site-config.ts"),
     read("../app/site-ui.tsx"),
     read("../index.html"),
-    read("../app/globals.css"),
+    readGlobalsCss(),
     read("../public/preloader/fb-preloader.js"),
     readFile(
       new URL(
@@ -177,7 +192,7 @@ test("homepage hero uses sharp landscape images", async () => {
   const [component, categoryMeta, css] = await Promise.all([
     read("../app/App.tsx"),
     read("../app/category-meta.ts"),
-    read("../app/globals.css"),
+    readGlobalsCss(),
   ]);
   assert.match(categoryMeta, /hero-rebar-1680\.jpg/);
   assert.match(categoryMeta, /hero-beam-1680\.jpg/);
@@ -204,7 +219,7 @@ test("about section does not render the square-profile photo", async () => {
 test("homepage uses the supplied dense steel tread photo and cross-fades banners every 1.7 seconds", async () => {
   const [component, css, texture] = await Promise.all([
     read("../app/App.tsx"),
-    read("../app/globals.css"),
+    readGlobalsCss(),
     readFile(
       new URL("../public/textures/dark-chequered-plate.png", import.meta.url),
     ),
@@ -293,7 +308,7 @@ test("beam and hash prices are sourced and exposed through the catalog", async (
     await Promise.all([
       read("../app/BeamPrices.tsx"),
       read("../app/App.tsx"),
-      read("../app/globals.css"),
+      readGlobalsCss(),
       read("../scripts/fetch-beam-prices.mjs"),
       read("../app/data/beam-prices.json").then(JSON.parse),
       read("../package.json").then(JSON.parse),
