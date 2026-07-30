@@ -6,28 +6,36 @@
     <meta name="robots" content="noindex" />
     <meta
       http-equiv="Content-Security-Policy"
-      content="default-src 'none'; img-src 'self'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'"
+      content="default-src 'none'; img-src 'self'; style-src 'unsafe-inline'; font-src 'self'; base-uri 'none'; form-action 'none'"
     />
     <link rel="icon" href="/favicon.png" type="image/png" />
     <title>صفحه پیدا نشد | بنیان فولاد داریا</title>
     <style>
+      @font-face {
+        font-family: "Vazirmatn";
+        src: url("/fonts/vazirmatn-arabic-variable.woff2") format("woff2");
+        font-style: normal;
+        font-weight: 100 900;
+        font-display: swap;
+      }
+
       * {
         box-sizing: border-box;
       }
       body {
         min-height: 100vh;
         margin: 0;
-        background: #f6f6f7;
-        color: #222226;
-        font-family: Tahoma, Arial, sans-serif;
+        background: #3b3b3e;
+        color: #fff;
+        font-family: "Vazirmatn", Tahoma, Arial, sans-serif;
       }
       .shell {
         width: min(100% - 2.5rem, 72rem);
         margin: auto;
       }
       .site-header {
-        border-bottom: 1px solid #dedee2;
-        background: #fff;
+        border-bottom: 1px solid rgb(255 255 255 / 18%);
+        background: #3b3b3e;
       }
       .header-inner,
       .footer-inner {
@@ -57,7 +65,7 @@
         gap: 0.1rem;
       }
       .brand small {
-        color: #65656c;
+        color: #d4d4d7;
         font-size: 0.7rem;
         font-weight: 400;
       }
@@ -70,10 +78,13 @@
         gap: 0.75rem;
       }
       .header-nav a {
-        color: #3b3b3e;
+        color: #f2f2f4;
         font-size: 0.9rem;
         font-weight: 700;
         text-decoration: none;
+      }
+      .header-nav a:hover {
+        color: #f6b500;
       }
       main {
         min-height: calc(100vh - 14rem);
@@ -84,8 +95,9 @@
       .not-found-card {
         width: min(100%, 38rem);
         padding: clamp(2rem, 7vw, 4rem);
+        border: 1px solid rgb(255 255 255 / 18%);
         border-radius: 14px;
-        background: #3b3b3e;
+        background: #242428;
         color: #fff;
         box-shadow: 0 18px 50px rgb(18 18 22 / 18%);
         text-align: center;
@@ -107,7 +119,8 @@
       }
       .site-footer {
         padding-block: 1.5rem;
-        background: #242428;
+        border-top: 1px solid rgb(255 255 255 / 10%);
+        background: #29292c;
         color: #f2f2f4;
       }
       .footer-inner {
