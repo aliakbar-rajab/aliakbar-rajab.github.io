@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import {
   PriceCatalog,
-  type CatalogPriceData,
   type PriceCatalogConfig,
 } from "./RebarPrices";
+import type { CatalogPriceData } from "./catalog-types";
 import {
   loadProductPricePayload,
   type ProductCatalogId,

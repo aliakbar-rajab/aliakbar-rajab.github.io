@@ -1,7 +1,7 @@
 import { createRetryableLoader } from "./catalog-cache";
 import { loadBeamPriceData, loadRebarPriceData } from "./catalog-data";
 import { loadProductPricePayload } from "./product-price-data";
-import type { CatalogCategory } from "./RebarPrices";
+import type { CatalogCategory } from "./catalog-types";
 
 export type QuoteProductName =
   | "میلگرد"

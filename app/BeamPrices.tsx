@@ -2,10 +2,9 @@ import { useEffect, useState } from "react";
 import { loadBeamPriceData } from "./catalog-data";
 import {
   PriceCatalog,
-  type CatalogPriceData,
-  type CatalogViewRequest,
   type PriceCatalogConfig,
 } from "./RebarPrices";
+import type { CatalogPriceData, CatalogViewRequest } from "./catalog-types";
 
 export type BeamViewRequest = Omit<CatalogViewRequest, "categoryId"> & {
   categoryId?: "beam" | "hash";
