@@ -79,3 +79,13 @@ git rev-parse main origin/main   # باید یکسان باشند
   شمارش می‌شوند (سقف رایگان ماهانه‌ی مخازن private، نه نامحدود مثل public)،
   و ورک‌فلوی رفرش قیمت روزی ۶ بار اجرا می‌شود — اگر رفتار CI/بودجه‌ی Actions
   موضوع کار بود، این را در نظر بگیر.
+
+## Agent skills
+
+### Issue tracker
+
+Issues and PRDs are tracked in GitHub Issues. See `docs/agents/issue-tracker.md`.
+
+### Domain docs
+
+Single-context domain documentation. See `docs/agents/domain.md`.
