@@ -1,6 +1,7 @@
 import {
   FormEvent,
   KeyboardEvent as ReactKeyboardEvent,
+  useEffect,
   useMemo,
   useRef,
   useState,
@@ -42,6 +43,13 @@ const loadCatalogSearchGroups = createRetryableLoader<ProductGroup[]>(() =>
   ),
 );
 
+function scrollToPrices(reduceMotion: boolean) {
+  document.getElementById("prices")?.scrollIntoView({
+    behavior: reduceMotion ? "auto" : "smooth",
+    block: "start",
+  });
+}
+
 export default function App() {
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [activeGroup, setActiveGroup] = useState(getInitialCategory);
@@ -67,6 +75,18 @@ export default function App() {
   const reduceMotion = useMediaQuery("(prefers-reduced-motion: reduce)");
   const contactHref = isDirectCallDevice ? phones[0].href : "#phone-numbers";
   const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
+  const didAutoScrollCategoryRoute = useRef(false);
+  const initialCategoryRoute = productGroups.some(
+    (group) =>
+      group.id ===
+      document.getElementById("root")?.dataset.initialCategory,
+  );
+
+  useEffect(() => {
+    if (!initialCategoryRoute || didAutoScrollCategoryRoute.current) return;
+    didAutoScrollCategoryRoute.current = true;
+    scrollToPrices(reduceMotion);
+  }, [initialCategoryRoute, reduceMotion]);
 
   const filteredGroups = useMemo(
     () => filterProductGroups(searchGroups ?? productGroups, committedSearch),
@@ -102,10 +122,7 @@ export default function App() {
     setActiveGroup(groupId);
     resetGroupView(groupId);
     setMobileNavOpen(false);
-    document.getElementById("prices")?.scrollIntoView({
-      behavior: reduceMotion ? "auto" : "smooth",
-      block: "start",
-    });
+    scrollToPrices(reduceMotion);
   };
 
   const goToRebarView = (
@@ -120,10 +137,7 @@ export default function App() {
       requestId: current.requestId + 1,
     }));
     setMobileNavOpen(false);
-    document.getElementById("prices")?.scrollIntoView({
-      behavior: reduceMotion ? "auto" : "smooth",
-      block: "start",
-    });
+    scrollToPrices(reduceMotion);
   };
 
   const goToBeamView = (view: Omit<BeamViewRequest, "requestId">) => {
@@ -136,10 +150,7 @@ export default function App() {
       requestId: current.requestId + 1,
     }));
     setMobileNavOpen(false);
-    document.getElementById("prices")?.scrollIntoView({
-      behavior: reduceMotion ? "auto" : "smooth",
-      block: "start",
-    });
+    scrollToPrices(reduceMotion);
   };
 
   const goToProductView = (
@@ -155,10 +166,7 @@ export default function App() {
       requestId: current.requestId + 1,
     }));
     setMobileNavOpen(false);
-    document.getElementById("prices")?.scrollIntoView({
-      behavior: reduceMotion ? "auto" : "smooth",
-      block: "start",
-    });
+    scrollToPrices(reduceMotion);
   };
 
   const submitSearch = async (event: FormEvent<HTMLFormElement>) => {
@@ -225,10 +233,7 @@ export default function App() {
       }
       setSearchLoading(false);
     }
-    document.getElementById("prices")?.scrollIntoView({
-      behavior: reduceMotion ? "auto" : "smooth",
-      block: "start",
-    });
+    scrollToPrices(reduceMotion);
   };
 
   const moveTabFocus = (
