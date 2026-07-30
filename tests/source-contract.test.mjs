@@ -168,7 +168,7 @@ test("core palette combinations meet WCAG AA contrast", () => {
 
 test("source exposes one H1 and complete social metadata", async () => {
   const [component, html, robots, sitemap] = await Promise.all([
-    read("../app/App.tsx"),
+    read("../app/HeroCarousel.tsx"),
     read("../index.html"),
     read("../public/robots.txt"),
     read("../public/sitemap.xml"),
@@ -191,7 +191,7 @@ test("source exposes one H1 and complete social metadata", async () => {
 
 test("homepage hero uses sharp landscape images", async () => {
   const [component, categoryMeta, css] = await Promise.all([
-    read("../app/App.tsx"),
+    read("../app/HeroCarousel.tsx"),
     read("../app/category-meta.ts"),
     readGlobalsCss(),
   ]);
@@ -219,7 +219,7 @@ test("about section does not render the square-profile photo", async () => {
 
 test("homepage uses the supplied dense steel tread photo and cross-fades banners every 1.7 seconds", async () => {
   const [component, css, texture] = await Promise.all([
-    read("../app/App.tsx"),
+    read("../app/HeroCarousel.tsx"),
     readGlobalsCss(),
     readFile(
       new URL("../public/textures/dark-chequered-plate.png", import.meta.url),
