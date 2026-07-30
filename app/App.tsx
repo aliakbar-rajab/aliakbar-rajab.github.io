@@ -496,7 +496,7 @@ export default function App() {
                   {megaProduct === "rebar" ? (
                     <>
                       <section className="mega-rebar-types">
-                        <h2>انواع میلگرد</h2>
+                        <p className="mega-group-label">انواع میلگرد</p>
                         {rebarTypeLinks.map((item) => (
                           <button
                             type="button"
@@ -511,7 +511,7 @@ export default function App() {
                       </section>
 
                       <section className="mega-rebar-factories">
-                        <h2>کارخانه‌های میلگرد</h2>
+                        <p className="mega-group-label">کارخانه‌های میلگرد</p>
                         <div>
                           {rebarFactories.map((factory) => (
                             <button
@@ -534,7 +534,7 @@ export default function App() {
                       </section>
 
                       <section className="mega-rebar-sizes">
-                        <h2>سایزهای میلگرد</h2>
+                        <p className="mega-group-label">سایزهای میلگرد</p>
                         <div>
                           {rebarSizes.map((size) => (
                             <button
@@ -556,7 +556,7 @@ export default function App() {
                   ) : megaProduct === "beam" ? (
                     <>
                       <section className="mega-rebar-types">
-                        <h2>انواع تیرآهن</h2>
+                        <p className="mega-group-label">انواع تیرآهن</p>
                         {beamTypeLinks.map((item) => (
                           <button
                             type="button"
@@ -571,7 +571,7 @@ export default function App() {
                       </section>
 
                       <section className="mega-rebar-factories">
-                        <h2>کارخانه‌های تیرآهن</h2>
+                        <p className="mega-group-label">کارخانه‌های تیرآهن</p>
                         <div>
                           {beamFactories.map((factory) => (
                             <button
@@ -591,7 +591,7 @@ export default function App() {
                       </section>
 
                       <section className="mega-rebar-sizes">
-                        <h2>سایزهای تیرآهن</h2>
+                        <p className="mega-group-label">سایزهای تیرآهن</p>
                         <div>
                           {beamSizes.map((size) => (
                             <button
@@ -613,7 +613,7 @@ export default function App() {
                   ) : megaCatalog && megaInitialCategory ? (
                     <>
                       <section className="mega-rebar-types">
-                        <h2>انواع {megaCatalog.label}</h2>
+                        <p className="mega-group-label">انواع {megaCatalog.label}</p>
                         {megaCatalog.categories.map((category) => (
                           <button
                             type="button"
@@ -630,10 +630,10 @@ export default function App() {
                       </section>
 
                       <section className="mega-rebar-factories">
-                        <h2>
+                        <p className="mega-group-label">
                           {megaInitialCategory.groupingLabel}‌های{" "}
                           {megaCatalog.label}
-                        </h2>
+                        </p>
                         <div>
                           {megaInitialCategory.filters.factories
                             .slice(0, 16)
@@ -655,7 +655,7 @@ export default function App() {
                       </section>
 
                       <section className="mega-rebar-sizes">
-                        <h2>سایزهای {megaCatalog.label}</h2>
+                        <p className="mega-group-label">سایزهای {megaCatalog.label}</p>
                         <div>
                           {megaInitialCategory.filters.sizes
                             .slice(0, 16)
@@ -688,7 +688,7 @@ export default function App() {
                   )}
 
                   <section className="mega-other-products">
-                    <h2>گروه محصولات</h2>
+                    <p className="mega-group-label">گروه محصولات</p>
                     <div>
                       {productGroups.map((group) => (
                           <button
