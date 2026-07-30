@@ -466,7 +466,7 @@ noscript {
   border-inline-start: 1px solid #ececf0;
 }
 
-.rebar-mega-menu h2 {
+.rebar-mega-menu .mega-group-label {
   margin: 0 0 0.65rem;
   padding-inline-start: 0.55rem;
   border-inline-start: 3px solid var(--brand-yellow);
