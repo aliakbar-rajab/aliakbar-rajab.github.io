@@ -60,6 +60,10 @@
   line-height: 1.5;
 }
 
+.quote-print-viewport {
+  position: relative;
+}
+
 .quote-print-header {
   display: grid;
   direction: ltr;
@@ -316,6 +320,10 @@
     display: none;
   }
 
+  .quote-print-scroll {
+    overflow: visible;
+  }
+
   .quote-print-sheet {
     width: 210mm;
     min-height: 297mm;
@@ -362,6 +370,59 @@
 }
 
 @media (max-width: 640px) {
+  .quote-print-scroll {
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
+    scrollbar-width: none;
+  }
+
+  .quote-print-scroll::-webkit-scrollbar {
+    display: none;
+  }
+
+  .quote-print-viewport::after {
+    content: "";
+    position: absolute;
+    z-index: 1;
+    inset-block: 0;
+    left: 0;
+    width: 2.5rem;
+    pointer-events: none;
+    background: linear-gradient(to left, rgb(255 255 255 / 0%), #fff 85%);
+  }
+
+  .quote-print-sheet {
+    width: 42rem;
+    min-width: 42rem;
+  }
+
+  .quote-print-table {
+    display: table;
+  }
+
+  .quote-print-table thead {
+    display: table-header-group;
+  }
+
+  .quote-print-table tbody {
+    display: table-row-group;
+    padding: 0;
+  }
+
+  .quote-print-table tr {
+    display: table-row;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+  }
+
+  .quote-print-table th,
+  .quote-print-table td {
+    width: auto;
+    min-height: 0;
+    display: table-cell;
+  }
+
   .quote-document-actions,
   .quote-document-action-buttons {
     align-items: stretch;

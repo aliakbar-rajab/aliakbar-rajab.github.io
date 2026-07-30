@@ -157,6 +157,67 @@ export function QuoteRequestForm() {
   const nextItemId = useRef(2);
   const prepared = usePreparedRequest();
 
+  const updateFieldError = (field: string, message: string) => {
+    setErrors((current) =>
+      field in current ? { ...current, [field]: message } : current,
+    );
+  };
+
+  const validateChangedField = (
+    element: HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement,
+  ) => {
+    if (element.name === "fullName") {
+      updateFieldError("fullName", validateFullName(element.value));
+      return;
+    }
+    if (element.name === "phone") {
+      updateFieldError("phone", validatePhone(element.value));
+      return;
+    }
+    if (element.name === "destination") {
+      updateFieldError("destination", validateRequired(element.value, "شهر مقصد"));
+      return;
+    }
+    if (element.name === "acceptDisclaimer") {
+      updateFieldError(
+        "acceptDisclaimer",
+        element instanceof HTMLInputElement && element.checked
+          ? ""
+          : "برای آماده‌سازی درخواست باید متن غیرقطعی‌بودن درخواست را تأیید کنید.",
+      );
+      return;
+    }
+
+    const productMatch = /^itemProduct-(\d+)$/.exec(element.name);
+    const quantityMatch = /^itemQuantity-(\d+)$/.exec(element.name);
+    const itemId = Number(productMatch?.[1] ?? quantityMatch?.[1]);
+    const itemIndex = items.findIndex((item) => item.id === itemId);
+    if (itemIndex === -1) return;
+
+    const itemNumber = (itemIndex + 1).toLocaleString("fa-IR");
+    if (productMatch) {
+      updateFieldError(
+        element.name,
+        validateRequired(element.value, `نوع کالای ${itemNumber}`),
+      );
+      return;
+    }
+    if (quantityMatch) {
+      const requiredError = validateRequired(
+        element.value,
+        `مقدار تقریبی کالای ${itemNumber}`,
+      );
+      const numericQuantity = Number(element.value);
+      updateFieldError(
+        element.name,
+        requiredError ||
+          (!Number.isFinite(numericQuantity) || numericQuantity <= 0
+            ? `مقدار تقریبی کالای ${itemNumber} باید عددی بزرگ‌تر از صفر باشد.`
+            : ""),
+      );
+    }
+  };
+
   useEffect(() => {
     let active = true;
 
@@ -412,9 +473,17 @@ export function QuoteRequestForm() {
       id="quote-form"
       noValidate
       onSubmit={submit}
-      onChange={() => {
+      onChange={(event) => {
         prepared.clear();
         setGeneratedQuote(null);
+        const element = event.target;
+        if (
+          element instanceof HTMLInputElement ||
+          element instanceof HTMLSelectElement ||
+          element instanceof HTMLTextAreaElement
+        ) {
+          validateChangedField(element);
+        }
       }}
     >
       <div className="form-heading">
