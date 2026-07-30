@@ -6,6 +6,7 @@ import {
   validatePhone,
   validateRequired,
 } from "./form-validation";
+import { managementContacts } from "./contact-data";
 import { ErrorMessage, PreparedRequest, usePreparedRequest } from "./request-form-shared";
 
 export function ComplaintForm() {
@@ -154,6 +155,8 @@ export function ComplaintForm() {
         copyMessage={prepared.copyMessage}
         resultRef={prepared.resultRef}
         onCopy={prepared.copy}
+        contactLabel="تماس با مدیریت"
+        contactHref={managementContacts[0].href}
       />
     </form>
   );

@@ -15,7 +15,6 @@ type GeneratedQuoteItem = {
 };
 
 export type GeneratedQuote = {
-  number: string;
   date: string;
   fullName: string;
   phone: string;
