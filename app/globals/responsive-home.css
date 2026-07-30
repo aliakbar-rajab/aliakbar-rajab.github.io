@@ -328,7 +328,8 @@
     grid-template-columns: 1fr;
   }
 
-  .hero-actions a {
+  .hero-actions a,
+  .hero-actions button {
     width: 100%;
   }
 
@@ -680,4 +681,3 @@
     flex-direction: column;
   }
 }
-

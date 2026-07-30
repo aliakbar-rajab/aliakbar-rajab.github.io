@@ -341,7 +341,10 @@ export default function App() {
       </header>
 
       <main id="main-content">
-        <HeroCarousel reduceMotion={reduceMotion} />
+        <HeroCarousel
+          reduceMotion={reduceMotion}
+          onGoToPrices={() => scrollToPrices(reduceMotion)}
+        />
 
         <CategoryGrid onSelectGroup={goToGroup} />
 

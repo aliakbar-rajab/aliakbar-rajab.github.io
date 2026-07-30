@@ -168,7 +168,8 @@
   margin-top: 2rem;
 }
 
-.hero-actions a {
+.hero-actions a,
+.hero-actions button {
   min-height: 3.1rem;
   display: inline-flex;
   align-items: center;
@@ -178,6 +179,7 @@
   border-radius: 8px;
   background: rgb(30 30 33 / 35%);
   color: var(--white);
+  font: inherit;
   font-weight: 900;
 }
 
@@ -189,6 +191,17 @@
 
 .hero-actions a:hover {
   border-color: var(--brand-yellow);
+}
+
+.hero-actions .hero-price-jump {
+  border-color: var(--brand-yellow);
+  background: rgb(20 20 23 / 72%);
+  box-shadow: inset 0 0 0 1px rgb(255 211 56 / 18%);
+  cursor: pointer;
+}
+
+.hero-actions .hero-price-jump:hover {
+  background: rgb(20 20 23 / 88%);
 }
 
 .carousel-controls {
@@ -251,4 +264,3 @@
   font-size: 0.78rem;
   font-weight: 800;
 }
-
