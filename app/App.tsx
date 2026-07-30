@@ -1,7 +1,6 @@
 import {
   FormEvent,
   KeyboardEvent as ReactKeyboardEvent,
-  useEffect,
   useMemo,
   useRef,
   useState,
@@ -13,12 +12,9 @@ import { loadBeamPriceData, loadRebarPriceData } from "./catalog-data";
 import RebarPrices, { type RebarViewRequest } from "./RebarPrices";
 import BeamPrices, { type BeamViewRequest } from "./BeamPrices";
 import ProductPrices from "./ProductPrices";
-import { localizeCatalogValue } from "./catalog-utils";
 import {
-  loadProductPriceCatalog,
   loadProductPricePayload,
   type ProductCatalogId,
-  type ProductPriceCatalog,
   type ProductViewRequest,
 } from "./product-price-data";
 import {
@@ -33,6 +29,7 @@ import { SiteFooter } from "./SiteFooter";
 import { Brand, SectionTitle } from "./site-ui";
 import { CategoryGrid } from "./CategoryGrid";
 import { HeroCarousel } from "./HeroCarousel";
+import { MegaMenu } from "./MegaMenu";
 import { useMediaQuery } from "./use-media-query";
 
 const loadCatalogSearchGroups = createRetryableLoader<ProductGroup[]>(() =>
@@ -45,86 +42,14 @@ const loadCatalogSearchGroups = createRetryableLoader<ProductGroup[]>(() =>
   ),
 );
 
-const rebarTypeLinks: Array<{
-  id: NonNullable<RebarViewRequest["categoryId"]>;
-  label: string;
-}> = [
-  { id: "ribbed", label: "قیمت میلگرد آجدار" },
-  { id: "simple", label: "قیمت میلگرد ساده" },
-  { id: "stainless", label: "قیمت میلگرد استیل" },
-  { id: "alloy", label: "قیمت میلگرد آلیاژی" },
-];
-
-const rebarFactories = [
-  "ذوب آهن",
-  "میانه",
-  "شاهین بناب",
-  "نیشابور",
-  "راد همدان",
-  "ظفر بناب",
-  "زاگرس",
-  "ابهر",
-  "ابرکوه",
-  "آناهیتا گیلان",
-  "شاهرود",
-  "کوثر اهواز",
-  "امیرکبیر",
-  "فایکو",
-  "کویر کاشان",
-  "اروند",
-];
-
-const rebarSizes = [
-  "8",
-  "10",
-  "12",
-  "14",
-  "16",
-  "18",
-  "20",
-  "22",
-  "25",
-  "28",
-  "32",
-  "36",
-  "40",
-];
-
-const beamTypeLinks: Array<{
-  id: NonNullable<BeamViewRequest["categoryId"]>;
-  label: string;
-}> = [
-  { id: "beam", label: "قیمت تیرآهن" },
-  { id: "hash", label: "قیمت هاش" },
-];
-
-const beamFactories = [
-  "ذوب آهن",
-  "یزد",
-  "فایکو",
-  "ناب تبریز",
-  "شاهین بناب",
-  "کرمانشاه",
-  "ماهان",
-  "اهواز",
-];
-
-const beamSizes = ["12", "14", "16", "18", "20", "22", "24", "27", "30"];
-
 export default function App() {
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
-  const [productsOpen, setProductsOpen] = useState(false);
-  const [megaProduct, setMegaProduct] = useState<ProductGroupId>("rebar");
   const [activeGroup, setActiveGroup] = useState(getInitialCategory);
   const [searchInput, setSearchInput] = useState("");
   const [committedSearch, setCommittedSearch] = useState("");
   const [searchMessage, setSearchMessage] = useState("");
   const [searchGroups, setSearchGroups] = useState<ProductGroup[] | null>(null);
   const [searchLoading, setSearchLoading] = useState(false);
-  const [loadedMegaCatalog, setLoadedMegaCatalog] =
-    useState<ProductPriceCatalog | null>(null);
-  const [megaCatalogError, setMegaCatalogError] =
-    useState<ProductCatalogId | null>(null);
   const [rebarViewRequest, setRebarViewRequest] = useState<RebarViewRequest>({
     requestId: 0,
   });
@@ -136,13 +61,11 @@ export default function App() {
       requestId: 0,
     });
 
-  const isMobile = useMediaQuery("(max-width: 900px)");
   const isDirectCallDevice = useMediaQuery(
     "(max-width: 900px) and (hover: none) and (pointer: coarse)",
   );
   const reduceMotion = useMediaQuery("(prefers-reduced-motion: reduce)");
   const contactHref = isDirectCallDevice ? phones[0].href : "#phone-numbers";
-  const productMenuRef = useRef<HTMLDivElement>(null);
   const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
 
   const filteredGroups = useMemo(
@@ -154,60 +77,6 @@ export default function App() {
     filteredGroups.find((group) => group.id === activeGroup) ??
     filteredGroups[0] ??
     null;
-  const megaCatalog =
-    isProductCatalogId(megaProduct) && loadedMegaCatalog?.id === megaProduct
-      ? loadedMegaCatalog
-      : null;
-  const megaCatalogLoading =
-    isProductCatalogId(megaProduct) &&
-    !megaCatalog &&
-    megaCatalogError !== megaProduct;
-  const megaInitialCategory = megaCatalog
-    ? (megaCatalog.categories.find(
-        (category) => category.id === megaCatalog.initialCategoryId,
-      ) ?? megaCatalog.categories[0])
-    : null;
-
-  useEffect(() => {
-    if (!productsOpen) return undefined;
-
-    const closeOnOutsideClick = (event: MouseEvent) => {
-      if (!productMenuRef.current?.contains(event.target as Node)) {
-        setProductsOpen(false);
-      }
-    };
-    const closeOnEscape = (event: globalThis.KeyboardEvent) => {
-      if (event.key === "Escape") setProductsOpen(false);
-    };
-
-    document.addEventListener("pointerdown", closeOnOutsideClick);
-    document.addEventListener("keydown", closeOnEscape);
-    return () => {
-      document.removeEventListener("pointerdown", closeOnOutsideClick);
-      document.removeEventListener("keydown", closeOnEscape);
-    };
-  }, [productsOpen]);
-
-  useEffect(() => {
-    if (!productsOpen || !isProductCatalogId(megaProduct)) {
-      return undefined;
-    }
-    let active = true;
-    loadProductPriceCatalog(megaProduct)
-      .then((catalog) => {
-        if (active) {
-          setLoadedMegaCatalog(catalog);
-          setMegaCatalogError(null);
-        }
-      })
-      .catch(() => {
-        if (active) setMegaCatalogError(megaProduct);
-      });
-    return () => {
-      active = false;
-    };
-  }, [megaProduct, productsOpen]);
-
   const resetGroupView = (groupId: ProductGroupId) => {
     if (groupId === "rebar") {
       setRebarViewRequest((current) => ({
@@ -232,7 +101,6 @@ export default function App() {
     setSearchMessage("");
     setActiveGroup(groupId);
     resetGroupView(groupId);
-    setProductsOpen(false);
     setMobileNavOpen(false);
     document.getElementById("prices")?.scrollIntoView({
       behavior: reduceMotion ? "auto" : "smooth",
@@ -251,7 +119,6 @@ export default function App() {
       ...view,
       requestId: current.requestId + 1,
     }));
-    setProductsOpen(false);
     setMobileNavOpen(false);
     document.getElementById("prices")?.scrollIntoView({
       behavior: reduceMotion ? "auto" : "smooth",
@@ -268,7 +135,6 @@ export default function App() {
       ...view,
       requestId: current.requestId + 1,
     }));
-    setProductsOpen(false);
     setMobileNavOpen(false);
     document.getElementById("prices")?.scrollIntoView({
       behavior: reduceMotion ? "auto" : "smooth",
@@ -288,7 +154,6 @@ export default function App() {
       ...view,
       requestId: current.requestId + 1,
     }));
-    setProductsOpen(false);
     setMobileNavOpen(false);
     document.getElementById("prices")?.scrollIntoView({
       behavior: reduceMotion ? "auto" : "smooth",
@@ -387,6 +252,14 @@ export default function App() {
     tabRefs.current[target]?.focus();
   };
 
+  const toggleMobileNav = () => {
+    setMobileNavOpen((open) => !open);
+  };
+
+  const closeMobileNav = () => {
+    setMobileNavOpen(false);
+  };
+
   return (
     <div id="fb-site">
       <a className="skip-link" href="#main-content">
@@ -443,269 +316,23 @@ export default function App() {
             type="button"
             aria-expanded={mobileNavOpen}
             aria-controls="primary-navigation"
-            onClick={() => setMobileNavOpen((open) => !open)}
+            onClick={toggleMobileNav}
           >
             <span aria-hidden="true">{mobileNavOpen ? "×" : "☰"}</span>
             <span className="sr-only">فهرست اصلی</span>
           </button>
         </div>
 
-        <div className="nav-wrap">
-          <nav
-            className="shell primary-nav"
-            id="primary-navigation"
-            aria-label="فهرست اصلی"
-            hidden={isMobile && !mobileNavOpen}
-          >
-            <a href="#top" onClick={() => setMobileNavOpen(false)}>
-              صفحه اصلی
-            </a>
-            <div className="products-menu" ref={productMenuRef}>
-              <button
-                type="button"
-                aria-expanded={productsOpen}
-                aria-controls="product-navigation"
-                onClick={() => {
-                  const nextOpen = !productsOpen;
-                  if (nextOpen) {
-                    setMegaProduct(activeGroup);
-                  }
-                  setProductsOpen(nextOpen);
-                }}
-              >
-                قیمت روز محصولات <span aria-hidden="true">⌄</span>
-              </button>
-              {productsOpen ? (
-                <div
-                  id="product-navigation"
-                  className="product-dropdown rebar-mega-menu"
-                >
-                  {megaProduct === "rebar" ? (
-                    <>
-                      <section className="mega-rebar-types">
-                        <p className="mega-group-label">انواع میلگرد</p>
-                        {rebarTypeLinks.map((item) => (
-                          <button
-                            type="button"
-                            key={item.id}
-                            onClick={() =>
-                              goToRebarView({ categoryId: item.id })
-                            }
-                          >
-                            {item.label}
-                          </button>
-                        ))}
-                      </section>
-
-                      <section className="mega-rebar-factories">
-                        <p className="mega-group-label">کارخانه‌های میلگرد</p>
-                        <div>
-                          {rebarFactories.map((factory) => (
-                            <button
-                              type="button"
-                              key={factory}
-                              onClick={() =>
-                                goToRebarView({
-                                  categoryId: "ribbed",
-                                  factory:
-                                    factory === "ابهر"
-                                      ? "سیادن ابهر"
-                                      : factory,
-                                })
-                              }
-                            >
-                              میلگرد {factory}
-                            </button>
-                          ))}
-                        </div>
-                      </section>
-
-                      <section className="mega-rebar-sizes">
-                        <p className="mega-group-label">سایزهای میلگرد</p>
-                        <div>
-                          {rebarSizes.map((size) => (
-                            <button
-                              type="button"
-                              key={size}
-                              onClick={() =>
-                                goToRebarView({
-                                  categoryId: "ribbed",
-                                  size,
-                                })
-                              }
-                            >
-                              میلگرد {Number(size).toLocaleString("fa-IR")}
-                            </button>
-                          ))}
-                        </div>
-                      </section>
-                    </>
-                  ) : megaProduct === "beam" ? (
-                    <>
-                      <section className="mega-rebar-types">
-                        <p className="mega-group-label">انواع تیرآهن</p>
-                        {beamTypeLinks.map((item) => (
-                          <button
-                            type="button"
-                            key={item.id}
-                            onClick={() =>
-                              goToBeamView({ categoryId: item.id })
-                            }
-                          >
-                            {item.label}
-                          </button>
-                        ))}
-                      </section>
-
-                      <section className="mega-rebar-factories">
-                        <p className="mega-group-label">کارخانه‌های تیرآهن</p>
-                        <div>
-                          {beamFactories.map((factory) => (
-                            <button
-                              type="button"
-                              key={factory}
-                              onClick={() =>
-                                goToBeamView({
-                                  categoryId: "beam",
-                                  factory,
-                                })
-                              }
-                            >
-                              تیرآهن {factory}
-                            </button>
-                          ))}
-                        </div>
-                      </section>
-
-                      <section className="mega-rebar-sizes">
-                        <p className="mega-group-label">سایزهای تیرآهن</p>
-                        <div>
-                          {beamSizes.map((size) => (
-                            <button
-                              type="button"
-                              key={size}
-                              onClick={() =>
-                                goToBeamView({
-                                  categoryId: "beam",
-                                  size,
-                                })
-                              }
-                            >
-                              تیرآهن {Number(size).toLocaleString("fa-IR")}
-                            </button>
-                          ))}
-                        </div>
-                      </section>
-                    </>
-                  ) : megaCatalog && megaInitialCategory ? (
-                    <>
-                      <section className="mega-rebar-types">
-                        <p className="mega-group-label">انواع {megaCatalog.label}</p>
-                        {megaCatalog.categories.map((category) => (
-                          <button
-                            type="button"
-                            key={category.id}
-                            onClick={() =>
-                              goToProductView(megaProduct, {
-                                categoryId: category.id,
-                              })
-                            }
-                          >
-                            قیمت {category.label}
-                          </button>
-                        ))}
-                      </section>
-
-                      <section className="mega-rebar-factories">
-                        <p className="mega-group-label">
-                          {megaInitialCategory.groupingLabel}‌های{" "}
-                          {megaCatalog.label}
-                        </p>
-                        <div>
-                          {megaInitialCategory.filters.factories
-                            .slice(0, 16)
-                            .map((factory) => (
-                              <button
-                                type="button"
-                                key={factory}
-                                onClick={() =>
-                                  goToProductView(megaProduct, {
-                                    categoryId: megaCatalog.initialCategoryId,
-                                    factory,
-                                  })
-                                }
-                              >
-                                {megaCatalog.label} {factory}
-                              </button>
-                            ))}
-                        </div>
-                      </section>
-
-                      <section className="mega-rebar-sizes">
-                        <p className="mega-group-label">سایزهای {megaCatalog.label}</p>
-                        <div>
-                          {megaInitialCategory.filters.sizes
-                            .slice(0, 16)
-                            .map((size) => (
-                              <button
-                                type="button"
-                                key={size}
-                                onClick={() =>
-                                  goToProductView(megaProduct, {
-                                    categoryId: megaCatalog.initialCategoryId,
-                                    size,
-                                  })
-                                }
-                              >
-                                {megaCatalog.label}{" "}
-                                {localizeCatalogValue(size)}
-                              </button>
-                            ))}
-                        </div>
-                      </section>
-                    </>
-                  ) : megaCatalogLoading ? (
-                    <p className="catalog-load-state" role="status">
-                      در حال دریافت فهرست محصولات…
-                    </p>
-                  ) : (
-                    <p className="catalog-load-state" role="alert">
-                      دریافت فهرست این گروه ممکن نشد.
-                    </p>
-                  )}
-
-                  <section className="mega-other-products">
-                    <p className="mega-group-label">گروه محصولات</p>
-                    <div>
-                      {productGroups.map((group) => (
-                          <button
-                            type="button"
-                            key={group.id}
-                            aria-pressed={megaProduct === group.id}
-                            onClick={() => setMegaProduct(group.id)}
-                          >
-                            قیمت {group.label}
-                          </button>
-                        ))}
-                    </div>
-                  </section>
-                </div>
-              ) : null}
-            </div>
-            <a href="#prices" onClick={() => setMobileNavOpen(false)}>
-              راهنمای استعلام
-            </a>
-            <a href="/about/" onClick={() => setMobileNavOpen(false)}>
-              درباره ما
-            </a>
-            <a href="/contact/" onClick={() => setMobileNavOpen(false)}>
-              تماس با ما
-            </a>
-            <a className="nav-quote" href="/quote-process/#quote-form">
-              درخواست پیش‌فاکتور
-            </a>
-          </nav>
-        </div>
+        <MegaMenu
+          mobileOpen={mobileNavOpen}
+          onMobileToggle={toggleMobileNav}
+          onMobileClose={closeMobileNav}
+          activeGroup={activeGroup}
+          onSelectGroup={goToGroup}
+          onSelectRebarView={goToRebarView}
+          onSelectBeamView={goToBeamView}
+          onSelectProductView={goToProductView}
+        />
       </header>
 
       <main id="main-content">
