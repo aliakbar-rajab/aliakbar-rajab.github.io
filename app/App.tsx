@@ -372,34 +372,36 @@ export default function App() {
               ) : null}
             </p>
 
-            <div className="product-tabs" role="tablist" aria-label="گروه محصولات">
-              {productGroups.map((group, index) => {
-                const selected = visibleGroup?.id === group.id;
-                // When a search leaves no group visible, every tab would
-                // otherwise get tabIndex -1 and the whole tablist would drop
-                // out of the tab order. Keep the first tab reachable instead.
-                const focusable = selected || (!visibleGroup && index === 0);
-                return (
-                  <button
-                    type="button"
-                    role="tab"
-                    id={`tab-${group.id}`}
-                    aria-selected={selected}
-                    aria-controls={`panel-${group.id}`}
-                    tabIndex={focusable ? 0 : -1}
-                    key={group.id}
-                    ref={(node) => {
-                      tabRefs.current[index] = node;
-                    }}
-                    onKeyDown={(event) => moveTabFocus(event, index)}
-                    onClick={() => {
-                      goToGroup(group.id);
-                    }}
-                  >
-                    {group.shortLabel}
-                  </button>
-                );
-              })}
+            <div className="product-tabs-viewport">
+              <div className="product-tabs" role="tablist" aria-label="گروه محصولات">
+                {productGroups.map((group, index) => {
+                  const selected = visibleGroup?.id === group.id;
+                  // When a search leaves no group visible, every tab would
+                  // otherwise get tabIndex -1 and the whole tablist would drop
+                  // out of the tab order. Keep the first tab reachable instead.
+                  const focusable = selected || (!visibleGroup && index === 0);
+                  return (
+                    <button
+                      type="button"
+                      role="tab"
+                      id={`tab-${group.id}`}
+                      aria-selected={selected}
+                      aria-controls={`panel-${group.id}`}
+                      tabIndex={focusable ? 0 : -1}
+                      key={group.id}
+                      ref={(node) => {
+                        tabRefs.current[index] = node;
+                      }}
+                      onKeyDown={(event) => moveTabFocus(event, index)}
+                      onClick={() => {
+                        goToGroup(group.id);
+                      }}
+                    >
+                      {group.shortLabel}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
 
             {visibleGroup ? (

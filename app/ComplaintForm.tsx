@@ -13,6 +13,48 @@ export function ComplaintForm() {
   const [errors, setErrors] = useState<FieldErrors>({});
   const prepared = usePreparedRequest();
 
+  const updateFieldError = (field: string, message: string) => {
+    setErrors((current) =>
+      field in current ? { ...current, [field]: message } : current,
+    );
+  };
+
+  const validateChangedField = (
+    element: HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement,
+    form: HTMLFormElement,
+  ) => {
+    switch (element.name) {
+      case "fullName":
+        updateFieldError("fullName", validateFullName(element.value));
+        break;
+      case "phone":
+        updateFieldError("phone", validatePhone(element.value));
+        break;
+      case "subject":
+        updateFieldError("subject", validateRequired(element.value, "موضوع"));
+        break;
+      case "description":
+        updateFieldError(
+          "description",
+          validateMinimumText(element.value, "شرح موضوع", 20),
+        );
+        break;
+      case "requestType":
+      case "reference": {
+        const formData = new FormData(form);
+        const requestType = String(formData.get("requestType") ?? "");
+        const reference = String(formData.get("reference") ?? "");
+        updateFieldError(
+          "reference",
+          requestType === "پیگیری شکایت" && !reference.trim()
+            ? "برای پیگیری، کد یا مرجع قبلی را وارد کنید."
+            : "",
+        );
+        break;
+      }
+    }
+  };
+
   const submit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
@@ -59,7 +101,22 @@ export function ComplaintForm() {
   };
 
   return (
-    <form className="request-form" id="complaint-form" noValidate onSubmit={submit}>
+    <form
+      className="request-form"
+      id="complaint-form"
+      noValidate
+      onSubmit={submit}
+      onChange={(event) => {
+        const element = event.target;
+        if (
+          element instanceof HTMLInputElement ||
+          element instanceof HTMLSelectElement ||
+          element instanceof HTMLTextAreaElement
+        ) {
+          validateChangedField(element, event.currentTarget);
+        }
+      }}
+    >
       <div className="form-heading">
         <span>ثبت و پیگیری</span>
         <h2>آماده‌سازی متن شکایت یا درخواست پیگیری</h2>

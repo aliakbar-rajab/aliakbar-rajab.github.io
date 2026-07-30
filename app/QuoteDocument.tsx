@@ -38,7 +38,9 @@ export function QuoteDocument({
           {copyMessage}
         </p>
       </div>
-      <article className="quote-print-sheet" dir="rtl">
+      <div className="quote-print-viewport">
+        <div className="quote-print-scroll">
+          <article className="quote-print-sheet" dir="rtl">
         <header className="quote-print-header">
           <img src="/brand/bonyan-foulad-daria-logo.png" alt="بنیان فولاد داریا" />
           <div className="quote-print-company">
@@ -139,7 +141,9 @@ export function QuoteDocument({
             <strong>تلفن:</strong> <span dir="ltr">{phones.map((phone) => phone.label).join(" - ")}</span>
           </address>
         </footer>
-      </article>
+          </article>
+        </div>
+      </div>
     </section>
   );
 }
