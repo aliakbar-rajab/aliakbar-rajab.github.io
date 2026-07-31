@@ -62,6 +62,21 @@
   → squash-merge. کامیت خودکار رفرش قیمت (job `refresh`) از این قانون
   مستثناست؛ push انسانی/ایجنت نیست.
 
+## Post-Merge Local Cleanup
+
+هر زمان کاربر اعلام کرد Pull Request مربوط به branch فعلی merge شده است:
+
+1. ابتدا git status --short را اجرا کن.
+2. اگر working tree تمیز نبود، هیچ فایل یا تغییری را حذف نکن و فقط وضعیت را گزارش کن.
+3. اگر working tree تمیز بود:
+   - git fetch origin --prune
+   - git switch main
+   - git pull --ff-only origin main
+4. فقط branch محلی مربوط به همان Pull Request مرج‌شده را با git branch -d حذف کن.
+5. هیچ‌وقت git reset --hard، git clean -fd یا force push اجرا نکن.
+6. در پایان git status، branch فعلی و آخرین commit را گزارش کن.
+7. برای مراحل معمول بالا از کاربر تأیید مرحله‌ای نگیر.
+
 ## هشدار محیط لوکال
 این ریپو به‌خاطر کامیت خودکار دیتای قیمت هر ۴ ساعت و کار روی برنچ‌های
 موقت (`agent/*`) به‌سرعت stale می‌شود. قبل از هر ادعا درباره‌ی «وضعیت
