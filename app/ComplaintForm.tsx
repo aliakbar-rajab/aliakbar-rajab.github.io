@@ -7,7 +7,8 @@ import {
   validateRequired,
 } from "./form-validation";
 import { managementContacts } from "./contact-data";
-import { ErrorMessage, PreparedRequest, usePreparedRequest } from "./request-form-shared";
+import { ErrorMessage, PreparedRequest } from "./request-form-shared";
+import { usePreparedRequest } from "./use-prepared-request";
 
 export function ComplaintForm() {
   const [errors, setErrors] = useState<FieldErrors>({});

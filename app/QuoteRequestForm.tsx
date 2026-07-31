@@ -15,7 +15,8 @@ import {
 import { QuoteDocument } from "./QuoteDocument";
 import { phones } from "./contact-data";
 import { quoteDisclaimer, type GeneratedQuote } from "./quote-types";
-import { ErrorMessage, PreparedRequest, usePreparedRequest } from "./request-form-shared";
+import { ErrorMessage, PreparedRequest } from "./request-form-shared";
+import { usePreparedRequest } from "./use-prepared-request";
 
 // Standard commercial rebar branch length in Iran; used only to estimate a
 // per-branch/per-piece weight when a buyer orders میلگرد by شاخه/عدد instead

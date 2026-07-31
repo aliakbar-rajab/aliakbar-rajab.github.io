@@ -13,7 +13,7 @@ export function Brand({
     >
       {headerLogo ? (
         <img
-          src="/brand/bonyan-foulad-daria-logo.png"
+          src="/brand/bonyan-foulad-daria-logo.webp"
           alt=""
           width="1254"
           height="1254"

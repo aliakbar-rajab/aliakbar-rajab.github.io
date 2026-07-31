@@ -42,7 +42,7 @@ export function QuoteDocument({
         <div className="quote-print-scroll">
           <article className="quote-print-sheet" dir="rtl">
         <header className="quote-print-header">
-          <img src="/brand/bonyan-foulad-daria-logo.png" alt="بنیان فولاد داریا" />
+          <img src="/brand/bonyan-foulad-daria-logo.webp" alt="بنیان فولاد داریا" />
           <div className="quote-print-company">
             <p>برآورد قیمت غیرقطعی</p>
             <h2>{siteConfig.brand.name}</h2>
