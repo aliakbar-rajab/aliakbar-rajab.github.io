@@ -14,7 +14,7 @@ test("production output contains required GitHub Pages files", async () => {
       "sitemap.xml",
       "manifest.webmanifest",
       "fonts/b-titr-bold.woff",
-      "brand/bonyan-foulad-daria-logo.png",
+      "brand/bonyan-foulad-daria-logo.webp",
       "preloader/fb-preloader.js",
       "preloader/assets/tr2.mp4",
       "preloader/assets/tr2-poster.jpg",

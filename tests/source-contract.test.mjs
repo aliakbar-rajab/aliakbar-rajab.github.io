@@ -51,7 +51,7 @@ test("brand, contact details, RTL, and palette match the approved contract", asy
     read("../public/preloader/fb-preloader.js"),
     readFile(
       new URL(
-        "../public/brand/bonyan-foulad-daria-logo.png",
+        "../public/brand/bonyan-foulad-daria-logo.webp",
         import.meta.url,
       ),
     ),
@@ -76,7 +76,7 @@ test("brand, contact details, RTL, and palette match the approved contract", asy
   assert.match(css, /--brand-yellow:\s*#f6b500/i);
   assert.match(css, /--brand-dark:\s*#3b3b3e/i);
   assert.match(component, /<Brand headerLogo \/>/);
-  assert.match(siteUi, /src="\/brand\/bonyan-foulad-daria-logo\.png"/);
+  assert.match(siteUi, /src="\/brand\/bonyan-foulad-daria-logo\.webp"/);
   assert.match(
     css,
     /\.header-main\s*\{[^}]*min-height:\s*8\.4rem/is,
@@ -85,8 +85,8 @@ test("brand, contact details, RTL, and palette match the approved contract", asy
     css,
     /\.brand-header-logo img\s*\{[^}]*width:\s*10\.5rem[^}]*height:\s*10\.5rem/is,
   );
-  assert.deepEqual([...headerLogo.subarray(0, 4)], [0x89, 0x50, 0x4e, 0x47]);
-  assert.ok(headerLogo.length > 1_000_000);
+  assert.deepEqual([...headerLogo.subarray(0, 4)], [0x52, 0x49, 0x46, 0x46]);
+  assert.ok(headerLogo.length < 200_000);
 });
 
 test("request forms stay local and never simulate a confirmed submission", async () => {
