@@ -43,6 +43,7 @@ export const siteConfig = {
     nationalId: null as string | null,
     registrationNumber: null as string | null,
     address: "آجودانیه پورابتهاج نبش لشکری ساختمان سرو واحد ۳۰۳",
+    shortAddress: "تهران، آجودانیه، پورابتهاج",
     city: "تهران",
     province: "تهران",
     postalCode: "1978977198",

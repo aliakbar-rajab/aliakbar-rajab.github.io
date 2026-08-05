@@ -4,6 +4,8 @@ export const phones = siteConfig.contact.phones;
 
 export const address = siteConfig.business.address;
 
+export const shortAddress = siteConfig.business.shortAddress;
+
 export const postalCode = siteConfig.business.postalCode;
 
 export const managementContacts = siteConfig.contact.management;

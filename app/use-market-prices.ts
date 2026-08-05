@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { isMarketPriceDataStale } from "./market-prices-stale";
 
 export type MarketPriceItem = {
   id: string;
@@ -30,15 +31,6 @@ export type MarketPricesState =
 // entry per request and defeat the whole point of it.
 const MARKET_PRICES_URL = "/api/market-prices";
 const REFRESH_INTERVAL_MS = 5 * 60 * 1000;
-// The endpoint's own fresh window is 5 minutes; treating anything past
-// ~15 minutes as stale gives one missed refresh of slack before surfacing
-// it, rather than waiting hours.
-const STALE_AFTER_MS = 15 * 60 * 1000;
-
-function isStale(fetchedAt: string) {
-  const age = Date.now() - new Date(fetchedAt).getTime();
-  return !Number.isFinite(age) || age > STALE_AFTER_MS;
-}
 
 function isMarketPriceData(value: unknown): value is MarketPriceData {
   return (
@@ -65,7 +57,11 @@ export function useMarketPrices(): MarketPricesState {
         if (!isMarketPriceData(data)) throw new Error("داده نامعتبر");
         if (!active) return;
         lastGoodRef.current = data;
-        setState({ status: "ready", data, isStale: isStale(data.fetchedAt) });
+        setState({
+          status: "ready",
+          data,
+          isStale: isMarketPriceDataStale(data),
+        });
       } catch {
         if (!active) return;
         const lastGood = lastGoodRef.current;
