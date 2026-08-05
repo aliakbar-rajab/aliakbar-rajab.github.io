@@ -144,16 +144,21 @@
   font-size: 1.15rem;
 }
 
-/* WhatsApp's own green is used only on this one badge -- everywhere else
-   on the page keeps the charcoal/white/gold palette. */
+/*
+ * WhatsApp's own green is used only on this one glyph -- everywhere else
+ * on the page keeps the charcoal/white/gold palette. The badge stays the
+ * same size and shape as its siblings and picks up the shared gold ring so
+ * it reads as part of the same icon set instead of a separate widget.
+ */
 .contact-info-icon-whatsapp {
   background: var(--white);
+  border: 2px solid var(--brand-yellow);
   color: #25d366;
 }
 
 .contact-info-icon-whatsapp svg {
-  width: 1.4rem;
-  height: 1.4rem;
+  width: 1.3rem;
+  height: 1.3rem;
 }
 
 .contact-whatsapp-link {

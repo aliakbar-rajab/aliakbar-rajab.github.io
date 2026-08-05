@@ -48,8 +48,12 @@ export function SiteFooter({
             target="_blank"
             rel="noopener noreferrer"
           >
-            <WhatsAppIcon />
-            عضویت در کامیونیتی واتساپ
+            <span className="footer-whatsapp-badge" aria-hidden="true">
+              <WhatsAppIcon />
+            </span>
+            <span className="footer-whatsapp-label">
+              عضویت در کامیونیتی واتساپ
+            </span>
           </a>
         </div>
         <div className="footer-col-quick">
