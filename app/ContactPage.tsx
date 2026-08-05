@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Brand } from "./site-ui";
+import { WhatsAppIcon } from "./icons";
 import { useMediaQuery } from "./use-media-query";
 import { localizeCatalogValue } from "./catalog-utils";
 import {
@@ -11,6 +12,7 @@ import {
   buildGoogleMapsUrl,
   buildWazeUrl,
   neshanShareUrl,
+  whatsappCommunityUrl,
 } from "./contact-data";
 import { siteConfig } from "./site-config";
 import { SiteFooter } from "./SiteFooter";
@@ -153,6 +155,26 @@ export default function ContactPage() {
                       پس از اعلام و تأیید مالک سایت درج می‌شود.
                     </p>
                   )}
+                </div>
+              </div>
+
+              <div className="contact-info-row">
+                <span
+                  className="contact-info-icon contact-info-icon-whatsapp"
+                  aria-hidden="true"
+                >
+                  <WhatsAppIcon />
+                </span>
+                <div>
+                  <h2>کامیونیتی واتساپ</h2>
+                  <a
+                    className="contact-whatsapp-link"
+                    href={whatsappCommunityUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    عضویت در کامیونیتی واتساپ
+                  </a>
                 </div>
               </div>
 

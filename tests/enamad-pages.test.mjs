@@ -42,19 +42,18 @@ test("owner-only legal information remains explicitly unset, except the confirme
   assert.match(config, /legalName: null/);
   assert.match(config, /nationalId: null/);
   assert.match(config, /registrationNumber: null/);
-  assert.match(config, /workingHours: null/);
+  assert.match(config, /workingHours: "9 الی 18"/);
   assert.match(config, /officialEmail: "info@fouladbonyan\.com"/);
   assert.match(checklist, /نام حقوقی/);
   assert.match(checklist, /شناسه ملی/);
   assert.match(checklist, /شماره ثبت/);
-  assert.match(checklist, /ساعات و روزهای کاری/);
-  // The email itself is now confirmed, so it must no longer be listed among
-  // the still-missing required fields (a later bullet about the delivery
-  // channel for quote requests may still mention the phrase, that's fine).
+  // The email and working hours are now confirmed, so neither should still
+  // be listed among the still-missing required fields.
   assert.doesNotMatch(
     checklist,
     /ایمیل رسمی و قابل دسترس برای مکاتبات/,
   );
+  assert.doesNotMatch(checklist, /ساعات و روزهای کاری/);
 });
 
 test("Persian form validation rejects incomplete and malformed requests", () => {

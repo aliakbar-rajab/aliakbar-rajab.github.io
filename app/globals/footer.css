@@ -183,6 +183,9 @@
   width: 1.05rem;
   height: 1.05rem;
   flex-shrink: 0;
+  /* WhatsApp's own green stays on this one glyph only -- the CTA text and
+     border keep the footer's charcoal/white/gold palette even on hover. */
+  color: #25d366;
 }
 
 .footer-whatsapp-cta:hover {

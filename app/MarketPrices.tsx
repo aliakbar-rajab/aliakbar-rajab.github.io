@@ -25,6 +25,13 @@ function formatUpdatedAt(iso: string) {
   }).format(new Date(iso));
 }
 
+function formatCheckedAt(iso: string) {
+  return new Intl.DateTimeFormat("fa-IR", {
+    timeStyle: "short",
+    timeZone: "Asia/Tehran",
+  }).format(new Date(iso));
+}
+
 function MarketPriceCard({ item }: { item: MarketPriceItem }) {
   const trend = getTrendPresentation(item.status, item.percent);
   const Icon = ASSET_ICONS[item.id] ?? GoldIcon;
@@ -82,18 +89,15 @@ export function MarketPrices() {
 
         {state.status === "ready" ? (
           <>
-            {state.isStale ? (
-              <p className="market-prices-stale" role="status">
-                <span aria-hidden="true">⚠</span>
-                این نرخ‌ها ممکن است بروز نباشند؛ آخرین دریافت موفق نمایش داده
-                می‌شود.
-              </p>
-            ) : null}
             <div className="market-prices-grid">
               {state.data.items.map((item) => (
                 <MarketPriceCard item={item} key={item.id} />
               ))}
             </div>
+            <p className="market-prices-checked" role="status">
+              نرخ‌ها هر ۵ دقیقه به‌روزرسانی می‌شوند · آخرین بررسی:{" "}
+              <b>{formatCheckedAt(state.data.fetchedAt)}</b>
+            </p>
           </>
         ) : null}
       </div>

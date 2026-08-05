@@ -35,7 +35,7 @@ export const siteConfig = {
       },
     ] satisfies ManagementContact[],
     officialEmail: "info@fouladbonyan.com" as string | null,
-    workingHours: null as string | null,
+    workingHours: "9 الی 18" as string | null,
     whatsappCommunityUrl: "https://chat.whatsapp.com/IXb2LqQ6UQvFq3shgQCRiW",
   },
   business: {
