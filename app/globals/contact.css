@@ -144,6 +144,27 @@
   font-size: 1.15rem;
 }
 
+/* WhatsApp's own green is used only on this one badge -- everywhere else
+   on the page keeps the charcoal/white/gold palette. */
+.contact-info-icon-whatsapp {
+  background: var(--white);
+  color: #25d366;
+}
+
+.contact-info-icon-whatsapp svg {
+  width: 1.4rem;
+  height: 1.4rem;
+}
+
+.contact-whatsapp-link {
+  font-weight: 700;
+  color: var(--white);
+}
+
+.contact-whatsapp-link:hover {
+  color: #25d366;
+}
+
 .contact-info-row h2 {
   margin: 0 0 0.5rem;
   font-size: 1rem;
