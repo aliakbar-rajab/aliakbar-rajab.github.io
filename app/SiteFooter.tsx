@@ -1,23 +1,28 @@
 import { Fragment } from "react";
-import { localizeCatalogValue } from "./catalog-utils";
+import { WhatsAppIcon } from "./icons";
 import {
-  address,
   managementContacts,
   officialEmail,
   phones,
-  postalCode,
+  shortAddress,
   whatsappCommunityUrl,
 } from "./contact-data";
 import { Brand } from "./site-ui";
 
-const essentialPageLinks = [
-  { href: "/about/", label: "درباره ما" },
+const quickAccessLinks = [
+  { href: "/", label: "صفحه اصلی" },
+  { href: "/#products", label: "محصولات" },
+  { href: "/#prices", label: "قیمت‌ها" },
+  { href: "/quote-process/", label: "درخواست پیش‌فاکتور" },
   { href: "/contact/", label: "تماس با ما" },
+] as const;
+
+const infoPageLinks = [
+  { href: "/about/", label: "درباره ما" },
+  { href: "/shipping-delivery/", label: "ارسال و تحویل" },
   { href: "/terms/", label: "شرایط استفاده" },
   { href: "/privacy/", label: "حریم خصوصی" },
-  { href: "/quote-process/", label: "درخواست پیش‌فاکتور" },
   { href: "/complaints/", label: "ثبت شکایت و پیگیری" },
-  { href: "/shipping-delivery/", label: "شرایط ارسال و تحویل" },
 ] as const;
 
 type SiteFooterProps = {
@@ -32,11 +37,10 @@ export function SiteFooter({
   return (
     <footer className="site-footer" id="contact">
       <div className="shell footer-grid">
-        <div>
+        <div className="footer-col-brand">
           <Brand headerLogo href={homeHref} />
           <p>
-            معرفی و استعلام مقاطع فولادی برای پروژه‌های ساختمانی و صنعتی؛ بدون
-            فروش آنلاین یا ثبت سفارش قطعی.
+            معرفی و استعلام مقاطع فولادی برای پروژه‌های ساختمانی و صنعتی.
           </p>
           <a
             className="footer-whatsapp-cta"
@@ -44,27 +48,28 @@ export function SiteFooter({
             target="_blank"
             rel="noopener noreferrer"
           >
-            <span aria-hidden="true">💬</span>
+            <WhatsAppIcon />
             عضویت در کامیونیتی واتساپ
           </a>
         </div>
-        <div>
+        <div className="footer-col-quick">
           <h2>دسترسی سریع</h2>
-          <a href="/">صفحه اصلی</a>
-          <a href="/#products">محصولات</a>
-          <a href="/#prices">قیمت‌های اطلاع‌رسانی</a>
-          <a href="/contact/">تماس با واحد فروش</a>
+          {quickAccessLinks.map((link) => (
+            <a href={link.href} key={link.href}>
+              {link.label}
+            </a>
+          ))}
         </div>
-        <div>
-          <h2>اطلاعات و قوانین</h2>
-          {essentialPageLinks.map((link) => (
+        <div className="footer-col-info">
+          <h2>اطلاعات و راهنما</h2>
+          {infoPageLinks.map((link) => (
             <a href={link.href} key={link.href}>
               {link.label}
             </a>
           ))}
         </div>
         <div id="phone-numbers">
-          <h2>شماره‌های تماس</h2>
+          <h2>تماس</h2>
           {phones.map((phone) => (
             <a href={phone.href} key={phone.href} dir="ltr">
               {phone.label}
@@ -75,25 +80,21 @@ export function SiteFooter({
               {officialEmail}
             </a>
           ) : null}
-        </div>
-        <div>
-          <h2>تماس با مدیریت</h2>
-          {managementContacts.map((contact) => (
-            <Fragment key={contact.href}>
-              <strong className="footer-contact-name">{contact.name}</strong>
-              <a href={contact.href} dir="ltr">
-                {contact.label}
-              </a>
-            </Fragment>
-          ))}
-        </div>
-        <div>
-          <h2>نشانی دفتر</h2>
-          <address>
-            {address}
-            <br />
-            کد پستی {localizeCatalogValue(postalCode)}
-          </address>
+          <address>{shortAddress}</address>
+          <a href="/contact/">مشاهده صفحه کامل تماس</a>
+          <div className="footer-management">
+            <span className="footer-management-label">تماس با مدیریت</span>
+            {managementContacts.map((contact) => (
+              <Fragment key={contact.href}>
+                <strong className="footer-contact-name">
+                  {contact.name}
+                </strong>
+                <a href={contact.href} dir="ltr">
+                  {contact.label}
+                </a>
+              </Fragment>
+            ))}
+          </div>
         </div>
       </div>
       <div className="shell footer-bottom">

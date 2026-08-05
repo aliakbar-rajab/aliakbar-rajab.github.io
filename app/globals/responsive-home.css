@@ -11,14 +11,6 @@
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
-  .footer-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-
-  .footer-grid > div:first-child {
-    grid-column: 1 / -1;
-  }
-
   .rebar-layout {
     grid-template-columns: minmax(0, 1fr) 16rem;
   }
@@ -197,8 +189,27 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .footer-grid > div:last-child {
-    grid-column: auto;
+  /*
+   * At 2 columns, pairing by content length (not source order) keeps both
+   * rows close in height -- quick-access + info are both short link lists,
+   * while brand (short) and contact (the tallest column, with the
+   * management subsection) end up together in the trailing row instead of
+   * leaving a mid-page gap under a short first-row cell.
+   */
+  .footer-col-quick {
+    order: 1;
+  }
+
+  .footer-col-info {
+    order: 2;
+  }
+
+  .footer-col-brand {
+    order: 3;
+  }
+
+  #phone-numbers {
+    order: 4;
   }
 
   .mobile-actions {
@@ -456,6 +467,12 @@
 
   .footer-grid {
     grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+
+  .footer-grid > div:not(:first-child) {
+    padding-top: 1.5rem;
+    border-top: 1px solid rgb(255 255 255 / 10%);
   }
 
   .footer-bottom {

@@ -349,7 +349,10 @@ test("rebar prices are sourced, validated, and refreshed on a schedule", async (
   assert.doesNotMatch(fetcher, /existingDataIsUsable|console\.warn/);
   assert.match(fetcher, /validateCatalogPriceData/);
   assert.match(workflow, /schedule:/);
-  assert.match(workflow, /17 \*\/4 \* \* \*/);
+  // Runs hourly, Saturday-Thursday, 06:00-21:00 Asia/Tehran (matches the
+  // Iranian market's active hours; Friday is skipped as a closed day).
+  assert.match(workflow, /cron:\s*"0 6-21 \* \* 0-4,6"/);
+  assert.match(workflow, /timezone:\s*"Asia\/Tehran"/);
   assert.equal(priceData.categories.length, 4);
   assert.ok(
     priceData.categories.every((category) =>

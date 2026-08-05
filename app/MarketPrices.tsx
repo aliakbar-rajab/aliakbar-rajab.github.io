@@ -1,11 +1,12 @@
 import { getTrendPresentation } from "./catalog-behavior.mjs";
+import { EurIcon, GoldIcon, TetherIcon, UsdIcon, type IconProps } from "./icons";
 import { useMarketPrices, type MarketPriceItem } from "./use-market-prices";
 
-const ASSET_ICONS: Record<string, string> = {
-  gold: "◆",
-  usd: "$",
-  tether: "₮",
-  eur: "€",
+const ASSET_ICONS: Record<string, (props: IconProps) => ReturnType<typeof GoldIcon>> = {
+  gold: GoldIcon,
+  usd: UsdIcon,
+  tether: TetherIcon,
+  eur: EurIcon,
 };
 
 function formatPrice(value: number) {
@@ -26,11 +27,12 @@ function formatUpdatedAt(iso: string) {
 
 function MarketPriceCard({ item }: { item: MarketPriceItem }) {
   const trend = getTrendPresentation(item.status, item.percent);
+  const Icon = ASSET_ICONS[item.id] ?? GoldIcon;
   return (
     <article className={`market-price-card is-${item.status}`}>
       <header>
         <span className="market-price-icon" aria-hidden="true">
-          {ASSET_ICONS[item.id] ?? "◆"}
+          <Icon />
         </span>
         <h3>{item.label}</h3>
       </header>
