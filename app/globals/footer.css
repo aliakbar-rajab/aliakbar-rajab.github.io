@@ -143,9 +143,9 @@
   scroll-margin-top: 8rem;
 }
 
-.footer-grid {
+.footer-main {
   display: grid;
-  grid-template-columns: 1.1fr 0.85fr 1fr 1.1fr;
+  grid-template-columns: 1.3fr 1fr 1fr;
   gap: 2rem;
   padding-bottom: 2.25rem;
 }
@@ -156,6 +156,17 @@
 
 .site-footer .brand-copy span {
   color: #c5c5ca;
+}
+
+/*
+ * The header uses this same Brand component at full size (10.5rem) so the
+ * mark reads as the page's primary identity there; in the compact footer
+ * row it only needs to read as a mark, so it's scaled down here to keep
+ * the brand column from dictating the whole row's height.
+ */
+.footer-col-brand .brand-header-logo img {
+  width: 4.75rem;
+  height: 4.75rem;
 }
 
 .footer-col-brand > p {
@@ -217,7 +228,7 @@
   box-shadow: 0 2px 10px rgb(0 0 0 / 40%);
 }
 
-.footer-grid h2 {
+.footer-main h2 {
   margin: 0 0 0.7rem;
   color: var(--white);
   font-size: 1rem;
@@ -225,14 +236,15 @@
   line-height: 1.4;
 }
 
-.footer-grid > div:not(.footer-col-brand) {
+.footer-main > div:not(.footer-col-brand) {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   gap: 0.4rem;
 }
 
-.footer-grid a:not(.brand) {
+.footer-main a:not(.brand),
+.footer-contact-strip a {
   min-height: 2.15rem;
   display: inline-flex;
   align-items: center;
@@ -245,25 +257,85 @@
   font-size: 0.9rem;
 }
 
-.footer-grid a:not(.brand):hover {
+.footer-main a:not(.brand):hover,
+.footer-contact-strip a:hover {
   color: var(--brand-yellow);
 }
 
-.footer-grid address {
+.footer-contact-meta address {
+  min-height: 2.15rem;
+  display: inline-flex;
+  align-items: center;
   color: #c9c9ce;
   font-style: normal;
-  line-height: 1.7;
+  line-height: 1.5;
+}
+
+/*
+ * The contact strip replaces what used to be a tall vertical column: phones,
+ * secondary contact details and management contacts each get their own
+ * compact horizontal row instead of stacking one item per line.
+ */
+.footer-contact-strip {
+  border-block: 1px solid rgb(255 255 255 / 10%);
+  background: rgb(255 255 255 / 3%);
+}
+
+.footer-contact-strip-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding-block: 1.15rem;
+}
+
+.footer-phones {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0.5rem 1rem;
+}
+
+.footer-phones a {
+  min-height: 2.35rem;
+  justify-content: center;
+  padding-inline: 0.5rem;
+  border: 1px solid rgb(255 255 255 / 10%);
+  border-radius: 6px;
+  font-size: 0.88rem;
+}
+
+.footer-phones a:hover {
+  border-color: var(--brand-yellow);
+}
+
+.footer-contact-secondary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.4rem 2rem;
+  padding-top: 0.7rem;
+  border-top: 1px solid rgb(255 255 255 / 8%);
+}
+
+.footer-contact-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.3rem 1.5rem;
+  font-size: 0.88rem;
 }
 
 .footer-management {
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 0.4rem;
-  margin-top: 0.5rem;
-  padding-top: 0.65rem;
-  border-top: 1px solid rgb(255 255 255 / 10%);
-  width: 100%;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem 1.5rem;
+}
+
+.footer-management-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 .footer-management-label {
@@ -315,5 +387,56 @@
 
 .mobile-actions {
   display: none;
+}
+
+/*
+ * Footer breakpoints are scoped here (1100 / 700) rather than reused from
+ * the shared 1080/900/640 breakpoints in responsive-home.css, because the
+ * three-column footer-main and the five-phone strip need their own
+ * thresholds to stay balanced instead of inheriting unrelated components'
+ * cutoffs.
+ */
+@media (max-width: 1099px) {
+  .footer-phones {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 1099px) and (min-width: 700px) {
+  .footer-main {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .footer-col-brand {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 699px) {
+  .footer-main {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1.75rem;
+    padding-bottom: 1.75rem;
+  }
+
+  .footer-main > div:not(:first-child) {
+    padding-top: 1.5rem;
+    border-top: 1px solid rgb(255 255 255 / 10%);
+  }
+
+  .footer-phones {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .footer-contact-secondary {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .footer-bottom {
+    align-items: flex-start;
+    flex-direction: column;
+    padding-block: 1rem;
+  }
 }
 

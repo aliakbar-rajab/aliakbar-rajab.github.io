@@ -1,4 +1,3 @@
-import { Fragment } from "react";
 import { WhatsAppIcon } from "./icons";
 import {
   managementContacts,
@@ -36,7 +35,7 @@ export function SiteFooter({
 }: SiteFooterProps) {
   return (
     <footer className="site-footer" id="contact">
-      <div className="shell footer-grid">
+      <div className="shell footer-main">
         <div className="footer-col-brand">
           <Brand headerLogo href={homeHref} />
           <p>
@@ -72,32 +71,40 @@ export function SiteFooter({
             </a>
           ))}
         </div>
-        <div id="phone-numbers">
-          <h2>تماس</h2>
-          {phones.map((phone) => (
-            <a href={phone.href} key={phone.href} dir="ltr">
-              {phone.label}
-            </a>
-          ))}
-          {officialEmail ? (
-            <a href={`mailto:${officialEmail}`} dir="ltr">
-              {officialEmail}
-            </a>
-          ) : null}
-          <address>{shortAddress}</address>
-          <a href="/contact/">مشاهده صفحه کامل تماس</a>
-          <div className="footer-management">
-            <span className="footer-management-label">تماس با مدیریت</span>
-            {managementContacts.map((contact) => (
-              <Fragment key={contact.href}>
-                <strong className="footer-contact-name">
-                  {contact.name}
-                </strong>
-                <a href={contact.href} dir="ltr">
-                  {contact.label}
-                </a>
-              </Fragment>
+      </div>
+      <div className="footer-contact-strip" id="phone-numbers">
+        <div className="shell footer-contact-strip-inner">
+          <h2 className="sr-only">اطلاعات تماس</h2>
+          <div className="footer-phones">
+            {phones.map((phone) => (
+              <a href={phone.href} key={phone.href} dir="ltr">
+                {phone.label}
+              </a>
             ))}
+          </div>
+          <div className="footer-contact-secondary">
+            <div className="footer-contact-meta">
+              {officialEmail ? (
+                <a href={`mailto:${officialEmail}`} dir="ltr">
+                  {officialEmail}
+                </a>
+              ) : null}
+              <address>{shortAddress}</address>
+              <a href="/contact/">مشاهده صفحه کامل تماس</a>
+            </div>
+            <div className="footer-management">
+              <span className="footer-management-label">تماس با مدیریت</span>
+              {managementContacts.map((contact) => (
+                <span className="footer-management-item" key={contact.href}>
+                  <strong className="footer-contact-name">
+                    {contact.name}
+                  </strong>
+                  <a href={contact.href} dir="ltr">
+                    {contact.label}
+                  </a>
+                </span>
+              ))}
+            </div>
           </div>
         </div>
       </div>
