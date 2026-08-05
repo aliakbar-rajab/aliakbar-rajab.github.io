@@ -8,6 +8,10 @@ export const postalCode = siteConfig.business.postalCode;
 
 export const managementContacts = siteConfig.contact.management;
 
+export const officialEmail = siteConfig.contact.officialEmail;
+
+export const whatsappCommunityUrl = siteConfig.contact.whatsappCommunityUrl;
+
 /**
  * GPS pin for the office (پور ابتهاج، لشگری، آجودانیه) confirmed against the
  * owner-supplied Neshan share link -- do not adjust without a new pin, the

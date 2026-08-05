@@ -1,0 +1,157 @@
+/*
+ * Sits directly between .products (chequered-plate texture) and .prices,
+ * both of which share the same flat #3b3b3e tone at their edges -- using
+ * that same colour here keeps the three sections reading as one continuous
+ * dark band instead of introducing a visible seam.
+ */
+.market-prices {
+  position: relative;
+  z-index: 2;
+  background-color: #3b3b3e;
+  padding-block: clamp(2.5rem, 5vw, 4rem);
+}
+
+.market-prices .section-heading {
+  margin-bottom: 1.5rem;
+}
+
+.market-prices .section-heading h2 {
+  color: var(--white);
+}
+
+.market-prices .section-heading p {
+  color: #e1e1e4;
+}
+
+.market-prices-state {
+  margin: 0;
+  padding: 1.1rem 1.25rem;
+  border: 1px solid rgb(255 255 255 / 14%);
+  border-radius: var(--radius);
+  background: rgb(255 255 255 / 6%);
+  color: #d8d8dc;
+  text-align: center;
+}
+
+.market-prices-stale {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0 0 1rem;
+  padding: 0.65rem 1rem;
+  border: 1px solid rgb(246 181 0 / 45%);
+  border-radius: 10px;
+  background: rgb(246 181 0 / 12%);
+  color: #f6d98a;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.market-prices-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.market-price-card {
+  min-width: 0;
+  display: grid;
+  gap: 0.6rem;
+  padding: 1.1rem 1.2rem 1.25rem;
+  border-top: 3px solid var(--brand-yellow);
+  border-radius: var(--radius);
+  background: var(--white);
+  box-shadow: 0 10px 28px rgb(12 12 16 / 22%);
+}
+
+.market-price-card > header {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.market-price-icon {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 2.1rem;
+  height: 2.1rem;
+  border-radius: 50%;
+  background: #f3ede0;
+  color: var(--brand-dark);
+  font-family: Arial, sans-serif;
+  font-weight: 900;
+  font-size: 1.05rem;
+}
+
+.market-price-card h3 {
+  margin: 0;
+  color: var(--brand-dark);
+  font-size: 1rem;
+  font-weight: 900;
+}
+
+.market-price-value {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.4rem;
+  margin: 0;
+}
+
+.market-price-value strong {
+  color: #1c1c20;
+  font-size: 1.3rem;
+  font-weight: 950;
+  word-break: break-word;
+}
+
+.market-price-value small {
+  color: var(--muted);
+  font-size: 0.78rem;
+  white-space: nowrap;
+}
+
+.market-price-trend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
+  margin: 0;
+  color: #576079;
+  font-size: 0.85rem;
+  font-weight: 800;
+}
+
+.market-price-card.is-up .market-price-trend {
+  color: #ce324b;
+}
+
+.market-price-card.is-down .market-price-trend {
+  color: #10a966;
+}
+
+.market-price-updated {
+  margin: 0.2rem 0 0;
+  padding-top: 0.55rem;
+  border-top: 1px solid var(--line);
+  color: #8a8b94;
+  font-size: 0.72rem;
+}
+
+.market-price-updated b {
+  color: #55565f;
+  font-weight: 800;
+}
+
+@media (max-width: 900px) {
+  .market-prices-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 480px) {
+  .market-prices-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

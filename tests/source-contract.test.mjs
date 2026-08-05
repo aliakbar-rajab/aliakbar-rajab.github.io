@@ -72,7 +72,10 @@ test("brand, contact details, RTL, and palette match the approved contract", asy
     siteConfig,
     /آجودانیه پورابتهاج نبش لشکری ساختمان سرو واحد ۳۰۳/,
   );
-  assert.doesNotMatch(combined, /mailto:|[\w.+-]+@[\w.-]+\.[a-z]{2,}/i);
+  // officialEmail is confirmed as info@fouladbonyan.com; guard that it's the
+  // only email address referenced anywhere across these brand-critical files.
+  const emailMatches = combined.match(/[\w.+-]+@[\w.-]+\.[a-z]{2,}/gi) ?? [];
+  assert.deepEqual(new Set(emailMatches), new Set(["info@fouladbonyan.com"]));
   assert.match(css, /--brand-yellow:\s*#f6b500/i);
   assert.match(css, /--brand-dark:\s*#3b3b3e/i);
   assert.match(component, /<Brand headerLogo \/>/);

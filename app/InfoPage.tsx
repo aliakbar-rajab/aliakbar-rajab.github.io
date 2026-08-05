@@ -135,8 +135,19 @@ function PrivacyContent() {
         <h2>حقوق و تماس</h2>
         <p>
           برای پرسش درباره اطلاعات شخصی یا درخواست اصلاح اطلاعاتی که در تماس
-          تلفنی ارائه کرده‌اید، با مدیریت مجموعه تماس بگیرید. ایمیل رسمی پس از
-          اعلام و تأیید مالک سایت در همین صفحه درج خواهد شد.
+          تلفنی ارائه کرده‌اید، با مدیریت مجموعه تماس بگیرید
+          {siteConfig.contact.officialEmail ? (
+            <>
+              {" "}
+              یا به ایمیل رسمی{" "}
+              <a href={`mailto:${siteConfig.contact.officialEmail}`}>
+                {siteConfig.contact.officialEmail}
+              </a>{" "}
+              پیام دهید.
+            </>
+          ) : (
+            "."
+          )}
         </p>
         <p className="page-updated">آخرین به‌روزرسانی: ۷ مرداد ۱۴۰۵</p>
       </section>
@@ -175,11 +186,10 @@ function QuoteProcessContent() {
       </ol>
       <aside className="important-notice">
         <strong>توجه مهم</strong>
-        <p>
-          ثبت این درخواست به معنی ثبت سفارش، انعقاد قرارداد، تضمین موجودی یا
-          قطعی‌شدن قیمت نیست. قیمت و شرایط نهایی پس از بررسی واحد فروش در
-          پیش‌فاکتور دارای مدت اعتبار اعلام می‌شود.
-        </p>
+        <p>قیمت و شرایط نهایی پس از تماس با واحد فروش اعلام میشود.</p>
+        <a className="important-notice-phones-link" href="#phone-numbers">
+          مشاهده شماره‌های تماس
+        </a>
       </aside>
       <QuoteRequestForm />
     </>
