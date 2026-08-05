@@ -30,6 +30,7 @@ import { SiteFooter } from "./SiteFooter";
 import { Brand, SectionTitle } from "./site-ui";
 import { CategoryGrid } from "./CategoryGrid";
 import { HeroCarousel } from "./HeroCarousel";
+import { MarketPrices } from "./MarketPrices";
 import { MegaMenu } from "./MegaMenu";
 import { useMediaQuery } from "./use-media-query";
 
@@ -347,6 +348,8 @@ export default function App() {
         />
 
         <CategoryGrid onSelectGroup={goToGroup} />
+
+        <MarketPrices />
 
         <section className="prices section" id="prices">
           <div className="shell">

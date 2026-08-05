@@ -34,8 +34,9 @@ export const siteConfig = {
         label: "09126333326",
       },
     ] satisfies ManagementContact[],
-    officialEmail: null as string | null,
+    officialEmail: "info@fouladbonyan.com" as string | null,
     workingHours: null as string | null,
+    whatsappCommunityUrl: "https://chat.whatsapp.com/IXb2LqQ6UQvFq3shgQCRiW",
   },
   business: {
     legalName: null as string | null,

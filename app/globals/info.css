@@ -242,3 +242,28 @@
   line-height: 2;
 }
 
+.important-notice-phones-link {
+  min-height: 2.8rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 1rem;
+  padding-inline: 1.25rem;
+  border: 1px solid #c18e00;
+  border-radius: 8px;
+  background: var(--brand-yellow);
+  color: var(--ink);
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.important-notice-phones-link:hover {
+  background: #e0a500;
+}
+
+@media (max-width: 480px) {
+  .important-notice-phones-link {
+    width: 100%;
+  }
+}
+

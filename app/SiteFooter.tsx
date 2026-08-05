@@ -1,6 +1,13 @@
 import { Fragment } from "react";
 import { localizeCatalogValue } from "./catalog-utils";
-import { address, managementContacts, phones, postalCode } from "./contact-data";
+import {
+  address,
+  managementContacts,
+  officialEmail,
+  phones,
+  postalCode,
+  whatsappCommunityUrl,
+} from "./contact-data";
 import { Brand } from "./site-ui";
 
 const essentialPageLinks = [
@@ -31,6 +38,15 @@ export function SiteFooter({
             معرفی و استعلام مقاطع فولادی برای پروژه‌های ساختمانی و صنعتی؛ بدون
             فروش آنلاین یا ثبت سفارش قطعی.
           </p>
+          <a
+            className="footer-whatsapp-cta"
+            href={whatsappCommunityUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <span aria-hidden="true">💬</span>
+            عضویت در کامیونیتی واتساپ
+          </a>
         </div>
         <div>
           <h2>دسترسی سریع</h2>
@@ -54,6 +70,11 @@ export function SiteFooter({
               {phone.label}
             </a>
           ))}
+          {officialEmail ? (
+            <a href={`mailto:${officialEmail}`} dir="ltr">
+              {officialEmail}
+            </a>
+          ) : null}
         </div>
         <div>
           <h2>تماس با مدیریت</h2>
